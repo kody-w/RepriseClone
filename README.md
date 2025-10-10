@@ -18,6 +18,8 @@ A browser-based demo recording and playback tool, similar to Reprise. Record use
   - **Element Picker**: Click elements on page to select them in tree
   - **Hide/Show Elements**: Remove unwanted overlays, banners, or UI elements
   - **HTML Editor**: Advanced editing with full HTML access
+  - **Template Mode**: Mark dynamic vs static elements, export templates
+  - **Static Page Animator**: Edit only dynamic elements in static templates
   - Export modified recordings with flags
 
 - Built with [rrweb](https://www.rrweb.io/) - an open-source web session replay library
@@ -210,6 +212,75 @@ For advanced users who want full control:
 - Advanced customization
 - Developers who prefer code editing
 
+### Template Mode (Separate Static from Dynamic Content)
+
+Template Mode lets you mark which elements are dynamic (like chat messages) versus static (like headers, navigation):
+
+1. Load a recording in the player
+2. Click **"🎬 Template Mode"** button
+3. Open the **"✏️ Edit Text"** panel
+4. Browse the HTML tree and select dynamic elements
+5. Click **"🎬 Mark as Dynamic"** for each dynamic element
+   - Dynamic elements get a blue background and 🎬 badge
+6. Click **"📤 Export Template + Mapping"**
+   - Downloads **template HTML** (static content only, dynamic elements removed)
+   - Downloads **mapping JSON** (list of dynamic element selectors)
+7. Click **"📥 Load Template"** to reverse the process:
+   - Upload a template HTML
+   - System auto-detects what's dynamic vs static
+   - Marks detected elements for animation
+
+**What gets exported:**
+- `template-{timestamp}.html` - Static HTML page with dynamic elements removed
+- `template-mapping-{timestamp}.json` - JSON file mapping dynamic element selectors
+
+**Use Cases:**
+- Create reusable templates for product demos
+- Separate UI chrome from dynamic content
+- Define which parts animate during playback
+- Build template libraries for consistent demos
+
+### Static Page Animator (Edit Dynamic Elements Only)
+
+The Static Page Animator is a specialized tool for editing ONLY the dynamic elements in a static template:
+
+1. Click **"🎨 Open Static Page Animator"** from Template Mode panel
+   - Or navigate to `animator.html` directly
+2. Upload the **template HTML** file
+3. Upload the **mapping JSON** file
+4. The page loads with dynamic elements highlighted
+5. Click any dynamic element to edit its content
+6. Static elements are locked 🔒 and show "cannot be edited" message
+7. Make changes in the live editor
+8. Click **"✓ Apply"** to save changes
+9. Click **"↶ Revert"** to restore original content
+
+**Features:**
+- **Live preview** - See changes as you type
+- **Click to select** - Click elements on the page or in the list
+- **Locked static elements** - Can't accidentally edit template structure
+- **Visual indicators** - Dynamic elements pulse with purple outline
+- **Original content** - Always able to revert to original
+
+**Perfect for:**
+- Updating chat messages in demos
+- Changing dynamic data without touching template
+- Creating variations of the same template
+- Non-technical users editing specific content areas
+- Protecting template structure while allowing content updates
+
+**Workflow Example:**
+```
+1. Record a chat conversation
+2. Mark chat messages as dynamic (🎬)
+3. Export template + mapping
+4. Open Static Page Animator
+5. Load template + mapping
+6. Edit chat messages only
+7. Static header/sidebar are locked
+8. Export edited version
+```
+
 ## Recording Tips
 
 1. **Use the Bookmarklet**: The bookmarklet works on ANY webpage, including external sites
@@ -225,7 +296,8 @@ RepriseClone/
 ├── index.html          # Main landing page
 ├── bookmarklet.html    # Bookmarklet installation page (RECOMMENDED)
 ├── recorder.html       # Iframe-based recording interface
-├── player.html         # Playback interface
+├── player.html         # Playback interface with editing tools
+├── animator.html       # Static Page Animator for template editing
 ├── demo.html          # Sample page for testing
 ├── styles.css         # Shared styles
 └── README.md          # This file

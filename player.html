@@ -394,6 +394,17 @@
             color: #e74c3c;
         }
 
+        /* Dynamic element styling */
+        .html-tree-item.element-dynamic {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 3px solid #3498db;
+        }
+
+        .html-tree-item.element-dynamic .element-tag {
+            color: #3498db;
+            font-weight: bold;
+        }
+
         .player-container.with-text-editor {
             margin-bottom: 500px;
         }
@@ -487,8 +498,10 @@
             <button id="snapshotBtn" class="btn" style="background: #16a085; color: white; display: none;">📸 Export Snapshot</button>
             <label for="snapshotInput" id="snapshotUploadBtn" class="btn" style="background: #8e44ad; color: white; display: none; cursor: pointer;">📥 Load Snapshot</label>
             <input type="file" id="snapshotInput" accept=".html" style="display: none;">
+            <button id="templateBtn" class="btn" style="background: #3498db; color: white; display: none;">🎬 Template Mode</button>
             <span class="edit-mode-indicator" id="editModeIndicator">EDIT MODE</span>
             <span class="edit-mode-indicator" id="textEditModeIndicator" style="background: #9b59b6;">TEXT EDIT MODE</span>
+            <span class="edit-mode-indicator" id="templateModeIndicator" style="background: #3498db; display: none;">TEMPLATE MODE</span>
 
             <div class="playback-info">
                 <span id="recordingInfo"></span>
@@ -581,6 +594,8 @@
                 <div class="element-controls">
                     <button id="hideElementBtn" class="btn" style="background: #e74c3c; color: white;" disabled>👁️ Hide Element</button>
                     <button id="showElementBtn" class="btn" style="background: #27ae60; color: white;" disabled>👁️ Show Element</button>
+                    <button id="markDynamicBtn" class="btn" style="background: #3498db; color: white;" disabled>🎬 Mark as Dynamic</button>
+                    <button id="unmarkDynamicBtn" class="btn" style="background: #95a5a6; color: white;" disabled>🎬 Unmark Dynamic</button>
                 </div>
                 <textarea id="liveTextEditor" class="live-text-editor" placeholder="Select an element to edit..."></textarea>
                 <div class="editor-actions-bottom">
@@ -635,6 +650,10 @@
         let removalInterval = null;
         let pickerMode = false;
         let pickerTooltip = null;
+        let dynamicElements = new Set(); // Elements marked as dynamic (will be hidden in template)
+        let dynamicSelectors = new Set(); // CSS selectors for dynamic elements
+        let templateMode = false; // Whether we're in template mode
+        let templateBaseHTML = null; // Stored template HTML
         let currentHoverElement = null;
         let lastClickPosition = null;
         let elementStackAtPosition = [];
@@ -728,6 +747,7 @@
                         flagsBtn.style.display = 'inline-block';
                         document.getElementById('snapshotBtn').style.display = 'inline-block';
                         document.getElementById('snapshotUploadBtn').style.display = 'inline-block';
+                        document.getElementById('templateBtn').style.display = 'inline-block';
 
                         // If this is an edited recording, restore hidden elements
                         if (recording.edited && recording.hiddenSelectors && recording.hiddenSelectors.length > 0) {
@@ -1268,6 +1288,11 @@
             const isHidden = hiddenElements.has(currentSelectedElement);
             document.getElementById('hideElementBtn').disabled = isHidden;
             document.getElementById('showElementBtn').disabled = !isHidden;
+
+            // Update mark/unmark dynamic buttons
+            const isDynamic = dynamicElements.has(currentSelectedElement);
+            document.getElementById('markDynamicBtn').disabled = isDynamic;
+            document.getElementById('unmarkDynamicBtn').disabled = !isDynamic;
         }
 
         // Live text editing
@@ -1606,6 +1631,68 @@
             updateEditor();
         });
 
+        // Mark as dynamic button
+        document.getElementById('markDynamicBtn').addEventListener('click', () => {
+            if (!currentSelectedElement) return;
+
+            // Generate selector for this element
+            const selector = getElementSelector(currentSelectedElement);
+
+            // Add to dynamic tracking
+            dynamicElements.add(currentSelectedElement);
+            dynamicSelectors.add(selector);
+
+            // Mark in tree with special styling
+            const elementId = getElementId(currentSelectedElement);
+            if (elementId) {
+                const treeItem = htmlTreeContainer.querySelector(`[data-element-id="${elementId}"]`);
+                if (treeItem) {
+                    treeItem.classList.add('element-dynamic');
+                    // Add visual indicator
+                    if (!treeItem.querySelector('.dynamic-badge')) {
+                        const badge = document.createElement('span');
+                        badge.className = 'dynamic-badge';
+                        badge.textContent = ' 🎬';
+                        badge.style.color = '#3498db';
+                        badge.style.fontWeight = 'bold';
+                        treeItem.appendChild(badge);
+                    }
+                }
+            }
+
+            // Update buttons
+            updateEditor();
+        });
+
+        // Unmark dynamic button
+        document.getElementById('unmarkDynamicBtn').addEventListener('click', () => {
+            if (!currentSelectedElement) return;
+
+            // Get selector
+            const selector = getElementSelector(currentSelectedElement);
+
+            // Remove from dynamic tracking
+            dynamicElements.delete(currentSelectedElement);
+            dynamicSelectors.delete(selector);
+
+            // Unmark in tree
+            const elementId = getElementId(currentSelectedElement);
+            if (elementId) {
+                const treeItem = htmlTreeContainer.querySelector(`[data-element-id="${elementId}"]`);
+                if (treeItem) {
+                    treeItem.classList.remove('element-dynamic');
+                    // Remove badge
+                    const badge = treeItem.querySelector('.dynamic-badge');
+                    if (badge) {
+                        badge.remove();
+                    }
+                }
+            }
+
+            // Update buttons
+            updateEditor();
+        });
+
         // Show all hidden elements
         document.getElementById('showAllBtn').addEventListener('click', () => {
             if (removedElements.size === 0 && hiddenElements.size === 0) {
@@ -1794,6 +1881,16 @@
 
         .html-tree-item.element-hidden .element-tag {
             color: #e74c3c;
+        }
+
+        .html-tree-item.element-dynamic {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 3px solid #3498db;
+        }
+
+        .html-tree-item.element-dynamic .element-tag {
+            color: #3498db;
+            font-weight: bold;
         }
 
         .element-tag {
@@ -2751,6 +2848,348 @@ ${clonedDoc.documentElement.querySelector('body').outerHTML}
                 console.error('Snapshot error:', error);
             }
         });
+
+        // TEMPLATE MODE FUNCTIONALITY
+
+        document.getElementById('templateBtn').addEventListener('click', () => {
+            if (!replayIframe) {
+                alert('Please load a recording first.');
+                return;
+            }
+
+            // Show template mode panel
+            const existingPanel = document.getElementById('templatePanel');
+            if (existingPanel) {
+                existingPanel.remove();
+                document.getElementById('templateModeIndicator').style.display = 'none';
+                templateMode = false;
+                return;
+            }
+
+            templateMode = true;
+            document.getElementById('templateModeIndicator').style.display = 'inline-block';
+
+            // Create template panel
+            const panel = document.createElement('div');
+            panel.id = 'templatePanel';
+            panel.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                width: 400px;
+                background: white;
+                border-radius: 12px;
+                padding: 20px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-family: -apple-system, sans-serif;
+            `;
+
+            panel.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin: 0; color: #3498db;">🎬 Template Mode</h3>
+                    <button onclick="document.getElementById('templateBtn').click()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                </div>
+
+                <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db;">
+                    <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.6;">
+                        <strong style="color: #3498db;">Template Mode</strong> lets you separate static content from dynamic elements (like chat messages).
+                        Mark elements as dynamic, export a template, then replay with animation!
+                    </p>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h4 style="color: #333; margin-bottom: 10px; font-size: 14px;">Dynamic Elements: <span id="dynamicCount" style="color: #3498db; font-weight: bold;">0</span></h4>
+                    <div id="dynamicList" style="background: #f8f9fa; padding: 10px; border-radius: 6px; max-height: 150px; overflow-y: auto; font-size: 12px; color: #666;">
+                        <em>No dynamic elements marked yet</em>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button id="exportTemplateBtn" class="btn" style="background: #3498db; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        📤 Export Template + Mapping
+                    </button>
+                    <label for="templateInput" class="btn" style="background: #27ae60; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; display: block; box-sizing: border-box;">
+                        📥 Load Template
+                    </label>
+                    <input type="file" id="templateInput" accept=".html" style="display: none;">
+                    <button id="openAnimatorBtn" class="btn" style="background: #9b59b6; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        🎨 Open Static Page Animator
+                    </button>
+                    <button id="clearDynamicBtn" class="btn" style="background: #e74c3c; color: white; width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        🗑️ Clear All Dynamic
+                    </button>
+                </div>
+
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <h4 style="color: #333; margin-bottom: 10px; font-size: 14px;">How to use:</h4>
+                    <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #666; line-height: 1.8;">
+                        <li>Use text editor to mark dynamic elements (🎬)</li>
+                        <li>Export template (static content only)</li>
+                        <li>Load template back to auto-detect dynamic elements</li>
+                        <li>Play recording with animated dynamic content!</li>
+                    </ol>
+                </div>
+            `;
+
+            document.body.appendChild(panel);
+
+            // Update dynamic count
+            updateDynamicList();
+
+            // Export template button
+            document.getElementById('exportTemplateBtn').addEventListener('click', exportTemplate);
+
+            // Load template button
+            document.getElementById('templateInput').addEventListener('change', loadTemplate);
+
+            // Open animator button
+            document.getElementById('openAnimatorBtn').addEventListener('click', () => {
+                window.open('animator.html', '_blank');
+            });
+
+            // Clear all dynamic button
+            document.getElementById('clearDynamicBtn').addEventListener('click', () => {
+                if (!confirm(`Clear all ${dynamicSelectors.size} dynamic element(s)?`)) return;
+
+                dynamicElements.clear();
+                dynamicSelectors.clear();
+
+                // Clear visual indicators
+                document.querySelectorAll('.element-dynamic').forEach(el => {
+                    el.classList.remove('element-dynamic');
+                });
+                document.querySelectorAll('.dynamic-badge').forEach(badge => {
+                    badge.remove();
+                });
+
+                updateDynamicList();
+                alert('All dynamic elements cleared!');
+            });
+        });
+
+        function updateDynamicList() {
+            const countEl = document.getElementById('dynamicCount');
+            const listEl = document.getElementById('dynamicList');
+
+            if (!countEl || !listEl) return;
+
+            countEl.textContent = dynamicSelectors.size;
+
+            if (dynamicSelectors.size === 0) {
+                listEl.innerHTML = '<em>No dynamic elements marked yet</em>';
+            } else {
+                listEl.innerHTML = Array.from(dynamicSelectors).map(selector =>
+                    `<div style="padding: 4px 0; border-bottom: 1px solid #e0e0e0;">🎬 ${selector}</div>`
+                ).join('');
+            }
+        }
+
+        function exportTemplate() {
+            if (!replayIframe) {
+                alert('No replay iframe found.');
+                return;
+            }
+
+            if (dynamicSelectors.size === 0) {
+                alert('No dynamic elements marked. Mark some elements as dynamic first!');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Clone the document
+                const clonedDoc = iframeDoc.cloneNode(true);
+
+                // Remove dynamic elements from the clone
+                dynamicSelectors.forEach(selector => {
+                    try {
+                        const elements = clonedDoc.querySelectorAll(selector);
+                        elements.forEach(el => el.remove());
+                    } catch (e) {
+                        console.warn('Could not remove element with selector:', selector, e);
+                    }
+                });
+
+                // Get all stylesheets and inline them
+                let inlinedStyles = '';
+
+                // Collect styles from style tags
+                const styleTags = iframeDoc.querySelectorAll('style');
+                styleTags.forEach(style => {
+                    inlinedStyles += style.textContent + '\n';
+                });
+
+                // Collect styles from link tags
+                const linkTags = iframeDoc.querySelectorAll('link[rel="stylesheet"]');
+                linkTags.forEach(link => {
+                    try {
+                        if (link.sheet && link.sheet.cssRules) {
+                            for (let rule of link.sheet.cssRules) {
+                                inlinedStyles += rule.cssText + '\n';
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not access stylesheet:', link.href, e);
+                    }
+                });
+
+                // Get computed styles for remaining elements
+                const allElements = iframeDoc.querySelectorAll('*');
+                const allClonedElements = clonedDoc.querySelectorAll('*');
+
+                allElements.forEach((element, index) => {
+                    try {
+                        // Skip if this element was removed
+                        const elementClone = allClonedElements[index];
+                        if (!elementClone || !elementClone.parentElement) return;
+
+                        const computedStyle = iframeDoc.defaultView.getComputedStyle(element);
+
+                        // Build inline style string
+                        let styleStr = '';
+                        for (let prop of computedStyle) {
+                            const value = computedStyle.getPropertyValue(prop);
+                            if (value) {
+                                styleStr += `${prop}:${value};`;
+                            }
+                        }
+                        if (styleStr) {
+                            elementClone.setAttribute('style', styleStr);
+                        }
+                    } catch (e) {
+                        console.warn('Error getting computed styles:', e);
+                    }
+                });
+
+                // Build the standalone HTML with metadata
+                const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template - ${currentRecording ? (currentRecording.url || 'Recording') : 'Page'}</title>
+    <meta name="reprise-template" content="true">
+    <meta name="reprise-dynamic-count" content="${dynamicSelectors.size}">
+    <style>
+/* Extracted Styles */
+${inlinedStyles}
+    </style>
+</head>
+${clonedDoc.documentElement.querySelector('body').outerHTML}
+</html>`;
+
+                // Download the template HTML
+                const timestamp = Date.now();
+                const htmlBlob = new Blob([htmlContent], {type: 'text/html'});
+                const htmlUrl = URL.createObjectURL(htmlBlob);
+                const htmlLink = document.createElement('a');
+                htmlLink.href = htmlUrl;
+                htmlLink.download = `template-${timestamp}.html`;
+                htmlLink.click();
+                URL.revokeObjectURL(htmlUrl);
+
+                // Also export JSON mapping file
+                const mapping = {
+                    version: '1.0',
+                    timestamp: new Date().toISOString(),
+                    templateName: `template-${timestamp}.html`,
+                    originalUrl: currentRecording ? currentRecording.url : null,
+                    dynamicElements: Array.from(dynamicSelectors),
+                    dynamicCount: dynamicSelectors.size
+                };
+
+                const jsonBlob = new Blob([JSON.stringify(mapping, null, 2)], {type: 'application/json'});
+                const jsonUrl = URL.createObjectURL(jsonBlob);
+                const jsonLink = document.createElement('a');
+                jsonLink.href = jsonUrl;
+                jsonLink.download = `template-mapping-${timestamp}.json`;
+                jsonLink.click();
+                URL.revokeObjectURL(jsonUrl);
+
+                alert(`Template exported successfully!\n\n✓ Template HTML (${dynamicSelectors.size} dynamic elements removed)\n✓ Mapping JSON (dynamic element selectors)\n\nUse the Static Page Animator to edit dynamic elements!`);
+            } catch (error) {
+                alert('Error exporting template: ' + error.message);
+                console.error('Template export error:', error);
+            }
+        }
+
+        function loadTemplate(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!replayIframe) {
+                alert('Please load a recording first.');
+                e.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                try {
+                    const htmlText = event.target.result;
+
+                    // Parse the template HTML
+                    const parser = new DOMParser();
+                    const templateDoc = parser.parseFromString(htmlText, 'text/html');
+
+                    // Get current iframe document
+                    const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                    // Find elements in recording that are NOT in template (these are dynamic)
+                    const detectedDynamic = findRemovedElements(iframeDoc, templateDoc);
+
+                    if (detectedDynamic.length === 0) {
+                        alert('No dynamic elements detected. The template appears identical to the current frame.');
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Confirm with user
+                    const confirmed = confirm(`Detected ${detectedDynamic.length} dynamic element(s)!\n\nDo you want to mark these as dynamic?`);
+
+                    if (!confirmed) {
+                        e.target.value = '';
+                        return;
+                    }
+
+                    // Add all detected selectors to dynamic tracking
+                    detectedDynamic.forEach(selector => {
+                        dynamicSelectors.add(selector);
+                    });
+
+                    // Store template
+                    templateBaseHTML = htmlText;
+
+                    updateDynamicList();
+
+                    alert(`Successfully detected ${detectedDynamic.length} dynamic element(s)!\n\nThese elements are now marked as dynamic content that will animate during playback.`);
+
+                    // Reset input
+                    e.target.value = '';
+
+                } catch (error) {
+                    alert('Error loading template: ' + error.message);
+                    console.error('Template load error:', error);
+                    e.target.value = '';
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // Update dynamic list whenever dynamic elements change
+        const originalMarkDynamic = document.getElementById('markDynamicBtn').onclick;
+        document.getElementById('markDynamicBtn').addEventListener('click', () => {
+            setTimeout(updateDynamicList, 100);
+        });
+
+        const originalUnmarkDynamic = document.getElementById('unmarkDynamicBtn').onclick;
+        document.getElementById('unmarkDynamicBtn').addEventListener('click', () => {
+            setTimeout(updateDynamicList, 100);
+        });
+
     </script>
 </body>
 </html>
