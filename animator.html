@@ -404,65 +404,115 @@
         function setupDynamicElements() {
             const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
 
-            // Update dynamic count
-            document.getElementById('dynamicCount').textContent = mappingData.dynamicCount;
-
             // Build dynamic elements list
             const dynamicList = document.getElementById('dynamicList');
             dynamicList.innerHTML = '';
 
-            mappingData.dynamicElements.forEach((selector, index) => {
-                // Find elements matching this selector
-                const elements = iframeDoc.querySelectorAll(selector);
+            // First, try to find elements with data-dynamic-element attribute (preferred method)
+            const markedElements = iframeDoc.querySelectorAll('[data-dynamic-element="true"]');
 
-                if (elements.length === 0) {
-                    // Element doesn't exist in template (was removed) - this is expected
+            let dynamicElementsFound = 0;
+
+            if (markedElements.length > 0) {
+                // Use marked elements from template
+                markedElements.forEach((element, index) => {
+                    const selector = element.getAttribute('data-dynamic-selector') || `element-${index}`;
+                    const textContent = element.textContent.trim().substring(0, 50);
+                    originalContent[selector + '_' + index] = element.textContent;
+
                     const item = document.createElement('div');
                     item.className = 'dynamic-item';
+                    item.dataset.selector = selector;
+                    item.dataset.index = index;
+
                     item.innerHTML = `
                         <div class="dynamic-item-selector">${selector}</div>
-                        <div class="dynamic-item-preview" style="color: #e74c3c;">⚠️ Not found in template (removed as expected)</div>
+                        <div class="dynamic-item-preview">${textContent || '(empty)'}</div>
                     `;
-                    dynamicList.appendChild(item);
-                } else {
-                    // Element exists - store original content
-                    elements.forEach((element, elemIndex) => {
-                        const textContent = element.textContent.trim().substring(0, 50);
-                        originalContent[selector + '_' + elemIndex] = element.textContent;
 
+                    item.addEventListener('click', () => {
+                        selectDynamicElement(selector, index, element);
+                    });
+
+                    dynamicList.appendChild(item);
+
+                    // Add visual indicator to element
+                    element.style.cursor = 'pointer';
+                    element.addEventListener('mouseenter', () => {
+                        element.classList.add('element-highlight');
+                    });
+                    element.addEventListener('mouseleave', () => {
+                        if (element !== currentSelectedElement) {
+                            element.classList.remove('element-highlight');
+                        }
+                    });
+                    element.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        selectDynamicElement(selector, index, element);
+                    });
+
+                    dynamicElementsFound++;
+                });
+            } else {
+                // Fallback: use selectors from mapping JSON
+                mappingData.dynamicElements.forEach((selector, index) => {
+                    const elements = iframeDoc.querySelectorAll(selector);
+
+                    if (elements.length === 0) {
+                        // Element doesn't exist in template
                         const item = document.createElement('div');
                         item.className = 'dynamic-item';
-                        item.dataset.selector = selector;
-                        item.dataset.index = elemIndex;
-
                         item.innerHTML = `
-                            <div class="dynamic-item-selector">${selector}${elements.length > 1 ? ` [${elemIndex + 1}/${elements.length}]` : ''}</div>
-                            <div class="dynamic-item-preview">${textContent || '(empty)'}</div>
+                            <div class="dynamic-item-selector">${selector}</div>
+                            <div class="dynamic-item-preview" style="color: #e74c3c;">⚠️ Not found in template</div>
                         `;
-
-                        item.addEventListener('click', () => {
-                            selectDynamicElement(selector, elemIndex, element);
-                        });
-
                         dynamicList.appendChild(item);
+                    } else {
+                        elements.forEach((element, elemIndex) => {
+                            const textContent = element.textContent.trim().substring(0, 50);
+                            originalContent[selector + '_' + elemIndex] = element.textContent;
 
-                        // Add visual indicator to element
-                        element.style.cursor = 'pointer';
-                        element.addEventListener('mouseenter', () => {
-                            element.classList.add('element-highlight');
+                            const item = document.createElement('div');
+                            item.className = 'dynamic-item';
+                            item.dataset.selector = selector;
+                            item.dataset.index = elemIndex;
+
+                            item.innerHTML = `
+                                <div class="dynamic-item-selector">${selector}${elements.length > 1 ? ` [${elemIndex + 1}/${elements.length}]` : ''}</div>
+                                <div class="dynamic-item-preview">${textContent || '(empty)'}</div>
+                            `;
+
+                            item.addEventListener('click', () => {
+                                selectDynamicElement(selector, elemIndex, element);
+                            });
+
+                            dynamicList.appendChild(item);
+
+                            // Add visual indicator to element
+                            element.style.cursor = 'pointer';
+                            element.addEventListener('mouseenter', () => {
+                                element.classList.add('element-highlight');
+                            });
+                            element.addEventListener('mouseleave', () => {
+                                if (element !== currentSelectedElement) {
+                                    element.classList.remove('element-highlight');
+                                }
+                            });
+                            element.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                selectDynamicElement(selector, elemIndex, element);
+                            });
+
+                            dynamicElementsFound++;
                         });
-                        element.addEventListener('mouseleave', () => {
-                            if (element !== currentSelectedElement) {
-                                element.classList.remove('element-highlight');
-                            }
-                        });
-                        element.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            selectDynamicElement(selector, elemIndex, element);
-                        });
-                    });
-                }
-            });
+                    }
+                });
+            }
+
+            // Update dynamic count
+            document.getElementById('dynamicCount').textContent = dynamicElementsFound;
 
             // Mark static elements (for reference)
             markStaticElements(iframeDoc);
@@ -487,24 +537,32 @@
             allElements.forEach(element => {
                 let isDynamic = false;
 
-                // Check if this element matches any dynamic selector
-                for (const selector of mappingData.dynamicElements) {
-                    try {
-                        if (element.matches(selector)) {
-                            isDynamic = true;
-                            break;
+                // First check if element has data-dynamic-element attribute
+                if (element.hasAttribute('data-dynamic-element')) {
+                    isDynamic = true;
+                } else {
+                    // Fallback: check if this element matches any dynamic selector from mapping
+                    for (const selector of mappingData.dynamicElements) {
+                        try {
+                            if (element.matches(selector)) {
+                                isDynamic = true;
+                                break;
+                            }
+                        } catch (e) {
+                            // Invalid selector
                         }
-                    } catch (e) {
-                        // Invalid selector
                     }
                 }
 
                 if (!isDynamic && !['SCRIPT', 'STYLE', 'META', 'LINK'].includes(element.tagName)) {
                     element.classList.add('static-locked');
                     element.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        alert('This is a static element and cannot be edited.\n\nOnly dynamic elements (marked with 🎬) can be edited.');
+                        // Only alert if the element itself was clicked, not a child
+                        if (e.target === element) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            alert('This is a static element and cannot be edited.\n\nOnly dynamic elements (marked with 🎬) can be edited.');
+                        }
                     });
                 }
             });

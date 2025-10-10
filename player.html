@@ -3002,13 +3002,16 @@ ${clonedDoc.documentElement.querySelector('body').outerHTML}
                 // Clone the document
                 const clonedDoc = iframeDoc.cloneNode(true);
 
-                // Remove dynamic elements from the clone
+                // Mark dynamic elements with data attributes (don't remove them!)
                 dynamicSelectors.forEach(selector => {
                     try {
                         const elements = clonedDoc.querySelectorAll(selector);
-                        elements.forEach(el => el.remove());
+                        elements.forEach(el => {
+                            el.setAttribute('data-dynamic-element', 'true');
+                            el.setAttribute('data-dynamic-selector', selector);
+                        });
                     } catch (e) {
-                        console.warn('Could not remove element with selector:', selector, e);
+                        console.warn('Could not mark element with selector:', selector, e);
                     }
                 });
 
@@ -3108,7 +3111,7 @@ ${clonedDoc.documentElement.querySelector('body').outerHTML}
                 jsonLink.click();
                 URL.revokeObjectURL(jsonUrl);
 
-                alert(`Template exported successfully!\n\n✓ Template HTML (${dynamicSelectors.size} dynamic elements removed)\n✓ Mapping JSON (dynamic element selectors)\n\nUse the Static Page Animator to edit dynamic elements!`);
+                alert(`Template exported successfully!\n\n✓ Template HTML (${dynamicSelectors.size} dynamic elements marked)\n✓ Mapping JSON (dynamic element selectors)\n\nUse the Static Page Animator to edit dynamic elements!`);
             } catch (error) {
                 alert('Error exporting template: ' + error.message);
                 console.error('Template export error:', error);
