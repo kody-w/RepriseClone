@@ -134,6 +134,66 @@
             border-left-color: #fff;
         }
 
+        .dynamic-item.diff-selected {
+            background: #e67e22;
+            border-left-color: #fff;
+        }
+
+        .diff-result-panel {
+            background: #2d2d2d;
+            border-top: 2px solid #9b59b6;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .diff-result-panel h4 {
+            color: #9b59b6;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .diff-result-panel textarea {
+            width: 100%;
+            min-height: 250px;
+            background: #1a1a1a;
+            border: 2px solid #9b59b6;
+            border-radius: 6px;
+            color: #27ae60;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .diff-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-radius: 6px;
+        }
+
+        .diff-stat {
+            flex: 1;
+            text-align: center;
+        }
+
+        .diff-stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .diff-stat-label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
         .dynamic-item-selector {
             color: #9b59b6;
             font-family: 'Courier New', monospace;
@@ -364,7 +424,29 @@
             </div>
 
             <!-- ANIMATION MODE SECTIONS -->
-            <div id="animationModeSections" style="display: none; height: 100%; flex-direction: column;">
+            <div id="animationModeSections" style="display: none; height: 100%; flex-direction: column; overflow: hidden;">
+                <div id="diffResultPanel" class="diff-result-panel">
+                    <h4>🔍 Frame Differences</h4>
+                    <div class="diff-stats">
+                        <div class="diff-stat">
+                            <div class="diff-stat-value" id="addedElements">0</div>
+                            <div class="diff-stat-label">Added Elements</div>
+                        </div>
+                        <div class="diff-stat">
+                            <div class="diff-stat-value" id="changedElements">0</div>
+                            <div class="diff-stat-label">Changed Elements</div>
+                        </div>
+                        <div class="diff-stat">
+                            <div class="diff-stat-value" id="diffSize">0</div>
+                            <div class="diff-stat-label">Characters Added</div>
+                        </div>
+                    </div>
+                    <textarea id="diffOutput" placeholder="Differences will appear here..." readonly></textarea>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button id="copyDiffBtn" class="btn" style="background: #27ae60; color: white; flex: 1;">📋 Copy Diff</button>
+                        <button id="exportDiffBtn" class="btn" style="background: #3498db; color: white; flex: 1;">💾 Export HTML</button>
+                    </div>
+                </div>
                 <div class="sidebar-section">
                     <h3>🎬 Frame Files (<span id="frameCount">0</span>)</h3>
                     <div id="framesUploadArea" class="file-upload-area">
@@ -386,6 +468,10 @@
                         <button id="prevFrameBtn" class="btn" style="background: #3498db; color: white; flex: 1;" disabled>← Prev</button>
                         <button id="nextFrameBtn" class="btn" style="background: #3498db; color: white; flex: 1;" disabled>Next →</button>
                     </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="diffFramesBtn" class="btn" style="background: #9b59b6; color: white; flex: 1;" disabled>🔍 Diff Selected</button>
+                        <button id="clearDiffBtn" class="btn" style="background: #95a5a6; color: white; flex: 1; display: none;">✕ Clear</button>
+                    </div>
                     <div style="margin-bottom: 15px;">
                         <label style="color: #fff; font-size: 13px; display: block; margin-bottom: 5px;">
                             Speed: <span id="speedValue">1.0s</span> per frame
@@ -394,6 +480,9 @@
                     </div>
                     <div style="color: #999; font-size: 13px; text-align: center; padding: 10px; background: #1a1a1a; border-radius: 6px;">
                         Frame: <span id="currentFrameNum" style="color: #fff; font-weight: bold;">-</span> / <span id="totalFrameNum" style="color: #fff; font-weight: bold;">-</span>
+                    </div>
+                    <div id="diffSelectionInfo" style="display: none; color: #9b59b6; font-size: 12px; text-align: center; padding: 8px; background: #1a1a1a; border-radius: 6px; margin-top: 10px; border: 2px solid #9b59b6;">
+                        <span id="diffSelectionText">Select 2 frames to diff</span>
                     </div>
                 </div>
 
@@ -439,6 +528,8 @@
         let currentFrameIndex = 0;
         let animationInterval = null;
         let animationSpeed = 1.0;
+        let selectedForDiff = []; // Stores indices of frames selected for diff
+        let lastDiffResult = null;
 
         // Mode selector
         document.getElementById('modeSelector').addEventListener('change', (e) => {
@@ -848,8 +939,9 @@
                         <p><strong>How it works:</strong></p>
                         <p>1. Upload multiple HTML files as frames</p>
                         <p>2. Click frames to view them individually</p>
-                        <p>3. Use Play button to animate through frames</p>
-                        <p>4. Adjust speed with the slider</p>
+                        <p>3. Hold Shift/Ctrl and click 2 frames to diff</p>
+                        <p>4. Use Play button to animate through frames</p>
+                        <p>5. Adjust speed with the slider</p>
                     </div>
                 `;
                 return;
@@ -861,18 +953,26 @@
                 if (index === currentFrameIndex) {
                     item.classList.add('selected');
                 }
+                if (selectedForDiff.includes(index)) {
+                    item.classList.add('diff-selected');
+                }
                 item.dataset.frameIndex = index;
 
                 const frameContent = document.createElement('div');
                 frameContent.innerHTML = `
-                    <div class="dynamic-item-selector">Frame ${index + 1}</div>
+                    <div class="dynamic-item-selector">Frame ${index + 1}${selectedForDiff.includes(index) ? ' [DIFF]' : ''}</div>
                     <div class="dynamic-item-preview">${frame.name}</div>
                 `;
-                frameContent.addEventListener('click', () => {
-                    stopAnimation();
-                    currentFrameIndex = index;
-                    displayFrame(index);
-                    updateFrameList();
+                frameContent.addEventListener('click', (e) => {
+                    // Check if Shift key is pressed for multi-select
+                    if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                        toggleDiffSelection(index);
+                    } else {
+                        stopAnimation();
+                        currentFrameIndex = index;
+                        displayFrame(index);
+                        updateFrameList();
+                    }
                 });
 
                 // Action buttons
@@ -1166,6 +1266,227 @@
                 document.getElementById('clearFrames').style.display = 'none';
             }
         }
+
+        // DIFF FUNCTIONS
+        function toggleDiffSelection(index) {
+            const diffIndex = selectedForDiff.indexOf(index);
+
+            if (diffIndex > -1) {
+                // Deselect
+                selectedForDiff.splice(diffIndex, 1);
+            } else {
+                // Select (max 2 frames)
+                if (selectedForDiff.length >= 2) {
+                    selectedForDiff.shift(); // Remove oldest selection
+                }
+                selectedForDiff.push(index);
+            }
+
+            updateFrameList();
+            updateDiffUI();
+        }
+
+        function updateDiffUI() {
+            const diffBtn = document.getElementById('diffFramesBtn');
+            const clearBtn = document.getElementById('clearDiffBtn');
+            const diffInfo = document.getElementById('diffSelectionInfo');
+            const diffText = document.getElementById('diffSelectionText');
+
+            if (selectedForDiff.length === 0) {
+                diffBtn.disabled = true;
+                clearBtn.style.display = 'none';
+                diffInfo.style.display = 'none';
+            } else if (selectedForDiff.length === 1) {
+                diffBtn.disabled = true;
+                clearBtn.style.display = 'block';
+                diffInfo.style.display = 'block';
+                diffText.textContent = `1 frame selected (select 1 more)`;
+            } else if (selectedForDiff.length === 2) {
+                diffBtn.disabled = false;
+                clearBtn.style.display = 'block';
+                diffInfo.style.display = 'block';
+                diffText.textContent = `2 frames selected - Ready to diff!`;
+            }
+        }
+
+        document.getElementById('diffFramesBtn').addEventListener('click', () => {
+            if (selectedForDiff.length !== 2) return;
+
+            const [index1, index2] = selectedForDiff.sort((a, b) => a - b);
+            const frame1 = frames[index1];
+            const frame2 = frames[index2];
+
+            computeDiff(frame1, frame2);
+        });
+
+        document.getElementById('clearDiffBtn').addEventListener('click', () => {
+            selectedForDiff = [];
+            updateFrameList();
+            updateDiffUI();
+            hideDiffPanel();
+        });
+
+        function computeDiff(frame1, frame2) {
+            const parser = new DOMParser();
+            const doc1 = parser.parseFromString(frame1.html, 'text/html');
+            const doc2 = parser.parseFromString(frame2.html, 'text/html');
+
+            // Extract only the body content for comparison
+            const body1 = doc1.body;
+            const body2 = doc2.body;
+
+            // Find new elements
+            const newElements = [];
+            const changedElements = [];
+
+            // Compare all elements in body2 against body1
+            const elements2 = body2.querySelectorAll('*');
+            const elements1 = body1.querySelectorAll('*');
+
+            // Create a map of elements from frame1 by their text content and tag
+            const frame1Map = new Map();
+            elements1.forEach(el => {
+                const key = `${el.tagName}:${el.textContent.trim()}`;
+                if (!frame1Map.has(key)) {
+                    frame1Map.set(key, []);
+                }
+                frame1Map.get(key).push(el);
+            });
+
+            // Find new and changed elements
+            let addedCount = 0;
+            let changedCount = 0;
+            let diffHTML = '';
+
+            elements2.forEach(el => {
+                const key = `${el.tagName}:${el.textContent.trim()}`;
+                const matchingElements = frame1Map.get(key) || [];
+
+                if (matchingElements.length === 0 && el.textContent.trim().length > 0) {
+                    // This is a new element
+                    addedCount++;
+                    const clone = el.cloneNode(true);
+                    diffHTML += clone.outerHTML + '\n\n';
+                    newElements.push(el);
+                }
+            });
+
+            // Also check for text content changes
+            const textNodes1 = getTextNodes(body1);
+            const textNodes2 = getTextNodes(body2);
+            const text1 = textNodes1.map(n => n.textContent.trim()).filter(t => t.length > 0);
+            const text2 = textNodes2.map(n => n.textContent.trim()).filter(t => t.length > 0);
+
+            // Find text that exists in frame2 but not in frame1
+            const newText = text2.filter(t => !text1.includes(t));
+            newText.forEach(text => {
+                if (!diffHTML.includes(text)) {
+                    changedCount++;
+                    diffHTML += `<span>${text}</span>\n\n`;
+                }
+            });
+
+            // Calculate stats
+            const diffSize = diffHTML.length;
+
+            // Display results
+            lastDiffResult = diffHTML;
+            document.getElementById('diffOutput').value = diffHTML;
+            document.getElementById('addedElements').textContent = addedCount;
+            document.getElementById('changedElements').textContent = changedCount;
+            document.getElementById('diffSize').textContent = diffSize;
+
+            showDiffPanel();
+        }
+
+        function getTextNodes(node) {
+            const textNodes = [];
+            const walker = document.createTreeWalker(
+                node,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+
+            let currentNode;
+            while (currentNode = walker.nextNode()) {
+                if (currentNode.textContent.trim().length > 0) {
+                    textNodes.push(currentNode);
+                }
+            }
+            return textNodes;
+        }
+
+        function showDiffPanel() {
+            document.getElementById('diffResultPanel').style.display = 'block';
+        }
+
+        function hideDiffPanel() {
+            document.getElementById('diffResultPanel').style.display = 'none';
+        }
+
+        document.getElementById('copyDiffBtn').addEventListener('click', () => {
+            const diffOutput = document.getElementById('diffOutput');
+            diffOutput.select();
+            document.execCommand('copy');
+            alert('Diff copied to clipboard! ✓');
+        });
+
+        document.getElementById('exportDiffBtn').addEventListener('click', () => {
+            if (!lastDiffResult) return;
+
+            const htmlTemplate = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame Differences</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #9b59b6;
+            margin-bottom: 30px;
+        }
+        .diff-content {
+            border: 2px solid #9b59b6;
+            border-radius: 6px;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Frame Differences</h1>
+        <div class="diff-content">
+            ${lastDiffResult}
+        </div>
+    </div>
+</body>
+</html>`;
+
+            const blob = new Blob([htmlTemplate], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'frame-diff.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
 
         // Keyboard shortcuts for animation mode
         document.addEventListener('keydown', (e) => {
