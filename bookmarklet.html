@@ -165,7 +165,37 @@
                     <p>Go to the <a href="player.html">Player page</a> and load your recording file to watch it play back!</p>
                 </div>
 
-                <h3 style="margin-top: 40px; margin-bottom: 20px;">Features</h3>
+                <h2 style="margin-top: 60px; margin-bottom: 20px; padding-top: 40px; border-top: 3px solid #e0e0e0;">Snapshot Export Bookmarklet</h2>
+                <p style="margin-bottom: 20px; color: #666; line-height: 1.8;">
+                    This bookmarklet lets you export any webpage as a snapshot HTML file. Perfect for editing pages with browser DevTools and then re-uploading to the player!
+                </p>
+
+                <div class="bookmarklet-box" style="background: #f0f8ff; border-color: #16a085;">
+                    <p style="margin-bottom: 20px; font-size: 16px; color: #666;">
+                        <strong>Drag this button to your bookmarks bar →</strong>
+                    </p>
+                    <a id="snapshotBookmarklet" href="#" class="bookmarklet-link" style="background: linear-gradient(135deg, #16a085 0%, #1abc9c 100%); box-shadow: 0 4px 15px rgba(22, 160, 133, 0.4);">
+                        📸 Export Snapshot
+                    </a>
+                    <p style="margin-top: 20px; font-size: 14px; color: #999;">
+                        <em>Click and drag this button up to your bookmarks bar</em>
+                    </p>
+                </div>
+
+                <div class="instructions" style="background: #e8f5e9; border-left-color: #27ae60;">
+                    <h3 style="color: #1b5e20;">🔧 How to Use Snapshot Export</h3>
+                    <ol style="margin-top: 10px; line-height: 1.8; padding-left: 20px;">
+                        <li>Export a snapshot from the player</li>
+                        <li>Open the snapshot HTML file in your browser</li>
+                        <li>Press F12 to open DevTools</li>
+                        <li>Delete unwanted elements in the Elements inspector</li>
+                        <li>Click the "📸 Export Snapshot" bookmarklet</li>
+                        <li>Re-upload the exported file to the player with "📥 Load Snapshot"</li>
+                        <li>Removed elements are now hidden in your recording!</li>
+                    </ol>
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 20px;">Recording Features</h3>
                 <ul class="feature-list">
                     <li>Works on ANY webpage (no iframe limitations)</li>
                     <li>Records all user interactions and DOM changes</li>
@@ -324,6 +354,97 @@
         // Set the bookmarklet href
         const bookmarkletLink = document.getElementById('bookmarklet');
         bookmarkletLink.href = 'javascript:' + encodeURIComponent(bookmarkletCode.trim());
+
+        // Build the snapshot export bookmarklet code
+        const snapshotBookmarkletCode = `
+(function() {
+    try {
+        // Clone the document
+        const clonedDoc = document.cloneNode(true);
+
+        // Get all stylesheets and inline them
+        let inlinedStyles = '';
+
+        // Collect styles from style tags
+        const styleTags = document.querySelectorAll('style');
+        styleTags.forEach(style => {
+            inlinedStyles += style.textContent + '\\n';
+        });
+
+        // Collect styles from link tags (external stylesheets)
+        const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
+        linkTags.forEach(link => {
+            try {
+                if (link.sheet && link.sheet.cssRules) {
+                    for (let rule of link.sheet.cssRules) {
+                        inlinedStyles += rule.cssText + '\\n';
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not access stylesheet:', link.href, e);
+            }
+        });
+
+        // Get computed styles for all elements and inline them
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach((element, index) => {
+            try {
+                const computedStyle = window.getComputedStyle(element);
+                const elementClone = clonedDoc.querySelectorAll('*')[index];
+
+                if (elementClone) {
+                    // Build inline style string
+                    let styleStr = '';
+                    for (let prop of computedStyle) {
+                        const value = computedStyle.getPropertyValue(prop);
+                        if (value) {
+                            styleStr += prop + ':' + value + ';';
+                        }
+                    }
+                    if (styleStr) {
+                        elementClone.setAttribute('style', styleStr);
+                    }
+                }
+            } catch (e) {
+                console.warn('Error getting computed styles for element:', element, e);
+            }
+        });
+
+        // Build the standalone HTML
+        const htmlContent = \`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapshot - \${document.title}</title>
+    <style>
+/* Extracted Styles */
+\${inlinedStyles}
+    </style>
+</head>
+\${clonedDoc.documentElement.querySelector('body').outerHTML}
+</html>\`;
+
+        // Download the snapshot
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'snapshot-' + Date.now() + '.html';
+        a.click();
+        URL.revokeObjectURL(url);
+
+        alert('Snapshot exported successfully!\\n\\nYou can now:\\n1. Open the HTML file in your browser\\n2. Use DevTools (F12) to delete unwanted elements\\n3. Click this bookmarklet again to export the edited version\\n4. Upload to the player with "📥 Load Snapshot"');
+    } catch (error) {
+        alert('Error exporting snapshot: ' + error.message);
+        console.error('Snapshot error:', error);
+    }
+})();
+        `;
+
+        // Set the snapshot bookmarklet href
+        const snapshotBookmarkletLink = document.getElementById('snapshotBookmarklet');
+        snapshotBookmarkletLink.href = 'javascript:' + encodeURIComponent(snapshotBookmarkletCode.trim());
     </script>
 </body>
 </html>

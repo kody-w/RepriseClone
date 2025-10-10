@@ -1484,7 +1484,12 @@
             }
 
             const tag = element.tagName.toLowerCase();
-            const classes = element.className ? '.' + element.className.trim().split(/\s+/).join('.') : '';
+
+            // Safely get classes - works for both HTML and SVG elements
+            let classes = '';
+            if (element.classList && element.classList.length > 0) {
+                classes = '.' + Array.from(element.classList).join('.');
+            }
 
             // Try to make it unique with parent context
             let selector = tag + classes;
@@ -1497,7 +1502,13 @@
                     const index = siblings.indexOf(element) + 1;
                     const parentTag = parent.tagName.toLowerCase();
                     const parentId = parent.id ? '#' + parent.id : '';
-                    const parentClasses = parent.className ? '.' + parent.className.trim().split(/\s+/).join('.') : '';
+
+                    // Safely get parent classes
+                    let parentClasses = '';
+                    if (parent.classList && parent.classList.length > 0) {
+                        parentClasses = '.' + Array.from(parent.classList).join('.');
+                    }
+
                     selector = `${parentTag}${parentId}${parentClasses} > ${selector}:nth-child(${index})`;
                 }
             }
@@ -2509,6 +2520,143 @@
                 elementInfo.style.background = '#667eea';
                 elementInfo.style.color = 'white';
             }
+        }
+
+        // SNAPSHOT IMPORT FUNCTIONALITY
+
+        document.getElementById('snapshotInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (!replayIframe) {
+                alert('Please load a recording first before importing a snapshot.');
+                e.target.value = ''; // Reset input
+                return;
+            }
+
+            try {
+                const htmlText = await file.text();
+
+                // Parse the snapshot HTML
+                const parser = new DOMParser();
+                const snapshotDoc = parser.parseFromString(htmlText, 'text/html');
+
+                // Get current iframe document
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Find removed elements by comparing current iframe with snapshot
+                const removedSelectors = findRemovedElements(iframeDoc, snapshotDoc);
+
+                if (removedSelectors.length === 0) {
+                    alert('No differences found. The snapshot appears identical to the current frame.');
+                    e.target.value = '';
+                    return;
+                }
+
+                // Confirm with user
+                const confirmed = confirm(`Found ${removedSelectors.length} element(s) that were removed in the snapshot.\n\nDo you want to hide these elements in the recording?`);
+
+                if (!confirmed) {
+                    e.target.value = '';
+                    return;
+                }
+
+                // Add all removed selectors to tracking
+                removedSelectors.forEach(selector => {
+                    selectorsToRemove.add(selector);
+                });
+
+                // Start monitoring to keep them hidden
+                startRemovalMonitoring();
+
+                alert(`Successfully applied ${removedSelectors.length} element removal(s) from snapshot!\n\nThese elements will now be hidden during playback.`);
+
+                // Reset input
+                e.target.value = '';
+
+            } catch (error) {
+                alert('Error loading snapshot: ' + error.message);
+                console.error('Snapshot import error:', error);
+                e.target.value = '';
+            }
+        });
+
+        // Find elements that exist in current but not in snapshot (were removed)
+        function findRemovedElements(currentDoc, snapshotDoc) {
+            const removedSelectors = [];
+
+            // Build a map of snapshot elements by their unique identifiers
+            const snapshotElements = new Map();
+
+            function indexSnapshotElements(element, path = '') {
+                const tagName = element.tagName;
+                const id = element.id;
+                const classes = Array.from(element.classList || []).sort().join('.');
+                const textContent = Array.from(element.childNodes)
+                    .filter(node => node.nodeType === Node.TEXT_NODE)
+                    .map(node => node.textContent.trim())
+                    .join(' ')
+                    .substring(0, 50);
+
+                // Create a signature for this element
+                const signature = `${tagName}|${id}|${classes}|${textContent}`;
+                const fullPath = path + '>' + tagName + (id ? '#' + id : '') + (classes ? '.' + classes : '');
+
+                snapshotElements.set(signature, { element, path: fullPath });
+
+                // Recursively index children
+                Array.from(element.children || []).forEach((child, index) => {
+                    indexSnapshotElements(child, fullPath + `:nth-child(${index + 1})`);
+                });
+            }
+
+            // Index all snapshot body children
+            if (snapshotDoc.body) {
+                Array.from(snapshotDoc.body.children).forEach(child => {
+                    indexSnapshotElements(child);
+                });
+            }
+
+            // Check current document elements against snapshot
+            function checkElement(element) {
+                // Skip special elements
+                if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'META', 'LINK'].includes(element.tagName)) {
+                    return;
+                }
+
+                const tagName = element.tagName;
+                const id = element.id;
+                const classes = Array.from(element.classList || []).sort().join('.');
+                const textContent = Array.from(element.childNodes)
+                    .filter(node => node.nodeType === Node.TEXT_NODE)
+                    .map(node => node.textContent.trim())
+                    .join(' ')
+                    .substring(0, 50);
+
+                const signature = `${tagName}|${id}|${classes}|${textContent}`;
+
+                // If this element doesn't exist in snapshot, it was removed
+                if (!snapshotElements.has(signature)) {
+                    const selector = getElementSelector(element);
+                    if (selector && !removedSelectors.includes(selector)) {
+                        removedSelectors.push(selector);
+                    }
+                }
+
+                // Check children
+                Array.from(element.children || []).forEach(child => {
+                    checkElement(child);
+                });
+            }
+
+            // Start checking from body
+            if (currentDoc.body) {
+                Array.from(currentDoc.body.children).forEach(child => {
+                    checkElement(child);
+                });
+            }
+
+            return removedSelectors;
         }
 
         // SNAPSHOT EXPORT FUNCTIONALITY
