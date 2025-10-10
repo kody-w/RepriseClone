@@ -2,6 +2,10 @@
 
 A browser-based demo recording and playback tool, similar to Reprise. Record user interactions on any webpage and replay them later.
 
+## 📚 [View Complete Tutorial](tutorial.html)
+
+New to Reprise Clone? Check out the **[comprehensive tutorial](tutorial.html)** with step-by-step guides for all features!
+
 ## Features
 
 - **Recording:**
@@ -294,6 +298,7 @@ The Static Page Animator is a specialized tool for editing ONLY the dynamic elem
 ```
 RepriseClone/
 ├── index.html          # Main landing page
+├── tutorial.html       # Complete step-by-step tutorial (START HERE!)
 ├── bookmarklet.html    # Bookmarklet installation page (RECOMMENDED)
 ├── recorder.html       # Iframe-based recording interface
 ├── player.html         # Playback interface with editing tools
