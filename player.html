@@ -1903,6 +1903,15 @@
                 // Get selector
                 const selector = getElementSelector(currentSelectedElement);
 
+                // Remove from tracking so it won't be removed anymore
+                selectorsToRemove.delete(selector);
+
+                // Stop monitoring if no more selectors
+                if (selectorsToRemove.size === 0 && removalInterval) {
+                    clearInterval(removalInterval);
+                    removalInterval = null;
+                }
+
                 // Restore element from removed elements
                 const removedInfo = removedElements.get(selector);
                 if (removedInfo) {
