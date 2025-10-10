@@ -484,6 +484,9 @@
             <button id="flagsBtn" class="btn" style="background: #667eea; color: white; display: none;">🚩 Flags</button>
             <button id="editTextBtn" class="btn" style="background: #9b59b6; color: white; display: none;">✏️ Edit Text</button>
             <button id="editHtmlBtn" class="btn" style="background: #f39c12; color: white; display: none;">Edit HTML</button>
+            <button id="snapshotBtn" class="btn" style="background: #16a085; color: white; display: none;">📸 Export Snapshot</button>
+            <label for="snapshotInput" id="snapshotUploadBtn" class="btn" style="background: #8e44ad; color: white; display: none; cursor: pointer;">📥 Load Snapshot</label>
+            <input type="file" id="snapshotInput" accept=".html" style="display: none;">
             <span class="edit-mode-indicator" id="editModeIndicator">EDIT MODE</span>
             <span class="edit-mode-indicator" id="textEditModeIndicator" style="background: #9b59b6;">TEXT EDIT MODE</span>
 
@@ -637,6 +640,8 @@
         let elementStackAtPosition = [];
         let currentStackIndex = 0;
         let currentOverlays = [];
+        let searchMatches = [];
+        let currentSearchIndex = 0;
 
         // Color palette for element stack (similar to Chrome DevTools)
         const stackColors = [
@@ -721,22 +726,21 @@
                         editHtmlBtn.style.display = 'inline-block';
                         editTextBtn.style.display = 'inline-block';
                         flagsBtn.style.display = 'inline-block';
+                        document.getElementById('snapshotBtn').style.display = 'inline-block';
+                        document.getElementById('snapshotUploadBtn').style.display = 'inline-block';
 
-                        // If this is an edited recording, apply the edited HTML
-                        if (recording.edited && recording.editedHTML) {
-                            setTimeout(() => {
-                                try {
-                                    const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
-                                    iframeDoc.open();
-                                    iframeDoc.write(recording.editedHTML);
-                                    iframeDoc.close();
+                        // If this is an edited recording, restore hidden elements
+                        if (recording.edited && recording.hiddenSelectors && recording.hiddenSelectors.length > 0) {
+                            // Restore the selectors to remove
+                            recording.hiddenSelectors.forEach(selector => {
+                                selectorsToRemove.add(selector);
+                            });
 
-                                    // Show indicator that this is edited
-                                    recordingInfo.innerHTML += ' <span style="background: #9b59b6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">✏️ EDITED</span>';
-                                } catch (e) {
-                                    console.error('Error applying edited HTML:', e);
-                                }
-                            }, 1000);
+                            // Start monitoring to keep them hidden
+                            startRemovalMonitoring();
+
+                            // Show indicator that this is edited
+                            recordingInfo.innerHTML += ' <span style="background: #9b59b6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">✏️ EDITED</span>';
                         }
                     }
                 }, 500);
@@ -1307,8 +1311,10 @@
             if (!searchText) return;
 
             const searchLower = searchText.toLowerCase();
+            searchMatches = [];
+            currentSearchIndex = 0;
 
-            // Find in element map
+            // Find ALL matches in element map
             for (let [elementId, element] of elementMap) {
                 let textContent = '';
                 for (let child of element.childNodes) {
@@ -1318,13 +1324,124 @@
                 }
 
                 if (textContent.toLowerCase().includes(searchLower)) {
-                    selectElement(elementId);
-                    return;
+                    searchMatches.push(elementId);
                 }
             }
 
-            alert('Text not found');
+            if (searchMatches.length === 0) {
+                alert('Text not found');
+                return;
+            }
+
+            // Select first match
+            selectElement(searchMatches[0]);
+
+            // Update element info to show match count and navigation
+            if (searchMatches.length > 1) {
+                elementInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span>Match 1 of ${searchMatches.length}</span>
+                        <button onclick="findPrevMatch()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">← Prev</button>
+                        <button onclick="findNextMatch()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">Next →</button>
+                        <button onclick="clearSearch()" class="btn btn-small" style="background: #95a5a6; color: white; padding: 4px 8px;">Clear</button>
+                    </div>
+                `;
+            }
         });
+
+        // Search navigation functions
+        function findNextMatch() {
+            if (searchMatches.length === 0) return;
+
+            currentSearchIndex = (currentSearchIndex + 1) % searchMatches.length;
+            selectElement(searchMatches[currentSearchIndex]);
+
+            elementInfo.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>Match ${currentSearchIndex + 1} of ${searchMatches.length}</span>
+                    <button onclick="findPrevMatch()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">← Prev</button>
+                    <button onclick="findNextMatch()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">Next →</button>
+                    <button onclick="clearSearch()" class="btn btn-small" style="background: #95a5a6; color: white; padding: 4px 8px;">Clear</button>
+                </div>
+            `;
+        }
+
+        function findPrevMatch() {
+            if (searchMatches.length === 0) return;
+
+            currentSearchIndex = (currentSearchIndex - 1 + searchMatches.length) % searchMatches.length;
+            selectElement(searchMatches[currentSearchIndex]);
+
+            elementInfo.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span>Match ${currentSearchIndex + 1} of ${searchMatches.length}</span>
+                    <button onclick="findPrevMatch()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">← Prev</button>
+                    <button onclick="findNextMatch()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">Next →</button>
+                    <button onclick="clearSearch()" class="btn btn-small" style="background: #95a5a6; color: white; padding: 4px 8px;">Clear</button>
+                </div>
+            `;
+        }
+
+        function clearSearch() {
+            searchMatches = [];
+            currentSearchIndex = 0;
+            updateEditor();
+        }
+
+        // Popup window search navigation functions
+        function findNextMatchPopup() {
+            if (searchMatches.length === 0) return;
+
+            currentSearchIndex = (currentSearchIndex + 1) % searchMatches.length;
+            selectElementFromPopup(searchMatches[currentSearchIndex]);
+
+            if (editorPopup && !editorPopup.closed) {
+                const popupDoc = editorPopup.document;
+                const popupElementInfo = popupDoc.getElementById('elementInfo');
+                popupElementInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span>Match ${currentSearchIndex + 1} of ${searchMatches.length}</span>
+                        <button onclick="window.opener.findPrevMatchPopup()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">← Prev</button>
+                        <button onclick="window.opener.findNextMatchPopup()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">Next →</button>
+                        <button onclick="window.opener.clearSearchPopup()" class="btn btn-small" style="background: #95a5a6; color: white; padding: 4px 8px;">Clear</button>
+                    </div>
+                `;
+            }
+        }
+
+        function findPrevMatchPopup() {
+            if (searchMatches.length === 0) return;
+
+            currentSearchIndex = (currentSearchIndex - 1 + searchMatches.length) % searchMatches.length;
+            selectElementFromPopup(searchMatches[currentSearchIndex]);
+
+            if (editorPopup && !editorPopup.closed) {
+                const popupDoc = editorPopup.document;
+                const popupElementInfo = popupDoc.getElementById('elementInfo');
+                popupElementInfo.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span>Match ${currentSearchIndex + 1} of ${searchMatches.length}</span>
+                        <button onclick="window.opener.findPrevMatchPopup()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">← Prev</button>
+                        <button onclick="window.opener.findNextMatchPopup()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">Next →</button>
+                        <button onclick="window.opener.clearSearchPopup()" class="btn btn-small" style="background: #95a5a6; color: white; padding: 4px 8px;">Clear</button>
+                    </div>
+                `;
+            }
+        }
+
+        function clearSearchPopup() {
+            searchMatches = [];
+            currentSearchIndex = 0;
+
+            if (editorPopup && !editorPopup.closed) {
+                const popupDoc = editorPopup.document;
+                if (currentSelectedElement) {
+                    updatePopupEditor();
+                } else {
+                    popupDoc.getElementById('elementInfo').textContent = 'Select an element from the tree to edit its text';
+                }
+            }
+        }
 
         // Continuously remove elements that match selectors to remove
         function startRemovalMonitoring() {
@@ -1538,20 +1655,17 @@
 
         // Export edited recording
         document.getElementById('exportEditedBtn').addEventListener('click', () => {
-            if (!currentRecording || !replayIframe) {
-                alert('No recording loaded or iframe not available');
+            if (!currentRecording) {
+                alert('No recording loaded');
                 return;
             }
 
             try {
-                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
-                const editedHTML = iframeDoc.documentElement.outerHTML;
-
-                // Create edited recording with the modified HTML
+                // Create edited recording with hidden element selectors
                 const editedRecording = {
                     ...currentRecording,
                     edited: true,
-                    editedHTML: editedHTML,
+                    hiddenSelectors: Array.from(selectorsToRemove), // Save which elements to hide
                     editedTimestamp: new Date().toISOString(),
                     flags: flags // Include current flags
                 };
@@ -1565,7 +1679,7 @@
                 a.click();
                 URL.revokeObjectURL(url);
 
-                alert('Edited recording exported successfully! All text changes and hidden elements are preserved.');
+                alert('Edited recording exported successfully! Hidden elements will be preserved.');
             } catch (error) {
                 alert('Error exporting edited recording: ' + error.message);
             }
@@ -1950,7 +2064,10 @@
                 if (!searchText) return;
 
                 const searchLower = searchText.toLowerCase();
+                searchMatches = [];
+                currentSearchIndex = 0;
 
+                // Find ALL matches in element map
                 for (let [elementId, element] of elementMap) {
                     let textContent = '';
                     for (let child of element.childNodes) {
@@ -1960,12 +2077,30 @@
                     }
 
                     if (textContent.toLowerCase().includes(searchLower)) {
-                        selectElementFromPopup(elementId);
-                        return;
+                        searchMatches.push(elementId);
                     }
                 }
 
-                editorPopup.alert('Text not found');
+                if (searchMatches.length === 0) {
+                    editorPopup.alert('Text not found');
+                    return;
+                }
+
+                // Select first match
+                selectElementFromPopup(searchMatches[0]);
+
+                // Update popup element info to show match count and navigation
+                if (searchMatches.length > 1 && !editorPopup.closed) {
+                    const popupElementInfo = popupDoc.getElementById('elementInfo');
+                    popupElementInfo.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>Match 1 of ${searchMatches.length}</span>
+                            <button onclick="window.opener.findPrevMatchPopup()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">← Prev</button>
+                            <button onclick="window.opener.findNextMatchPopup()" class="btn btn-small" style="background: #667eea; color: white; padding: 4px 8px;">Next →</button>
+                            <button onclick="window.opener.clearSearchPopup()" class="btn btn-small" style="background: #95a5a6; color: white; padding: 4px 8px;">Clear</button>
+                        </div>
+                    `;
+                }
             });
 
             // Show all hidden button
@@ -1976,6 +2111,13 @@
                 }
 
                 const count = Math.max(removedElements.size, hiddenElements.size);
+
+                // Stop monitoring
+                selectorsToRemove.clear();
+                if (removalInterval) {
+                    clearInterval(removalInterval);
+                    removalInterval = null;
+                }
 
                 // Restore all removed elements
                 removedElements.forEach((removedInfo, selector) => {
@@ -2007,19 +2149,17 @@
 
             // Export edited button
             popupDoc.getElementById('exportEditedBtn').addEventListener('click', () => {
-                if (!currentRecording || !replayIframe) {
-                    editorPopup.alert('No recording loaded or iframe not available');
+                if (!currentRecording) {
+                    editorPopup.alert('No recording loaded');
                     return;
                 }
 
                 try {
-                    const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
-                    const editedHTML = iframeDoc.documentElement.outerHTML;
-
+                    // Create edited recording with hidden element selectors
                     const editedRecording = {
                         ...currentRecording,
                         edited: true,
-                        editedHTML: editedHTML,
+                        hiddenSelectors: Array.from(selectorsToRemove), // Save which elements to hide
                         editedTimestamp: new Date().toISOString(),
                         flags: flags
                     };
@@ -2032,7 +2172,7 @@
                     a.click();
                     URL.revokeObjectURL(url);
 
-                    editorPopup.alert('Edited recording exported successfully!');
+                    editorPopup.alert('Edited recording exported successfully! Hidden elements will be preserved.');
                 } catch (error) {
                     editorPopup.alert('Error exporting: ' + error.message);
                 }
@@ -2370,6 +2510,99 @@
                 elementInfo.style.color = 'white';
             }
         }
+
+        // SNAPSHOT EXPORT FUNCTIONALITY
+
+        document.getElementById('snapshotBtn').addEventListener('click', () => {
+            if (!replayIframe) {
+                alert('No replay iframe found. Make sure a recording is loaded.');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Clone the document
+                const clonedDoc = iframeDoc.cloneNode(true);
+
+                // Get all stylesheets and inline them
+                let inlinedStyles = '';
+
+                // Collect styles from style tags
+                const styleTags = iframeDoc.querySelectorAll('style');
+                styleTags.forEach(style => {
+                    inlinedStyles += style.textContent + '\n';
+                });
+
+                // Collect styles from link tags (external stylesheets)
+                const linkTags = iframeDoc.querySelectorAll('link[rel="stylesheet"]');
+                linkTags.forEach(link => {
+                    try {
+                        if (link.sheet && link.sheet.cssRules) {
+                            for (let rule of link.sheet.cssRules) {
+                                inlinedStyles += rule.cssText + '\n';
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not access stylesheet:', link.href, e);
+                    }
+                });
+
+                // Get computed styles for all elements and inline them
+                const allElements = iframeDoc.querySelectorAll('*');
+                allElements.forEach((element, index) => {
+                    try {
+                        const computedStyle = iframeDoc.defaultView.getComputedStyle(element);
+                        const elementClone = clonedDoc.querySelectorAll('*')[index];
+
+                        if (elementClone) {
+                            // Build inline style string
+                            let styleStr = '';
+                            for (let prop of computedStyle) {
+                                const value = computedStyle.getPropertyValue(prop);
+                                if (value) {
+                                    styleStr += `${prop}:${value};`;
+                                }
+                            }
+                            if (styleStr) {
+                                elementClone.setAttribute('style', styleStr);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Error getting computed styles for element:', element, e);
+                    }
+                });
+
+                // Build the standalone HTML
+                const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snapshot - ${currentRecording ? (currentRecording.url || 'Recording') : 'Page'}</title>
+    <style>
+/* Extracted Styles */
+${inlinedStyles}
+    </style>
+</head>
+${clonedDoc.documentElement.querySelector('body').outerHTML}
+</html>`;
+
+                // Download the snapshot
+                const blob = new Blob([htmlContent], {type: 'text/html'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `snapshot-${Date.now()}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert('Snapshot exported successfully! You can open the HTML file in any browser.');
+            } catch (error) {
+                alert('Error exporting snapshot: ' + error.message);
+                console.error('Snapshot error:', error);
+            }
+        });
     </script>
 </body>
 </html>
