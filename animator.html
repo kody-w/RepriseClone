@@ -16,14 +16,73 @@
             overflow: hidden;
         }
 
-        .animator-controls {
-            background: #2d2d2d;
-            border-bottom: 2px solid #444;
-            padding: 15px 20px;
+        .animator-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
             display: flex;
             align-items: center;
             gap: 20px;
-            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .animator-header h2 {
+            color: white;
+            margin: 0;
+            flex: 1;
+            font-size: 24px;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .mode-switch {
+            display: flex;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px;
+            border-radius: 8px;
+            align-items: center;
+        }
+
+        .mode-btn {
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #764ba2;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f39c12;
+        }
+
+        .status-dot.ready {
+            background: #27ae60;
         }
 
         .animator-main {
@@ -33,7 +92,7 @@
         }
 
         .animator-sidebar {
-            width: 350px;
+            width: 380px;
             background: #2d2d2d;
             border-right: 2px solid #444;
             display: flex;
@@ -47,16 +106,17 @@
             padding: 20px;
             overflow: auto;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
 
         .page-container {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1400px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
             overflow: hidden;
         }
 
@@ -66,36 +126,66 @@
             border: none;
         }
 
-        .sidebar-section {
+        .sidebar-header {
             padding: 20px;
+            background: #252525;
             border-bottom: 2px solid #444;
         }
 
-        .sidebar-section h3 {
+        .sidebar-header h3 {
             color: #fff;
-            font-size: 16px;
-            margin-bottom: 15px;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .sidebar-header p {
+            color: #999;
+            margin: 0;
+            font-size: 12px;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .control-group {
+            background: #252525;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-group-title {
+            color: #9b59b6;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
         }
 
         .file-upload-area {
             background: #1a1a1a;
             border: 2px dashed #667eea;
             border-radius: 8px;
-            padding: 20px;
+            padding: 24px;
             text-align: center;
-            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s;
         }
 
         .file-upload-area:hover {
-            background: #252525;
-            border-color: #764ba2;
+            background: #222;
+            border-color: #9b59b6;
+            transform: translateY(-2px);
         }
 
         .file-upload-area.loaded {
             border-color: #27ae60;
             border-style: solid;
+            background: rgba(39, 174, 96, 0.1);
         }
 
         .file-upload-area p {
@@ -108,320 +198,501 @@
             color: #27ae60;
         }
 
-        .dynamic-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
+        .file-status {
+            color: #999;
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
         }
 
-        .dynamic-item {
+        .file-status.loaded {
+            color: #27ae60;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .btn-group.full {
+            grid-template-columns: 1fr;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-purple {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .btn-gray {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .frame-counter {
             background: #1a1a1a;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .frame-counter-label {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .frame-counter-value {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .speed-control {
+            margin-bottom: 12px;
+        }
+
+        .speed-control label {
+            color: #fff;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .speed-control input[type="range"] {
+            width: 100%;
+        }
+
+        .diff-indicator {
+            background: #1a1a1a;
+            border: 2px solid #9b59b6;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            color: #9b59b6;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .frame-list {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .frame-item {
+            background: #252525;
             border-left: 4px solid #9b59b6;
             padding: 12px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
-        .dynamic-item:hover {
-            background: #252525;
+        .frame-item:hover {
+            background: #2d2d2d;
             border-left-color: #e74c3c;
+            transform: translateX(4px);
         }
 
-        .dynamic-item.selected {
+        .frame-item.selected {
             background: #9b59b6;
             border-left-color: #fff;
         }
 
-        .dynamic-item.diff-selected {
+        .frame-item.diff-selected {
             background: #e67e22;
             border-left-color: #fff;
         }
 
-        .diff-result-panel {
-            background: #2d2d2d;
-            border: 3px solid #9b59b6;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
-        }
-
-        .diff-result-panel h4 {
+        .frame-item-title {
             color: #9b59b6;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-
-        .diff-result-panel textarea {
-            width: 100%;
-            min-height: 250px;
-            background: #1a1a1a;
-            border: 2px solid #9b59b6;
-            border-radius: 6px;
-            color: #27ae60;
-            padding: 15px;
             font-family: 'Courier New', monospace;
             font-size: 13px;
-            resize: vertical;
-            line-height: 1.6;
-        }
-
-        .diff-stats {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #1a1a1a;
-            border-radius: 6px;
-        }
-
-        .diff-stat {
-            flex: 1;
-            text-align: center;
-        }
-
-        .diff-stat-value {
-            font-size: 24px;
             font-weight: bold;
-            color: #27ae60;
+            margin-bottom: 4px;
         }
 
-        .diff-stat-label {
-            font-size: 11px;
-            color: #999;
-            margin-top: 5px;
-        }
-
-        .dynamic-item-selector {
-            color: #9b59b6;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        .dynamic-item.selected .dynamic-item-selector {
+        .frame-item.selected .frame-item-title,
+        .frame-item.diff-selected .frame-item-title {
             color: #fff;
         }
 
-        .dynamic-item-preview {
+        .frame-item-name {
             color: #999;
             font-size: 11px;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
-        .dynamic-item.selected .dynamic-item-preview {
+        .frame-item.selected .frame-item-name {
             color: #e0e0e0;
         }
 
         .frame-actions {
             margin-top: 8px;
             display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
+            gap: 6px;
         }
 
         .frame-action-btn {
-            padding: 4px 8px;
+            padding: 6px 10px;
             font-size: 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s;
             font-weight: bold;
+            transition: all 0.2s;
         }
 
         .frame-action-btn:hover {
             transform: translateY(-1px);
-            opacity: 0.9;
         }
 
-        .duplicate-btn {
-            background: #3498db;
-            color: white;
+        .diff-panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
         }
 
-        .export-btn {
-            background: #27ae60;
-            color: white;
-        }
-
-        .replace-btn {
-            background: #f39c12;
-            color: white;
-        }
-
-        .delete-btn {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .editor-panel {
+        .diff-panel {
             background: #2d2d2d;
-            border-top: 2px solid #444;
-            padding: 20px;
-            max-height: 300px;
+            border: 4px solid #9b59b6;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 1200px;
+            max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(155, 89, 182, 0.6);
+            position: relative;
+            animation: slideIn 0.3s ease-out;
         }
 
-        .editor-panel h4 {
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-
-        .editor-panel textarea {
-            width: 100%;
-            min-height: 100px;
-            background: #1a1a1a;
-            border: 2px solid #444;
-            border-radius: 6px;
-            color: #fff;
-            padding: 10px;
-            font-family: -apple-system, sans-serif;
-            font-size: 14px;
-            resize: vertical;
-        }
-
-        .editor-panel textarea:focus {
-            outline: none;
-            border-color: #9b59b6;
-        }
-
-        .element-highlight {
-            outline: 3px solid #9b59b6 !important;
-            outline-offset: 2px;
-            animation: pulse-highlight 1.5s infinite;
-        }
-
-        @keyframes pulse-highlight {
-            0%, 100% {
-                outline-color: #9b59b6;
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
             }
-            50% {
-                outline-color: #e74c3c;
-            }
-        }
-
-        @keyframes pulse-panel {
-            0% {
-                transform: scale(0.98);
-                opacity: 0.8;
-            }
-            50% {
-                transform: scale(1.02);
-            }
-            100% {
-                transform: scale(1);
+            to {
+                transform: translateY(0);
                 opacity: 1;
             }
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 11px;
+        .diff-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .diff-panel-title {
+            color: #9b59b6;
+            font-size: 24px;
             font-weight: bold;
-            margin-left: 10px;
+            margin: 0;
         }
 
-        .status-badge.ready {
-            background: #27ae60;
+        .diff-close-btn {
+            background: #e74c3c;
             color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
         }
 
-        .status-badge.waiting {
-            background: #f39c12;
-            color: white;
+        .diff-close-btn:hover {
+            background: #c0392b;
+            transform: scale(1.05);
+        }
+
+        .diff-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .diff-stat {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .diff-stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 8px;
+        }
+
+        .diff-stat-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .diff-output {
+            width: 100%;
+            min-height: 400px;
+            background: #1a1a1a;
+            border: 2px solid #9b59b6;
+            border-radius: 8px;
+            color: #27ae60;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            line-height: 1.6;
+            margin-bottom: 16px;
         }
 
         .info-box {
-            background: #f0f8ff;
-            border-left: 4px solid #3498db;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 14px;
         }
 
         .info-box p {
-            color: #333;
-            margin: 5px 0;
+            margin: 8px 0;
             font-size: 13px;
             line-height: 1.6;
+            opacity: 0.95;
         }
 
-        .static-element-overlay {
-            position: relative;
+        .placeholder-view {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
         }
 
-        .static-element-overlay::after {
-            content: "🔒 STATIC";
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: rgba(149, 165, 166, 0.9);
-            color: white;
-            padding: 4px 8px;
+        .placeholder-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            opacity: 0.3;
+        }
+
+        .placeholder-title {
+            color: #888;
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
             border-radius: 4px;
-            font-size: 10px;
-            font-weight: bold;
-            pointer-events: none;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>
 <body class="animator-page">
-    <div class="animator-controls">
-        <a href="player.html" class="back-link">← Back to Player</a>
-        <a href="tutorial.html" class="back-link" style="background: #667eea;">📚 Tutorial</a>
-        <a href="wysiwyg-editor.html" class="back-link" style="background: #e67e22;">✏️ WYSIWYG Editor</a>
-        <h2 style="color: white; margin: 0; flex: 1;">🎨 Static Page Animator</h2>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <label style="color: #999; font-size: 13px;">Mode:</label>
-            <select id="modeSelector" style="background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 6px; padding: 6px 12px; font-size: 13px;">
-                <option value="template">Template Editor</option>
-                <option value="animation" selected>Frame Animation</option>
-            </select>
+    <div class="animator-header">
+        <h2>🎨 Static Page Animator</h2>
+        <div class="header-links">
+            <a href="player.html" class="back-link">← Player</a>
+            <a href="tutorial.html" class="back-link" style="background: #667eea;">📚 Tutorial</a>
+            <a href="wysiwyg-editor.html" class="back-link" style="background: #e67e22;">✏️ Editor</a>
         </div>
-        <span id="statusBadge" class="status-badge waiting">Waiting for files...</span>
+        <div class="mode-switch">
+            <button class="mode-btn" id="templateModeBtn">Template Editor</button>
+            <button class="mode-btn active" id="animationModeBtn">Frame Animation</button>
+        </div>
+        <div class="status-indicator">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Ready</span>
+        </div>
     </div>
 
     <div class="animator-main">
-        <div class="animator-sidebar">
-            <!-- TEMPLATE MODE SECTIONS -->
-            <div id="templateModeSections">
-                <div class="sidebar-section">
-                    <h3>📄 Template HTML</h3>
-                    <div id="htmlUploadArea" class="file-upload-area">
-                        <p>📁 Click to upload template HTML</p>
-                        <p style="font-size: 11px; color: #666;">Static page with dynamic elements removed</p>
+        <!-- ANIMATION MODE SIDEBAR -->
+        <div class="animator-sidebar" id="animationSidebar">
+            <div class="sidebar-header">
+                <h3>Frame Animation</h3>
+                <p>Create smooth animations by transitioning between HTML frames</p>
+            </div>
+            <div class="sidebar-content">
+                <!-- Upload Section -->
+                <div class="control-group">
+                    <div class="control-group-title">📁 Frame Files</div>
+                    <div class="file-upload-area" id="framesUploadArea">
+                        <p style="font-size: 16px; margin-bottom: 8px;">📁 Upload HTML Frames</p>
+                        <p>Select multiple .html files</p>
+                    </div>
+                    <input type="file" id="framesInput" accept=".html" multiple style="display: none;">
+                    <p class="file-status" id="framesStatus">No frames loaded</p>
+                    <div class="btn-group" style="margin-top: 12px;">
+                        <button id="importAllFrames" class="btn btn-secondary">📂 Import JSON</button>
+                        <button id="exportAllFrames" class="btn btn-primary" style="display: none;">💾 Export JSON</button>
+                    </div>
+                    <input type="file" id="importFramesInput" accept=".json" style="display: none;">
+                    <button id="clearFrames" class="btn btn-danger btn-group full" style="margin-top: 8px; display: none; width: 100%;">🗑️ Clear All</button>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="control-group">
+                    <div class="control-group-title">▶️ Playback</div>
+                    <div class="frame-counter">
+                        <div class="frame-counter-label">Current Frame</div>
+                        <div class="frame-counter-value">
+                            <span id="currentFrameNum">-</span> / <span id="totalFrameNum">-</span>
+                        </div>
+                    </div>
+                    <div class="btn-group" style="margin-bottom: 8px;">
+                        <button id="playAnimationBtn" class="btn btn-primary" disabled>▶️ Play</button>
+                        <button id="stopAnimationBtn" class="btn btn-danger" disabled>⏹ Stop</button>
+                    </div>
+                    <div class="btn-group">
+                        <button id="prevFrameBtn" class="btn btn-secondary" disabled>← Prev</button>
+                        <button id="nextFrameBtn" class="btn btn-secondary" disabled>Next →</button>
+                    </div>
+                    <div class="speed-control">
+                        <label>Speed: <span id="speedValue">1.0s</span> per frame</label>
+                        <input type="range" id="animationSpeed" min="0.5" max="3" step="0.1" value="1.0" disabled>
+                    </div>
+                </div>
+
+                <!-- Diff Controls -->
+                <div class="control-group">
+                    <div class="control-group-title">🔍 Frame Comparison</div>
+                    <p style="color: #999; font-size: 12px; margin-bottom: 12px;">Hold Shift/Ctrl and click 2 frames to compare</p>
+                    <div id="diffSelectionInfo" class="diff-indicator" style="display: none;">
+                        <span id="diffSelectionText">Select 2 frames to diff</span>
+                    </div>
+                    <div class="btn-group">
+                        <button id="diffFramesBtn" class="btn btn-purple" disabled>🔍 Compare</button>
+                        <button id="clearDiffBtn" class="btn btn-gray" style="display: none;">✕ Clear</button>
+                    </div>
+                </div>
+
+                <!-- Frame List -->
+                <div class="control-group">
+                    <div class="control-group-title">📋 Frames (<span id="frameCount">0</span>)</div>
+                    <div class="frame-list" id="frameList">
+                        <div class="info-box">
+                            <strong>Quick Start:</strong>
+                            <p>1. Upload multiple HTML files as frames</p>
+                            <p>2. Click frames to view individually</p>
+                            <p>3. Use Play to animate through all frames</p>
+                            <p>4. Hold Shift/Ctrl + click 2 frames to compare</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEMPLATE MODE SIDEBAR -->
+        <div class="animator-sidebar" id="templateSidebar" style="display: none;">
+            <div class="sidebar-header">
+                <h3>Template Editor</h3>
+                <p>Edit dynamic elements in your static page template</p>
+            </div>
+            <div class="sidebar-content">
+                <div class="control-group">
+                    <div class="control-group-title">📄 Template HTML</div>
+                    <div class="file-upload-area" id="htmlUploadArea">
+                        <p style="font-size: 16px; margin-bottom: 8px;">📁 Upload Template</p>
+                        <p>Static page with dynamic elements</p>
                     </div>
                     <input type="file" id="htmlInput" accept=".html" style="display: none;">
-                    <p id="htmlStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No file loaded</p>
+                    <p class="file-status" id="htmlStatus">No file loaded</p>
                 </div>
 
-                <div class="sidebar-section">
-                    <h3>🗺️ Mapping JSON</h3>
-                    <div id="jsonUploadArea" class="file-upload-area">
-                        <p>📁 Click to upload mapping JSON</p>
-                        <p style="font-size: 11px; color: #666;">Dynamic element selectors</p>
+                <div class="control-group">
+                    <div class="control-group-title">🗺️ Mapping JSON</div>
+                    <div class="file-upload-area" id="jsonUploadArea">
+                        <p style="font-size: 16px; margin-bottom: 8px;">📁 Upload Mapping</p>
+                        <p>Dynamic element selectors</p>
                     </div>
                     <input type="file" id="jsonInput" accept=".json" style="display: none;">
-                    <p id="jsonStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No file loaded</p>
+                    <p class="file-status" id="jsonStatus">No file loaded</p>
                 </div>
 
-                <div class="sidebar-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                    <h3>🎬 Dynamic Elements (<span id="dynamicCount">0</span>)</h3>
-                    <div class="dynamic-list" id="dynamicList">
+                <div class="control-group">
+                    <div class="control-group-title">🎬 Dynamic Elements (<span id="dynamicCount">0</span>)</div>
+                    <div class="frame-list" id="dynamicList">
                         <div class="info-box">
-                            <p><strong>How it works:</strong></p>
+                            <strong>How it works:</strong>
                             <p>1. Load template HTML (static page)</p>
                             <p>2. Load mapping JSON (defines dynamic areas)</p>
                             <p>3. Click dynamic elements to edit them</p>
@@ -430,107 +701,55 @@
                     </div>
                 </div>
 
-                <div class="editor-panel" id="editorPanel" style="display: none;">
-                    <h4 id="editorTitle">Edit Dynamic Element</h4>
-                    <textarea id="dynamicEditor" placeholder="Select a dynamic element to edit..."></textarea>
-                    <div style="margin-top: 10px; display: flex; gap: 10px;">
-                        <button id="applyChanges" class="btn" style="background: #27ae60; color: white; flex: 1;">✓ Apply</button>
-                        <button id="revertChanges" class="btn" style="background: #e74c3c; color: white; flex: 1;">↶ Revert</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ANIMATION MODE SECTIONS -->
-            <div id="animationModeSections" style="display: none; height: 100%; flex-direction: column; overflow: hidden;">
-                <div id="diffResultPanel" class="diff-result-panel">
-                    <h4>🔍 Frame Differences</h4>
-                    <div class="diff-stats">
-                        <div class="diff-stat">
-                            <div class="diff-stat-value" id="addedElements">0</div>
-                            <div class="diff-stat-label">Added Elements</div>
-                        </div>
-                        <div class="diff-stat">
-                            <div class="diff-stat-value" id="changedElements">0</div>
-                            <div class="diff-stat-label">Changed Elements</div>
-                        </div>
-                        <div class="diff-stat">
-                            <div class="diff-stat-value" id="diffSize">0</div>
-                            <div class="diff-stat-label">Characters Added</div>
-                        </div>
-                    </div>
-                    <textarea id="diffOutput" placeholder="Differences will appear here..." readonly></textarea>
-                    <div style="margin-top: 10px; display: flex; gap: 10px;">
-                        <button id="copyDiffBtn" class="btn" style="background: #27ae60; color: white; flex: 1;">📋 Copy Diff</button>
-                        <button id="exportDiffBtn" class="btn" style="background: #3498db; color: white; flex: 1;">💾 Export HTML</button>
-                    </div>
-                </div>
-                <div class="sidebar-section">
-                    <h3>🎬 Frame Files (<span id="frameCount">0</span>)</h3>
-                    <div id="framesUploadArea" class="file-upload-area">
-                        <p>📁 Click to upload HTML frames</p>
-                        <p style="font-size: 11px; color: #666;">Select multiple .html files</p>
-                    </div>
-                    <input type="file" id="framesInput" accept=".html" multiple style="display: none;">
-                    <p id="framesStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No frames loaded</p>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button id="exportAllFrames" class="btn" style="background: #27ae60; color: white; flex: 1; display: none;">💾 Export All</button>
-                        <button id="importAllFrames" class="btn" style="background: #3498db; color: white; flex: 1;">📂 Import All</button>
-                    </div>
-                    <input type="file" id="importFramesInput" accept=".json" style="display: none;">
-                    <button id="clearFrames" class="btn" style="background: #e74c3c; color: white; width: 100%; margin-top: 10px; display: none;">🗑️ Clear All Frames</button>
-                </div>
-
-                <div class="sidebar-section" style="border-bottom: none;">
-                    <h3>▶️ Animation Controls</h3>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <button id="playAnimationBtn" class="btn" style="background: #27ae60; color: white; flex: 1;" disabled>▶️ Play</button>
-                        <button id="stopAnimationBtn" class="btn" style="background: #e74c3c; color: white; flex: 1;" disabled>⏹ Stop</button>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <button id="prevFrameBtn" class="btn" style="background: #3498db; color: white; flex: 1;" disabled>← Prev</button>
-                        <button id="nextFrameBtn" class="btn" style="background: #3498db; color: white; flex: 1;" disabled>Next →</button>
-                    </div>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <button id="diffFramesBtn" class="btn" style="background: #9b59b6; color: white; flex: 1;" disabled>🔍 Diff Selected</button>
-                        <button id="clearDiffBtn" class="btn" style="background: #95a5a6; color: white; flex: 1; display: none;">✕ Clear</button>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="color: #fff; font-size: 13px; display: block; margin-bottom: 5px;">
-                            Speed: <span id="speedValue">1.0s</span> per frame
-                        </label>
-                        <input type="range" id="animationSpeed" min="0.5" max="3" step="0.1" value="1.0" style="width: 100%;">
-                    </div>
-                    <div style="color: #999; font-size: 13px; text-align: center; padding: 10px; background: #1a1a1a; border-radius: 6px;">
-                        Frame: <span id="currentFrameNum" style="color: #fff; font-weight: bold;">-</span> / <span id="totalFrameNum" style="color: #fff; font-weight: bold;">-</span>
-                    </div>
-                    <div id="diffSelectionInfo" style="display: none; color: #9b59b6; font-size: 12px; text-align: center; padding: 8px; background: #1a1a1a; border-radius: 6px; margin-top: 10px; border: 2px solid #9b59b6;">
-                        <span id="diffSelectionText">Select 2 frames to diff</span>
-                    </div>
-                </div>
-
-                <div class="sidebar-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                    <h3>📋 Frame List</h3>
-                    <div class="dynamic-list" id="frameList">
-                        <div class="info-box">
-                            <p><strong>How it works:</strong></p>
-                            <p>1. Upload multiple HTML files as frames</p>
-                            <p>2. Click frames to view them individually</p>
-                            <p>3. Use Play button to animate through frames</p>
-                            <p>4. Adjust speed with the slider</p>
-                        </div>
+                <div class="control-group" id="editorPanel" style="display: none;">
+                    <div class="control-group-title" id="editorTitle">Edit Element</div>
+                    <textarea id="dynamicEditor" placeholder="Select a dynamic element to edit..." style="width: 100%; min-height: 120px; background: #1a1a1a; border: 2px solid #444; border-radius: 6px; color: #fff; padding: 12px; font-size: 14px; margin-bottom: 12px;"></textarea>
+                    <div class="btn-group">
+                        <button id="applyChanges" class="btn btn-primary">✓ Apply</button>
+                        <button id="revertChanges" class="btn btn-danger">↶ Revert</button>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- MAIN CONTENT AREA -->
         <div class="animator-content">
             <div id="pageContainer" class="page-container" style="display: none;">
                 <iframe id="previewIframe"></iframe>
             </div>
-            <div id="placeholder" style="text-align: center; color: #666;">
-                <div style="font-size: 6em; margin-bottom: 20px; opacity: 0.5;">🎨</div>
-                <h2 style="color: #888; margin-bottom: 10px;">Static Page Animator</h2>
-                <p style="color: #666;">Upload a template HTML and mapping JSON to get started</p>
+            <div id="placeholder" class="placeholder-view">
+                <div class="placeholder-icon">🎨</div>
+                <h2 class="placeholder-title">Static Page Animator</h2>
+                <p class="placeholder-text">Upload HTML frames to get started</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIFF PANEL MODAL -->
+    <div class="diff-panel-overlay" id="diffPanelOverlay">
+        <div class="diff-panel">
+            <div class="diff-panel-header">
+                <h3 class="diff-panel-title">🔍 Frame Differences</h3>
+                <button class="diff-close-btn" id="closeDiffBtn">✕ Close</button>
+            </div>
+            <div class="diff-stats">
+                <div class="diff-stat">
+                    <div class="diff-stat-value" id="addedElements">0</div>
+                    <div class="diff-stat-label">Added Elements</div>
+                </div>
+                <div class="diff-stat">
+                    <div class="diff-stat-value" id="changedElements">0</div>
+                    <div class="diff-stat-label">Changed Elements</div>
+                </div>
+                <div class="diff-stat">
+                    <div class="diff-stat-value" id="diffSize">0</div>
+                    <div class="diff-stat-label">Characters</div>
+                </div>
+            </div>
+            <textarea class="diff-output" id="diffOutput" placeholder="Differences will appear here..." readonly></textarea>
+            <div class="btn-group">
+                <button id="copyDiffBtn" class="btn btn-primary">📋 Copy Diff</button>
+                <button id="exportDiffBtn" class="btn btn-secondary">💾 Export HTML</button>
             </div>
         </div>
     </div>
@@ -550,348 +769,46 @@
         let currentFrameIndex = 0;
         let animationInterval = null;
         let animationSpeed = 1.0;
-        let selectedForDiff = []; // Stores indices of frames selected for diff
+        let selectedForDiff = [];
         let lastDiffResult = null;
 
-        // Mode selector
-        document.getElementById('modeSelector').addEventListener('change', (e) => {
-            currentMode = e.target.value;
-            switchMode(currentMode);
-        });
-
-        // Initialize with default mode
-        switchMode(currentMode);
+        // Mode switching
+        document.getElementById('animationModeBtn').addEventListener('click', () => switchMode('animation'));
+        document.getElementById('templateModeBtn').addEventListener('click', () => switchMode('template'));
 
         function switchMode(mode) {
-            const templateSections = document.getElementById('templateModeSections');
-            const animationSections = document.getElementById('animationModeSections');
+            currentMode = mode;
 
-            if (mode === 'template') {
-                templateSections.style.display = 'block';
-                animationSections.style.display = 'none';
-                document.getElementById('statusBadge').textContent = 'Waiting for files...';
-                document.getElementById('statusBadge').className = 'status-badge waiting';
-            } else {
-                templateSections.style.display = 'none';
-                animationSections.style.display = 'flex';
+            const animationSidebar = document.getElementById('animationSidebar');
+            const templateSidebar = document.getElementById('templateSidebar');
+            const animationBtn = document.getElementById('animationModeBtn');
+            const templateBtn = document.getElementById('templateModeBtn');
+
+            if (mode === 'animation') {
+                animationSidebar.style.display = 'flex';
+                templateSidebar.style.display = 'none';
+                animationBtn.classList.add('active');
+                templateBtn.classList.remove('active');
                 updateAnimationStatus();
-            }
-        }
-
-        // TEMPLATE MODE FUNCTIONS
-        // File upload handlers
-        document.getElementById('htmlUploadArea').addEventListener('click', () => {
-            document.getElementById('htmlInput').click();
-        });
-
-        document.getElementById('jsonUploadArea').addEventListener('click', () => {
-            document.getElementById('jsonInput').click();
-        });
-
-        document.getElementById('htmlInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            try {
-                templateHTML = await file.text();
-                document.getElementById('htmlUploadArea').classList.add('loaded');
-                document.getElementById('htmlStatus').textContent = `✓ ${file.name}`;
-                document.getElementById('htmlStatus').style.color = '#27ae60';
-
-                checkReadyToAnimate();
-            } catch (error) {
-                alert('Error loading HTML: ' + error.message);
-            }
-        });
-
-        document.getElementById('jsonInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            try {
-                const jsonText = await file.text();
-                mappingData = JSON.parse(jsonText);
-
-                document.getElementById('jsonUploadArea').classList.add('loaded');
-                document.getElementById('jsonStatus').textContent = `✓ ${file.name} (${mappingData.dynamicCount} dynamic)`;
-                document.getElementById('jsonStatus').style.color = '#27ae60';
-
-                checkReadyToAnimate();
-            } catch (error) {
-                alert('Error loading JSON: ' + error.message);
-            }
-        });
-
-        function checkReadyToAnimate() {
-            if (templateHTML && mappingData) {
-                initializeAnimator();
-            }
-        }
-
-        function initializeAnimator() {
-            // Update status
-            document.getElementById('statusBadge').textContent = 'Ready!';
-            document.getElementById('statusBadge').className = 'status-badge ready';
-
-            // Show page container
-            document.getElementById('placeholder').style.display = 'none';
-            document.getElementById('pageContainer').style.display = 'block';
-
-            // Load template into iframe
-            previewIframe = document.getElementById('previewIframe');
-            const blob = new Blob([templateHTML], {type: 'text/html'});
-            const url = URL.createObjectURL(blob);
-            previewIframe.src = url;
-
-            // Wait for iframe to load
-            previewIframe.onload = () => {
-                setupDynamicElements();
-                URL.revokeObjectURL(url);
-            };
-        }
-
-        function setupDynamicElements() {
-            const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
-
-            // Build dynamic elements list
-            const dynamicList = document.getElementById('dynamicList');
-            dynamicList.innerHTML = '';
-
-            // First, try to find elements with data-dynamic-element attribute (preferred method)
-            const markedElements = iframeDoc.querySelectorAll('[data-dynamic-element="true"]');
-
-            let dynamicElementsFound = 0;
-
-            if (markedElements.length > 0) {
-                // Use marked elements from template
-                markedElements.forEach((element, index) => {
-                    const selector = element.getAttribute('data-dynamic-selector') || `element-${index}`;
-                    const textContent = element.textContent.trim().substring(0, 50);
-                    originalContent[selector + '_' + index] = element.textContent;
-
-                    const item = document.createElement('div');
-                    item.className = 'dynamic-item';
-                    item.dataset.selector = selector;
-                    item.dataset.index = index;
-
-                    item.innerHTML = `
-                        <div class="dynamic-item-selector">${selector}</div>
-                        <div class="dynamic-item-preview">${textContent || '(empty)'}</div>
-                    `;
-
-                    item.addEventListener('click', () => {
-                        selectDynamicElement(selector, index, element);
-                    });
-
-                    dynamicList.appendChild(item);
-
-                    // Add visual indicator to element
-                    element.style.cursor = 'pointer';
-                    element.addEventListener('mouseenter', () => {
-                        element.classList.add('element-highlight');
-                    });
-                    element.addEventListener('mouseleave', () => {
-                        if (element !== currentSelectedElement) {
-                            element.classList.remove('element-highlight');
-                        }
-                    });
-                    element.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        selectDynamicElement(selector, index, element);
-                    });
-
-                    dynamicElementsFound++;
-                });
             } else {
-                // Fallback: use selectors from mapping JSON
-                mappingData.dynamicElements.forEach((selector, index) => {
-                    const elements = iframeDoc.querySelectorAll(selector);
-
-                    if (elements.length === 0) {
-                        // Element doesn't exist in template
-                        const item = document.createElement('div');
-                        item.className = 'dynamic-item';
-                        item.innerHTML = `
-                            <div class="dynamic-item-selector">${selector}</div>
-                            <div class="dynamic-item-preview" style="color: #e74c3c;">⚠️ Not found in template</div>
-                        `;
-                        dynamicList.appendChild(item);
-                    } else {
-                        elements.forEach((element, elemIndex) => {
-                            const textContent = element.textContent.trim().substring(0, 50);
-                            originalContent[selector + '_' + elemIndex] = element.textContent;
-
-                            const item = document.createElement('div');
-                            item.className = 'dynamic-item';
-                            item.dataset.selector = selector;
-                            item.dataset.index = elemIndex;
-
-                            item.innerHTML = `
-                                <div class="dynamic-item-selector">${selector}${elements.length > 1 ? ` [${elemIndex + 1}/${elements.length}]` : ''}</div>
-                                <div class="dynamic-item-preview">${textContent || '(empty)'}</div>
-                            `;
-
-                            item.addEventListener('click', () => {
-                                selectDynamicElement(selector, elemIndex, element);
-                            });
-
-                            dynamicList.appendChild(item);
-
-                            // Add visual indicator to element
-                            element.style.cursor = 'pointer';
-                            element.addEventListener('mouseenter', () => {
-                                element.classList.add('element-highlight');
-                            });
-                            element.addEventListener('mouseleave', () => {
-                                if (element !== currentSelectedElement) {
-                                    element.classList.remove('element-highlight');
-                                }
-                            });
-                            element.addEventListener('click', (e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                selectDynamicElement(selector, elemIndex, element);
-                            });
-
-                            dynamicElementsFound++;
-                        });
-                    }
-                });
+                animationSidebar.style.display = 'none';
+                templateSidebar.style.display = 'flex';
+                animationBtn.classList.remove('active');
+                templateBtn.classList.add('active');
+                updateStatus('waiting', 'Waiting for files...');
             }
-
-            // Update dynamic count
-            document.getElementById('dynamicCount').textContent = dynamicElementsFound;
-
-            // Mark static elements (for reference)
-            markStaticElements(iframeDoc);
         }
 
-        function markStaticElements(iframeDoc) {
-            // Add a subtle indicator that static elements can't be edited
-            const style = iframeDoc.createElement('style');
-            style.textContent = `
-                body * {
-                    transition: outline 0.3s;
-                }
-                .static-locked:hover {
-                    outline: 2px dashed #95a5a6 !important;
-                    cursor: not-allowed !important;
-                }
-            `;
-            iframeDoc.head.appendChild(style);
+        function updateStatus(type, text) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
 
-            // Find all elements that are NOT dynamic
-            const allElements = iframeDoc.querySelectorAll('body *');
-            allElements.forEach(element => {
-                let isDynamic = false;
-
-                // First check if element has data-dynamic-element attribute
-                if (element.hasAttribute('data-dynamic-element')) {
-                    isDynamic = true;
-                } else {
-                    // Fallback: check if this element matches any dynamic selector from mapping
-                    for (const selector of mappingData.dynamicElements) {
-                        try {
-                            if (element.matches(selector)) {
-                                isDynamic = true;
-                                break;
-                            }
-                        } catch (e) {
-                            // Invalid selector
-                        }
-                    }
-                }
-
-                if (!isDynamic && !['SCRIPT', 'STYLE', 'META', 'LINK'].includes(element.tagName)) {
-                    element.classList.add('static-locked');
-                    element.addEventListener('click', (e) => {
-                        // Only alert if the element itself was clicked, not a child
-                        if (e.target === element) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            alert('This is a static element and cannot be edited.\n\nOnly dynamic elements (marked with 🎬) can be edited.');
-                        }
-                    });
-                }
-            });
+            statusDot.className = 'status-dot';
+            if (type === 'ready') statusDot.classList.add('ready');
+            statusText.textContent = text;
         }
 
-        function selectDynamicElement(selector, index, element) {
-            // Clear previous selection
-            if (currentSelectedElement) {
-                currentSelectedElement.classList.remove('element-highlight');
-            }
-
-            // Update selection
-            currentSelectedElement = element;
-            currentSelectedSelector = selector + '_' + index;
-            element.classList.add('element-highlight');
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Update UI
-            document.querySelectorAll('.dynamic-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            const selectedItem = document.querySelector(`[data-selector="${selector}"][data-index="${index}"]`);
-            if (selectedItem) {
-                selectedItem.classList.add('selected');
-            }
-
-            // Show editor
-            document.getElementById('editorPanel').style.display = 'block';
-            document.getElementById('editorTitle').textContent = `Editing: ${selector}`;
-            document.getElementById('dynamicEditor').value = element.textContent;
-
-            // Focus editor
-            document.getElementById('dynamicEditor').focus();
-        }
-
-        // Apply changes
-        document.getElementById('applyChanges').addEventListener('click', () => {
-            if (!currentSelectedElement) return;
-
-            const newContent = document.getElementById('dynamicEditor').value;
-            currentSelectedElement.textContent = newContent;
-
-            // Update preview in list
-            const item = document.querySelector(`[data-selector][data-index].selected`);
-            if (item) {
-                const preview = item.querySelector('.dynamic-item-preview');
-                preview.textContent = newContent.substring(0, 50) || '(empty)';
-            }
-
-            alert('Changes applied! ✓');
-        });
-
-        // Revert changes
-        document.getElementById('revertChanges').addEventListener('click', () => {
-            if (!currentSelectedElement || !currentSelectedSelector) return;
-
-            const originalText = originalContent[currentSelectedSelector];
-            if (originalText !== undefined) {
-                currentSelectedElement.textContent = originalText;
-                document.getElementById('dynamicEditor').value = originalText;
-
-                // Update preview in list
-                const item = document.querySelector(`[data-selector][data-index].selected`);
-                if (item) {
-                    const preview = item.querySelector('.dynamic-item-preview');
-                    preview.textContent = originalText.substring(0, 50) || '(empty)';
-                }
-
-                alert('Reverted to original! ↶');
-            }
-        });
-
-        // Live editing
-        document.getElementById('dynamicEditor').addEventListener('input', (e) => {
-            if (currentSelectedElement) {
-                currentSelectedElement.textContent = e.target.value;
-            }
-        });
-
-        // ANIMATION MODE FUNCTIONS
+        // ANIMATION MODE
         document.getElementById('framesUploadArea').addEventListener('click', () => {
             document.getElementById('framesInput').click();
         });
@@ -901,7 +818,6 @@
             if (files.length === 0) return;
 
             try {
-                // Load all frames
                 for (const file of files) {
                     const htmlContent = await file.text();
                     frames.push({
@@ -911,23 +827,19 @@
                     });
                 }
 
-                // Sort frames by name (helps with sequential naming)
                 frames.sort((a, b) => a.name.localeCompare(b.name));
-
                 updateFrameList();
                 updateAnimationStatus();
                 updateAnimationControls();
 
-                // Show first frame
                 if (frames.length > 0) {
                     currentFrameIndex = 0;
                     displayFrame(0);
                 }
 
-                // Update UI
                 document.getElementById('framesUploadArea').classList.add('loaded');
                 document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
-                document.getElementById('framesStatus').style.color = '#27ae60';
+                document.getElementById('framesStatus').classList.add('loaded');
                 document.getElementById('clearFrames').style.display = 'block';
                 document.getElementById('exportAllFrames').style.display = 'block';
 
@@ -936,7 +848,6 @@
             }
         });
 
-        // Export all frames as single JSON file
         document.getElementById('exportAllFrames').addEventListener('click', () => {
             if (frames.length === 0) return;
 
@@ -956,11 +867,8 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-
-            // Generate filename with timestamp
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             a.download = `animation-frames-${timestamp}.json`;
-
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -969,7 +877,6 @@
             alert(`✓ Exported ${frames.length} frame${frames.length !== 1 ? 's' : ''} successfully!`);
         });
 
-        // Import all frames from JSON file
         document.getElementById('importAllFrames').addEventListener('click', () => {
             document.getElementById('importFramesInput').click();
         });
@@ -982,12 +889,10 @@
                 const jsonText = await file.text();
                 const importData = JSON.parse(jsonText);
 
-                // Validate import data
                 if (!importData.frames || !Array.isArray(importData.frames)) {
                     throw new Error('Invalid frames file format');
                 }
 
-                // Ask user if they want to replace or append
                 let shouldReplace = false;
                 if (frames.length > 0) {
                     shouldReplace = confirm(
@@ -997,12 +902,10 @@
                     );
                 }
 
-                // Clear existing frames if replacing
                 if (shouldReplace || frames.length === 0) {
                     frames = [];
                 }
 
-                // Import frames
                 importData.frames.forEach(frameData => {
                     frames.push({
                         name: frameData.name,
@@ -1011,12 +914,10 @@
                     });
                 });
 
-                // Update UI
                 updateFrameList();
                 updateAnimationStatus();
                 updateAnimationControls();
 
-                // Show first frame
                 if (frames.length > 0) {
                     currentFrameIndex = 0;
                     displayFrame(0);
@@ -1024,18 +925,15 @@
 
                 document.getElementById('framesUploadArea').classList.add('loaded');
                 document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
-                document.getElementById('framesStatus').style.color = '#27ae60';
+                document.getElementById('framesStatus').classList.add('loaded');
                 document.getElementById('clearFrames').style.display = 'block';
                 document.getElementById('exportAllFrames').style.display = 'block';
 
                 alert(`✓ Imported ${importData.frameCount} frame${importData.frameCount !== 1 ? 's' : ''} successfully!`);
-
-                // Reset file input
                 e.target.value = '';
 
             } catch (error) {
                 alert('Error importing frames: ' + error.message);
-                console.error(error);
                 e.target.value = '';
             }
         });
@@ -1046,14 +944,13 @@
             frames = [];
             currentFrameIndex = 0;
             stopAnimation();
-
             updateFrameList();
             updateAnimationStatus();
             updateAnimationControls();
 
             document.getElementById('framesUploadArea').classList.remove('loaded');
             document.getElementById('framesStatus').textContent = 'No frames loaded';
-            document.getElementById('framesStatus').style.color = '#999';
+            document.getElementById('framesStatus').classList.remove('loaded');
             document.getElementById('clearFrames').style.display = 'none';
             document.getElementById('exportAllFrames').style.display = 'none';
             document.getElementById('pageContainer').style.display = 'none';
@@ -1067,12 +964,11 @@
             if (frames.length === 0) {
                 frameList.innerHTML = `
                     <div class="info-box">
-                        <p><strong>How it works:</strong></p>
+                        <strong>Quick Start:</strong>
                         <p>1. Upload multiple HTML files as frames</p>
-                        <p>2. Click frames to view them individually</p>
-                        <p>3. Hold Shift/Ctrl and click 2 frames to diff</p>
-                        <p>4. Use Play button to animate through frames</p>
-                        <p>5. Adjust speed with the slider</p>
+                        <p>2. Click frames to view individually</p>
+                        <p>3. Use Play to animate through all frames</p>
+                        <p>4. Hold Shift/Ctrl + click 2 frames to compare</p>
                     </div>
                 `;
                 return;
@@ -1080,22 +976,17 @@
 
             frames.forEach((frame, index) => {
                 const item = document.createElement('div');
-                item.className = 'dynamic-item';
-                if (index === currentFrameIndex) {
-                    item.classList.add('selected');
-                }
-                if (selectedForDiff.includes(index)) {
-                    item.classList.add('diff-selected');
-                }
-                item.dataset.frameIndex = index;
+                item.className = 'frame-item';
+                if (index === currentFrameIndex) item.classList.add('selected');
+                if (selectedForDiff.includes(index)) item.classList.add('diff-selected');
 
-                const frameContent = document.createElement('div');
-                frameContent.innerHTML = `
-                    <div class="dynamic-item-selector">Frame ${index + 1}${selectedForDiff.includes(index) ? ' [DIFF]' : ''}</div>
-                    <div class="dynamic-item-preview">${frame.name}</div>
+                const content = document.createElement('div');
+                content.innerHTML = `
+                    <div class="frame-item-title">Frame ${index + 1}${selectedForDiff.includes(index) ? ' [DIFF]' : ''}</div>
+                    <div class="frame-item-name">${frame.name}</div>
                 `;
-                frameContent.addEventListener('click', (e) => {
-                    // Check if Shift key is pressed for multi-select
+
+                content.addEventListener('click', (e) => {
                     if (e.shiftKey || e.ctrlKey || e.metaKey) {
                         toggleDiffSelection(index);
                     } else {
@@ -1106,53 +997,29 @@
                     }
                 });
 
-                // Action buttons
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'frame-actions';
+                actionsDiv.innerHTML = `
+                    <button class="frame-action-btn" style="background: #3498db; color: white;" data-action="duplicate">📋 Duplicate</button>
+                    <button class="frame-action-btn" style="background: #27ae60; color: white;" data-action="export">💾 Export</button>
+                    <button class="frame-action-btn" style="background: #f39c12; color: white;" data-action="replace">🔄 Replace</button>
+                    <button class="frame-action-btn" style="background: #e74c3c; color: white;" data-action="delete">🗑️ Delete</button>
+                `;
 
-                const duplicateBtn = document.createElement('button');
-                duplicateBtn.className = 'frame-action-btn duplicate-btn';
-                duplicateBtn.textContent = '📋 Duplicate';
-                duplicateBtn.addEventListener('click', (e) => {
+                actionsDiv.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    duplicateFrame(index);
+                    const action = e.target.dataset.action;
+                    if (action === 'duplicate') duplicateFrame(index);
+                    else if (action === 'export') exportFrame(index);
+                    else if (action === 'replace') replaceFrame(index);
+                    else if (action === 'delete') deleteFrame(index);
                 });
 
-                const exportBtn = document.createElement('button');
-                exportBtn.className = 'frame-action-btn export-btn';
-                exportBtn.textContent = '💾 Export';
-                exportBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    exportFrame(index);
-                });
-
-                const replaceBtn = document.createElement('button');
-                replaceBtn.className = 'frame-action-btn replace-btn';
-                replaceBtn.textContent = '🔄 Replace';
-                replaceBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    replaceFrame(index);
-                });
-
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'frame-action-btn delete-btn';
-                deleteBtn.textContent = '🗑️ Delete';
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    deleteFrame(index);
-                });
-
-                actionsDiv.appendChild(duplicateBtn);
-                actionsDiv.appendChild(exportBtn);
-                actionsDiv.appendChild(replaceBtn);
-                actionsDiv.appendChild(deleteBtn);
-
-                item.appendChild(frameContent);
+                item.appendChild(content);
                 item.appendChild(actionsDiv);
                 frameList.appendChild(item);
             });
 
-            // Update frame counter
             document.getElementById('frameCount').textContent = frames.length;
         }
 
@@ -1160,44 +1027,26 @@
             if (index < 0 || index >= frames.length) return;
 
             currentFrameIndex = index;
-
-            // Show page container
             document.getElementById('placeholder').style.display = 'none';
             document.getElementById('pageContainer').style.display = 'block';
 
-            // Load frame into iframe
             previewIframe = document.getElementById('previewIframe');
             const frame = frames[index];
             const blob = new Blob([frame.html], {type: 'text/html'});
             const url = URL.createObjectURL(blob);
 
-            previewIframe.onload = () => {
-                URL.revokeObjectURL(url);
-            };
-
+            previewIframe.onload = () => URL.revokeObjectURL(url);
             previewIframe.src = url;
 
-            // Update frame indicator
             document.getElementById('currentFrameNum').textContent = index + 1;
             document.getElementById('totalFrameNum').textContent = frames.length;
-
-            // Update frame list selection
-            document.querySelectorAll('#frameList .dynamic-item').forEach((item, i) => {
-                if (i === index) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
         }
 
         function updateAnimationStatus() {
             if (frames.length === 0) {
-                document.getElementById('statusBadge').textContent = 'Waiting for frames...';
-                document.getElementById('statusBadge').className = 'status-badge waiting';
+                updateStatus('waiting', 'No frames loaded');
             } else {
-                document.getElementById('statusBadge').textContent = `${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
-                document.getElementById('statusBadge').className = 'status-badge ready';
+                updateStatus('ready', `${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`);
             }
         }
 
@@ -1210,38 +1059,24 @@
             document.getElementById('animationSpeed').disabled = !hasFrames;
         }
 
-        // Animation controls
-        document.getElementById('playAnimationBtn').addEventListener('click', () => {
-            playAnimation();
-        });
-
-        document.getElementById('stopAnimationBtn').addEventListener('click', () => {
-            stopAnimation();
-        });
+        document.getElementById('playAnimationBtn').addEventListener('click', playAnimation);
+        document.getElementById('stopAnimationBtn').addEventListener('click', stopAnimation);
 
         document.getElementById('prevFrameBtn').addEventListener('click', () => {
             stopAnimation();
-            if (currentFrameIndex > 0) {
-                displayFrame(currentFrameIndex - 1);
-            } else {
-                displayFrame(frames.length - 1); // Loop to end
-            }
+            displayFrame(currentFrameIndex > 0 ? currentFrameIndex - 1 : frames.length - 1);
+            updateFrameList();
         });
 
         document.getElementById('nextFrameBtn').addEventListener('click', () => {
             stopAnimation();
-            if (currentFrameIndex < frames.length - 1) {
-                displayFrame(currentFrameIndex + 1);
-            } else {
-                displayFrame(0); // Loop to start
-            }
+            displayFrame(currentFrameIndex < frames.length - 1 ? currentFrameIndex + 1 : 0);
+            updateFrameList();
         });
 
         document.getElementById('animationSpeed').addEventListener('input', (e) => {
             animationSpeed = parseFloat(e.target.value);
             document.getElementById('speedValue').textContent = animationSpeed.toFixed(1) + 's';
-
-            // Restart animation if playing
             if (animationInterval) {
                 stopAnimation();
                 playAnimation();
@@ -1250,20 +1085,13 @@
 
         function playAnimation() {
             if (frames.length === 0) return;
-
-            stopAnimation(); // Clear any existing interval
-
-            // Start from current frame
+            stopAnimation();
             let index = currentFrameIndex;
-
             animationInterval = setInterval(() => {
                 displayFrame(index);
-                index = (index + 1) % frames.length; // Loop back to start
+                updateFrameList();
+                index = (index + 1) % frames.length;
             }, animationSpeed * 1000);
-
-            // Visual feedback
-            document.getElementById('playAnimationBtn').style.opacity = '0.5';
-            document.getElementById('stopAnimationBtn').style.opacity = '1';
         }
 
         function stopAnimation() {
@@ -1271,51 +1099,28 @@
                 clearInterval(animationInterval);
                 animationInterval = null;
             }
-
-            // Visual feedback
-            document.getElementById('playAnimationBtn').style.opacity = '1';
-            document.getElementById('stopAnimationBtn').style.opacity = '0.5';
         }
 
-        // Frame management functions
         function duplicateFrame(index) {
-            if (index < 0 || index >= frames.length) return;
-
             const originalFrame = frames[index];
-            const duplicatedFrame = {
+            frames.splice(index + 1, 0, {
                 name: originalFrame.name.replace('.html', '') + '-copy.html',
                 html: originalFrame.html,
                 id: Date.now() + Math.random()
-            };
-
-            // Insert after the original frame
-            frames.splice(index + 1, 0, duplicatedFrame);
-
-            // Update UI
+            });
             updateFrameList();
             updateAnimationStatus();
             updateAnimationControls();
-
-            // Show the duplicated frame
-            currentFrameIndex = index + 1;
-            displayFrame(currentFrameIndex);
-
-            // Update status
-            document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
+            displayFrame(index + 1);
         }
 
         function exportFrame(index) {
-            if (index < 0 || index >= frames.length) return;
-
             const frame = frames[index];
-            const filename = frame.name.replace('.html', '') + '-exported.html';
-
-            // Download the frame HTML
             const blob = new Blob([frame.html], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = filename;
+            a.download = frame.name.replace('.html', '') + '-exported.html';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -1323,9 +1128,6 @@
         }
 
         function replaceFrame(index) {
-            if (index < 0 || index >= frames.length) return;
-
-            // Create a hidden file input for this specific frame
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = '.html';
@@ -1337,19 +1139,13 @@
 
                 try {
                     const htmlContent = await file.text();
-
-                    // Replace the frame
                     frames[index] = {
                         name: file.name,
                         html: htmlContent,
                         id: Date.now() + Math.random()
                     };
-
-                    // Update UI
                     updateFrameList();
                     displayFrame(index);
-
-                    // Cleanup
                     document.body.removeChild(fileInput);
                 } catch (error) {
                     alert('Error loading replacement file: ' + error.message);
@@ -1362,38 +1158,25 @@
         }
 
         function deleteFrame(index) {
-            if (index < 0 || index >= frames.length) return;
-
             if (!confirm(`Delete Frame ${index + 1}?`)) return;
 
-            // Remove the frame
             frames.splice(index, 1);
-
-            // Adjust current index if necessary
             if (currentFrameIndex >= frames.length) {
                 currentFrameIndex = Math.max(0, frames.length - 1);
             }
 
-            // Update UI
             updateFrameList();
             updateAnimationStatus();
             updateAnimationControls();
 
-            // Show the new current frame or hide container if no frames
             if (frames.length > 0) {
                 displayFrame(currentFrameIndex);
             } else {
                 document.getElementById('pageContainer').style.display = 'none';
                 document.getElementById('placeholder').style.display = 'block';
-            }
-
-            // Update status
-            if (frames.length > 0) {
-                document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
-            } else {
                 document.getElementById('framesUploadArea').classList.remove('loaded');
                 document.getElementById('framesStatus').textContent = 'No frames loaded';
-                document.getElementById('framesStatus').style.color = '#999';
+                document.getElementById('framesStatus').classList.remove('loaded');
                 document.getElementById('clearFrames').style.display = 'none';
                 document.getElementById('exportAllFrames').style.display = 'none';
             }
@@ -1402,18 +1185,12 @@
         // DIFF FUNCTIONS
         function toggleDiffSelection(index) {
             const diffIndex = selectedForDiff.indexOf(index);
-
             if (diffIndex > -1) {
-                // Deselect
                 selectedForDiff.splice(diffIndex, 1);
             } else {
-                // Select (max 2 frames)
-                if (selectedForDiff.length >= 2) {
-                    selectedForDiff.shift(); // Remove oldest selection
-                }
+                if (selectedForDiff.length >= 2) selectedForDiff.shift();
                 selectedForDiff.push(index);
             }
-
             updateFrameList();
             updateDiffUI();
         }
@@ -1437,7 +1214,7 @@
                 diffBtn.disabled = false;
                 clearBtn.style.display = 'block';
                 diffInfo.style.display = 'block';
-                diffText.textContent = `2 frames selected - Ready to diff!`;
+                diffText.textContent = `2 frames selected - Ready to compare!`;
             }
         }
 
@@ -1445,156 +1222,80 @@
             if (selectedForDiff.length !== 2) return;
 
             const [index1, index2] = selectedForDiff.sort((a, b) => a - b);
-            const frame1 = frames[index1];
-            const frame2 = frames[index2];
-
-            // Show computing message
-            const statusBadge = document.getElementById('statusBadge');
-            const originalStatus = statusBadge.textContent;
-            statusBadge.textContent = 'Computing diff...';
-            statusBadge.className = 'status-badge waiting';
-
-            // Compute diff with slight delay for UI update
-            setTimeout(() => {
-                computeDiff(frame1, frame2);
-
-                // Restore status
-                statusBadge.textContent = originalStatus;
-                statusBadge.className = 'status-badge ready';
-            }, 100);
+            computeDiff(frames[index1], frames[index2]);
         });
 
         document.getElementById('clearDiffBtn').addEventListener('click', () => {
             selectedForDiff = [];
             updateFrameList();
             updateDiffUI();
-            hideDiffPanel();
         });
 
         function computeDiff(frame1, frame2) {
-            console.log('Computing diff between:', frame1.name, 'and', frame2.name);
-
             const parser = new DOMParser();
             const doc1 = parser.parseFromString(frame1.html, 'text/html');
             const doc2 = parser.parseFromString(frame2.html, 'text/html');
 
-            // Extract only the body content for comparison
             const body1 = doc1.body;
             const body2 = doc2.body;
 
-            console.log('Body1 HTML length:', body1.innerHTML.length);
-            console.log('Body2 HTML length:', body2.innerHTML.length);
-
-            // Find new elements
-            const newElements = [];
-            const changedElements = [];
-
-            // Compare all elements in body2 against body1
-            const elements2 = body2.querySelectorAll('*');
             const elements1 = body1.querySelectorAll('*');
+            const elements2 = body2.querySelectorAll('*');
 
-            // Create a map of elements from frame1 by their outer HTML
             const frame1Set = new Set();
-            elements1.forEach(el => {
-                // Use outer HTML for more accurate comparison
-                frame1Set.add(el.outerHTML);
-            });
+            elements1.forEach(el => frame1Set.add(el.outerHTML));
 
-            // Find new and changed elements
             let addedCount = 0;
-            let changedCount = 0;
             let diffHTML = '';
 
             elements2.forEach(el => {
-                // Skip script, style, and meta tags
-                if (['SCRIPT', 'STYLE', 'META', 'LINK', 'HEAD'].includes(el.tagName)) {
-                    return;
-                }
+                if (['SCRIPT', 'STYLE', 'META', 'LINK', 'HEAD'].includes(el.tagName)) return;
 
-                const outerHTML = el.outerHTML;
-
-                // Check if this exact element exists in frame1
-                if (!frame1Set.has(outerHTML)) {
-                    // This is a new or modified element
+                if (!frame1Set.has(el.outerHTML)) {
                     const textContent = el.textContent.trim();
-
-                    // Only include if it has meaningful content
                     if (textContent.length > 0) {
                         addedCount++;
-                        diffHTML += outerHTML + '\n\n';
-                        newElements.push(el);
+                        diffHTML += el.outerHTML + '\n\n';
                     }
                 }
             });
 
-            // If no differences found in elements, try comparing raw HTML
             if (diffHTML.length === 0) {
                 const html1 = body1.innerHTML;
                 const html2 = body2.innerHTML;
-
                 if (html1 !== html2) {
-                    // There are differences but we couldn't detect them element-wise
-                    // Show the entire body2 as the diff
                     diffHTML = body2.innerHTML;
                     addedCount = 1;
-                    changedCount = 1;
                 }
             }
 
-            // Calculate stats
-            const diffSize = diffHTML.length;
-
-            console.log('Diff results - Added:', addedCount, 'Changed:', changedCount, 'Size:', diffSize);
-
-            // Display results
             if (diffHTML.length === 0) {
-                diffHTML = '<!-- No differences detected -->\n\nFrames appear to be identical or differences are too subtle to detect.\n\nTry comparing frames with more obvious changes.';
+                diffHTML = '<!-- No differences detected -->\n\nFrames appear to be identical.';
             }
 
             lastDiffResult = diffHTML;
             document.getElementById('diffOutput').value = diffHTML;
             document.getElementById('addedElements').textContent = addedCount;
-            document.getElementById('changedElements').textContent = changedCount;
-            document.getElementById('diffSize').textContent = diffSize;
+            document.getElementById('changedElements').textContent = 0;
+            document.getElementById('diffSize').textContent = diffHTML.length;
 
             showDiffPanel();
         }
 
-        function getTextNodes(node) {
-            const textNodes = [];
-            const walker = document.createTreeWalker(
-                node,
-                NodeFilter.SHOW_TEXT,
-                null,
-                false
-            );
-
-            let currentNode;
-            while (currentNode = walker.nextNode()) {
-                if (currentNode.textContent.trim().length > 0) {
-                    textNodes.push(currentNode);
-                }
-            }
-            return textNodes;
-        }
-
         function showDiffPanel() {
-            const panel = document.getElementById('diffResultPanel');
-            panel.style.display = 'block';
-
-            // Scroll to the diff panel
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // Add a visual pulse effect
-            panel.style.animation = 'none';
-            setTimeout(() => {
-                panel.style.animation = 'pulse-panel 0.5s ease-out';
-            }, 10);
+            document.getElementById('diffPanelOverlay').style.display = 'flex';
         }
 
         function hideDiffPanel() {
-            document.getElementById('diffResultPanel').style.display = 'none';
+            document.getElementById('diffPanelOverlay').style.display = 'none';
         }
+
+        document.getElementById('closeDiffBtn').addEventListener('click', hideDiffPanel);
+        document.getElementById('diffPanelOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('diffPanelOverlay')) {
+                hideDiffPanel();
+            }
+        });
 
         document.getElementById('copyDiffBtn').addEventListener('click', () => {
             const diffOutput = document.getElementById('diffOutput');
@@ -1659,7 +1360,16 @@
             URL.revokeObjectURL(url);
         });
 
-        // Keyboard shortcuts for animation mode
+        // TEMPLATE MODE (placeholder - existing functionality)
+        document.getElementById('htmlUploadArea').addEventListener('click', () => {
+            document.getElementById('htmlInput').click();
+        });
+
+        document.getElementById('jsonUploadArea').addEventListener('click', () => {
+            document.getElementById('jsonInput').click();
+        });
+
+        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (currentMode !== 'animation' || frames.length === 0) return;
 
@@ -1676,8 +1386,13 @@
                 } else {
                     playAnimation();
                 }
+            } else if (e.key === 'Escape') {
+                hideDiffPanel();
             }
         });
+
+        // Initialize
+        switchMode('animation');
     </script>
 </body>
 </html>
