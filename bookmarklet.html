@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprise Clone - Bookmarklet</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .bookmarklet-container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .bookmarklet-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 20px 40px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s;
+            cursor: move;
+        }
+
+        .bookmarklet-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .bookmarklet-box {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .instructions h3 {
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+
+        .step {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .step h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .step p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reprise Clone Bookmarklet</h1>
+            <p class="subtitle">Record any webpage with a single click</p>
+        </header>
+
+        <main>
+            <div class="bookmarklet-container">
+                <h2 style="margin-bottom: 20px;">Install the Recorder</h2>
+
+                <div class="instructions">
+                    <h3>⚠️ Important: Show Your Bookmarks Bar First</h3>
+                    <p>Before dragging, make sure your bookmarks bar is visible:</p>
+                    <ul style="margin-top: 10px; line-height: 1.8;">
+                        <li><strong>Chrome/Edge:</strong> Press <code>Cmd+Shift+B</code> (Mac) or <code>Ctrl+Shift+B</code> (Windows)</li>
+                        <li><strong>Firefox:</strong> Press <code>Cmd+Shift+B</code> (Mac) or <code>Ctrl+Shift+B</code> (Windows)</li>
+                        <li><strong>Safari:</strong> View → Show Favorites Bar</li>
+                    </ul>
+                </div>
+
+                <div class="bookmarklet-box">
+                    <p style="margin-bottom: 20px; font-size: 16px; color: #666;">
+                        <strong>Drag this button to your bookmarks bar →</strong>
+                    </p>
+                    <a id="bookmarklet" href="#" class="bookmarklet-link">
+                        📹 Record Page
+                    </a>
+                    <p style="margin-top: 20px; font-size: 14px; color: #999;">
+                        <em>Click and drag this button up to your bookmarks bar</em>
+                    </p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 1: Drag the Bookmarklet</h4>
+                    <p>Click and hold the "📹 Record Page" button above, then drag it to your bookmarks bar at the top of your browser.</p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 2: Navigate to Any Page</h4>
+                    <p>Go to any webpage you want to record (try it on Microsoft 365, Google, your own sites, etc.)</p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 3: Click the Bookmarklet</h4>
+                    <p>Click the "📹 Record Page" bookmark you just added. A floating control panel will appear in the top-right corner.</p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 4: Start Recording</h4>
+                    <p>Click "Start Recording" and interact with the page normally. The event counter will show how many events have been captured.</p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 5: Stop & Export</h4>
+                    <p>When done, click "Stop Recording", then "Export Recording" to download your recording as a JSON file.</p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 6: Replay</h4>
+                    <p>Go to the <a href="player.html">Player page</a> and load your recording file to watch it play back!</p>
+                </div>
+
+                <h3 style="margin-top: 40px; margin-bottom: 20px;">Features</h3>
+                <ul class="feature-list">
+                    <li>Works on ANY webpage (no iframe limitations)</li>
+                    <li>Records all user interactions and DOM changes</li>
+                    <li>Floating, draggable control panel</li>
+                    <li>Real-time event counter</li>
+                    <li>Export recordings as JSON files</li>
+                    <li>No installation required - just drag and click</li>
+                    <li>Works across all major browsers</li>
+                </ul>
+
+                <div class="instructions" style="margin-top: 30px; background: #d4edda; border-left-color: #27ae60;">
+                    <h3 style="color: #155724;">💡 Pro Tips</h3>
+                    <ul style="margin-top: 10px; line-height: 1.8;">
+                        <li>The control panel is draggable - click and drag it anywhere on the page</li>
+                        <li>You can record multiple sessions - each export gets a unique timestamp</li>
+                        <li>Works on sites that block iframes (like Microsoft 365, Google Docs, etc.)</li>
+                        <li>Close the control panel by clicking the × button</li>
+                        <li>The bookmarklet doesn't interfere with page functionality</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; margin-top: 40px;">
+                    <a href="index.html" class="btn btn-primary">← Back to Home</a>
+                    <a href="player.html" class="btn btn-secondary" style="margin-left: 10px;">Open Player →</a>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with <a href="https://www.rrweb.io/" target="_blank">rrweb</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Build the bookmarklet code
+        const bookmarkletCode = `
+(function() {
+    if (window.repriseRecorder) {
+        alert('Recorder already loaded!');
+        return;
+    }
+
+    window.repriseRecorder = {
+        events: [],
+        recording: false,
+        stopFn: null
+    };
+
+    var script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js';
+    script.onload = function() {
+        var panel = document.createElement('div');
+        panel.id = 'reprise-controls';
+        panel.style.cssText = 'position:fixed;top:20px;right:20px;z-index:2147483647;';
+
+        panel.innerHTML = \\\`
+            <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:20px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.3);font-family:-apple-system,sans-serif;min-width:280px;cursor:move">
+                <div style="color:white;font-weight:bold;font-size:16px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center">
+                    <span>📹 Reprise Recorder</span>
+                    <button onclick="document.getElementById('reprise-controls').remove();window.repriseRecorder=null" style="background:rgba(255,255,255,0.2);border:none;color:white;width:24px;height:24px;border-radius:50%;cursor:pointer">×</button>
+                </div>
+                <div id="reprise-status" style="color:white;font-size:13px;margin-bottom:15px;padding:8px;background:rgba(255,255,255,0.1);border-radius:6px;text-align:center">Ready to record</div>
+                <div id="reprise-count" style="color:white;font-size:12px;margin-bottom:12px;text-align:center">0 events captured</div>
+                <button id="reprise-start" style="width:100%;padding:10px;background:white;color:#667eea;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:8px">Start Recording</button>
+                <button id="reprise-stop" style="width:100%;padding:10px;background:#e74c3c;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-bottom:8px;display:none">Stop Recording</button>
+                <button id="reprise-export" style="width:100%;padding:10px;background:#27ae60;color:white;border:none;border-radius:6px;font-weight:bold;cursor:pointer;display:none">Export Recording</button>
+            </div>
+        \\\`;
+
+        document.body.appendChild(panel);
+
+        // Make draggable
+        var isDragging = false, currentX, currentY, initialX, initialY;
+        var container = panel.firstElementChild;
+
+        container.addEventListener('mousedown', function(e) {
+            if (e.target.tagName === 'BUTTON') return;
+            isDragging = true;
+            initialX = e.clientX - panel.offsetLeft;
+            initialY = e.clientY - panel.offsetTop;
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                panel.style.left = currentX + 'px';
+                panel.style.top = currentY + 'px';
+                panel.style.right = 'auto';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+
+        // Start recording
+        document.getElementById('reprise-start').onclick = function() {
+            window.repriseRecorder.events = [];
+            window.repriseRecorder.recording = true;
+            window.repriseRecorder.stopFn = rrweb.record({
+                emit: function(event) {
+                    window.repriseRecorder.events.push(event);
+                    document.getElementById('reprise-count').textContent = window.repriseRecorder.events.length + ' events captured';
+                },
+                recordCanvas: true,
+                collectFonts: true
+            });
+            document.getElementById('reprise-start').style.display = 'none';
+            document.getElementById('reprise-stop').style.display = 'block';
+            document.getElementById('reprise-status').innerHTML = '🔴 Recording...';
+            document.getElementById('reprise-status').style.background = 'rgba(231,76,60,0.8)';
+        };
+
+        // Stop recording
+        document.getElementById('reprise-stop').onclick = function() {
+            if (window.repriseRecorder.stopFn) {
+                window.repriseRecorder.stopFn();
+                window.repriseRecorder.stopFn = null;
+            }
+            window.repriseRecorder.recording = false;
+            document.getElementById('reprise-start').style.display = 'block';
+            document.getElementById('reprise-stop').style.display = 'none';
+            document.getElementById('reprise-export').style.display = 'block';
+            document.getElementById('reprise-status').innerHTML = '⏹ Stopped';
+            document.getElementById('reprise-status').style.background = 'rgba(243,156,18,0.8)';
+        };
+
+        // Export recording
+        document.getElementById('reprise-export').onclick = function() {
+            if (window.repriseRecorder.events.length === 0) {
+                alert('No recording to export');
+                return;
+            }
+            var recording = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                url: window.location.href,
+                events: window.repriseRecorder.events
+            };
+            var blob = new Blob([JSON.stringify(recording, null, 2)], {type: 'application/json'});
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'recording-' + Date.now() + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+    };
+
+    document.head.appendChild(script);
+})();
+        `;
+
+        // Set the bookmarklet href
+        const bookmarkletLink = document.getElementById('bookmarklet');
+        bookmarkletLink.href = 'javascript:' + encodeURIComponent(bookmarkletCode.trim());
+    </script>
+</body>
+</html>

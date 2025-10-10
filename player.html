@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+    <style>
+        .edit-panel {
+            position: fixed;
+            right: -600px;
+            top: 0;
+            width: 600px;
+            height: 100vh;
+            background: #1a1a1a;
+            border-left: 2px solid #444;
+            transition: right 0.3s ease;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .edit-panel.open {
+            right: 0;
+        }
+
+        .edit-panel-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .edit-panel-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .edit-panel-body {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #htmlEditor {
+            width: 100%;
+            height: 100%;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: none;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            resize: none;
+            line-height: 1.5;
+        }
+
+        .editor-actions {
+            padding: 15px 20px;
+            background: #2d2d2d;
+            border-top: 2px solid #444;
+            display: flex;
+            gap: 10px;
+        }
+
+        .player-container.editing {
+            margin-right: 600px;
+        }
+
+        .edit-mode-indicator {
+            background: #f39c12;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .edit-mode-indicator.active {
+            display: inline-block;
+        }
+
+        /* Flags Panel */
+        .flags-panel {
+            position: fixed;
+            left: -350px;
+            top: 0;
+            width: 350px;
+            height: 100vh;
+            background: #1a1a1a;
+            border-right: 2px solid #444;
+            transition: left 0.3s ease;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flags-panel.open {
+            left: 0;
+        }
+
+        .flags-panel-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flags-panel-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .flags-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .flag-item {
+            background: #2d2d2d;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .flag-item:hover {
+            background: #3d3d3d;
+        }
+
+        .flag-item.active {
+            border-left-color: #27ae60;
+            background: #3d3d3d;
+        }
+
+        .flag-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+
+        .flag-label {
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .flag-time {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .flag-delete {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .flag-description {
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .flag-actions {
+            padding: 15px;
+            background: #2d2d2d;
+            border-top: 2px solid #444;
+        }
+
+        .flag-nav-controls {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .flag-nav-controls button {
+            flex: 1;
+        }
+
+        .player-container.with-flags {
+            margin-left: 350px;
+        }
+
+        .player-container.with-flags.editing {
+            margin-left: 350px;
+            margin-right: 600px;
+        }
+
+        .add-flag-form {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .add-flag-form.active {
+            display: block;
+        }
+
+        .add-flag-form input,
+        .add-flag-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+        }
+
+        .add-flag-form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .empty-flags {
+            text-align: center;
+            color: #666;
+            padding: 40px 20px;
+        }
+
+        /* Text Edit Panel */
+        .text-edit-panel {
+            position: fixed;
+            bottom: -500px;
+            left: 0;
+            right: 0;
+            height: 500px;
+            background: #1a1a1a;
+            border-top: 2px solid #444;
+            transition: bottom 0.3s ease;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-edit-panel.open {
+            bottom: 0;
+        }
+
+        .text-edit-panel-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .text-edit-panel-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .text-edit-panel-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .html-tree-container {
+            width: 50%;
+            border-right: 2px solid #444;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .html-tree-item {
+            padding: 8px 10px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            transition: background 0.2s;
+        }
+
+        .html-tree-item:hover {
+            background: #2d2d2d;
+        }
+
+        .html-tree-item.selected {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .html-tree-item.has-text {
+            color: #9cdcfe;
+        }
+
+        .element-tag {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+
+        .element-text-preview {
+            color: #ce9178;
+            margin-left: 10px;
+            font-style: italic;
+        }
+
+        .element-indent {
+            display: inline-block;
+            width: 20px;
+        }
+
+        .text-editor-container {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .element-info {
+            background: #2d2d2d;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #9cdcfe;
+            font-size: 13px;
+        }
+
+        .element-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .element-controls button {
+            flex: 1;
+        }
+
+        .live-text-editor {
+            flex: 1;
+            background: #1e1e1e;
+            border: 2px solid #444;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .live-text-editor:focus {
+            outline: none;
+            border-color: #9b59b6;
+        }
+
+        .editor-actions-bottom {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* Hidden element styling */
+        .html-tree-item.element-hidden {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .html-tree-item.element-hidden .element-tag {
+            color: #e74c3c;
+        }
+
+        .player-container.with-text-editor {
+            margin-bottom: 500px;
+        }
+
+        /* Highlighted element on page */
+        .text-edit-highlight {
+            outline: 4px solid #9b59b6 !important;
+            outline-offset: 3px;
+            background: rgba(155, 89, 182, 0.2) !important;
+            animation: pulse-highlight 1s infinite;
+            box-shadow: 0 0 20px rgba(155, 89, 182, 0.6) !important;
+        }
+
+        @keyframes pulse-highlight {
+            0%, 100% {
+                outline-color: #9b59b6;
+                background: rgba(155, 89, 182, 0.2) !important;
+            }
+            50% {
+                outline-color: #d946ef;
+                background: rgba(217, 70, 239, 0.3) !important;
+            }
+        }
+
+        /* Element picker mode */
+        .element-picker-mode {
+            cursor: crosshair !important;
+        }
+
+        .element-picker-mode * {
+            cursor: crosshair !important;
+        }
+
+        .element-picker-hover {
+            outline: 2px dashed #27ae60 !important;
+            outline-offset: 2px;
+            background: rgba(39, 174, 96, 0.1) !important;
+        }
+
+        .picker-tooltip {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            pointer-events: none;
+            z-index: 100002;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .picker-tooltip-item {
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .picker-tooltip-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Element stack overlays */
+        .element-stack-overlay {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100000;
+            transition: opacity 0.1s;
+        }
+    </style>
+</head>
+<body class="player-page">
+    <div class="controls-bar">
+        <div class="controls-content">
+            <a href="index.html" class="back-link">← Back</a>
+
+            <div class="file-input-group">
+                <label for="fileInput" class="btn btn-primary">Load Recording</label>
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+                <span id="fileName">No file loaded</span>
+            </div>
+
+            <button id="flagsBtn" class="btn" style="background: #667eea; color: white; display: none;">🚩 Flags</button>
+            <button id="editTextBtn" class="btn" style="background: #9b59b6; color: white; display: none;">✏️ Edit Text</button>
+            <button id="editHtmlBtn" class="btn" style="background: #f39c12; color: white; display: none;">Edit HTML</button>
+            <span class="edit-mode-indicator" id="editModeIndicator">EDIT MODE</span>
+            <span class="edit-mode-indicator" id="textEditModeIndicator" style="background: #9b59b6;">TEXT EDIT MODE</span>
+
+            <div class="playback-info">
+                <span id="recordingInfo"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="player-container">
+        <div id="player"></div>
+        <div id="placeholder" class="placeholder">
+            <div class="placeholder-content">
+                <div class="placeholder-icon">📁</div>
+                <h2>No Recording Loaded</h2>
+                <p>Click "Load Recording" to import a recording file</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flags Panel -->
+    <div class="flags-panel" id="flagsPanel">
+        <div class="flags-panel-header">
+            <h3>🚩 Playback Flags</h3>
+            <button class="btn btn-small" onclick="closeFlagsPanel()" style="background: #e74c3c; color: white;">Close</button>
+        </div>
+        <div class="flags-list" id="flagsList">
+            <div class="empty-flags">
+                <div style="font-size: 48px; margin-bottom: 10px;">🚩</div>
+                <p>No flags yet</p>
+                <p style="font-size: 12px; margin-top: 10px;">Add flags to mark important moments in your recording</p>
+            </div>
+        </div>
+        <div class="flag-actions">
+            <div class="flag-nav-controls">
+                <button id="prevFlagBtn" class="btn btn-small" style="background: #667eea; color: white;" disabled>← Prev</button>
+                <button id="nextFlagBtn" class="btn btn-small" style="background: #667eea; color: white;" disabled>Next →</button>
+            </div>
+            <button id="addFlagBtn" class="btn btn-primary" style="width: 100%;">+ Add Flag at Current Time</button>
+            <div class="add-flag-form" id="addFlagForm">
+                <input type="text" id="flagLabelInput" placeholder="Flag label (e.g., 'Introduction')" maxlength="50">
+                <textarea id="flagDescInput" placeholder="Description (optional)"></textarea>
+                <div style="display: flex; gap: 5px;">
+                    <button id="saveFlagBtn" class="btn btn-success" style="flex: 1;">Save Flag</button>
+                    <button id="cancelFlagBtn" class="btn" style="flex: 1; background: #95a5a6; color: white;">Cancel</button>
+                </div>
+            </div>
+            <button id="exportFlagsBtn" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">Export with Flags</button>
+        </div>
+    </div>
+
+    <!-- Edit Panel -->
+    <div class="edit-panel" id="editPanel">
+        <div class="edit-panel-header">
+            <h3>HTML Editor</h3>
+            <button class="btn btn-small" onclick="closeEditPanel()" style="background: #e74c3c; color: white;">Close</button>
+        </div>
+        <div class="edit-panel-body">
+            <div class="editor-container">
+                <textarea id="htmlEditor" placeholder="Click 'Edit HTML' to load the current page HTML..."></textarea>
+            </div>
+            <div class="editor-actions">
+                <button id="applyHtmlBtn" class="btn btn-success">Apply Changes</button>
+                <button id="refreshHtmlBtn" class="btn btn-secondary">Refresh HTML</button>
+                <button id="copyHtmlBtn" class="btn" style="background: #667eea; color: white;">Copy HTML</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Edit Panel -->
+    <div class="text-edit-panel" id="textEditPanel">
+        <div class="text-edit-panel-header">
+            <h3>✏️ Live Text Editor</h3>
+            <div style="display: flex; gap: 10px;">
+                <button id="popoutEditorBtn" class="btn btn-small" style="background: #667eea; color: white;">🗗 Pop Out</button>
+                <button class="btn btn-small" onclick="closeTextEditPanel()" style="background: #e74c3c; color: white;">Close</button>
+            </div>
+        </div>
+        <div class="text-edit-panel-body">
+            <div class="html-tree-container" id="htmlTreeContainer">
+                <div style="color: #666; text-align: center; padding: 40px;">
+                    Loading HTML tree...
+                </div>
+            </div>
+            <div class="text-editor-container">
+                <div class="element-info" id="elementInfo">
+                    Select an element from the tree to edit its text
+                </div>
+                <div class="element-controls">
+                    <button id="pickerModeBtn" class="btn" style="background: #27ae60; color: white;">🎯 Pick Element from Page</button>
+                </div>
+                <div class="element-controls">
+                    <button id="hideElementBtn" class="btn" style="background: #e74c3c; color: white;" disabled>👁️ Hide Element</button>
+                    <button id="showElementBtn" class="btn" style="background: #27ae60; color: white;" disabled>👁️ Show Element</button>
+                </div>
+                <textarea id="liveTextEditor" class="live-text-editor" placeholder="Select an element to edit..."></textarea>
+                <div class="editor-actions-bottom">
+                    <button id="clearSelectionBtn" class="btn" style="background: #95a5a6; color: white;">Clear Selection</button>
+                    <button id="findTextBtn" class="btn" style="background: #667eea; color: white;">🔍 Find Text...</button>
+                    <button id="showAllBtn" class="btn" style="background: #27ae60; color: white;">Show All Hidden</button>
+                    <button id="debugHiddenBtn" class="btn" style="background: #e67e22; color: white;">🐛 Debug Hidden</button>
+                    <button id="exportEditedBtn" class="btn btn-success" style="width: 100%; margin-top: 10px;">💾 Export Edited Recording</button>
+                </div>
+                <div id="hiddenDebugPanel" style="display: none; margin-top: 15px; background: #2d2d2d; padding: 12px; border-radius: 6px; max-height: 200px; overflow-y: auto;">
+                    <div style="color: #e67e22; font-weight: bold; margin-bottom: 10px;">🐛 Hidden Elements Debug:</div>
+                    <div id="hiddenDebugList" style="font-family: 'Courier New', monospace; font-size: 11px; color: #aaa;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const recordingInfo = document.getElementById('recordingInfo');
+        const playerContainer = document.getElementById('player');
+        const placeholder = document.getElementById('placeholder');
+        const editHtmlBtn = document.getElementById('editHtmlBtn');
+        const editPanel = document.getElementById('editPanel');
+        const htmlEditor = document.getElementById('htmlEditor');
+        const editModeIndicator = document.getElementById('editModeIndicator');
+        const flagsBtn = document.getElementById('flagsBtn');
+        const flagsPanel = document.getElementById('flagsPanel');
+        const flagsList = document.getElementById('flagsList');
+        const addFlagBtn = document.getElementById('addFlagBtn');
+        const addFlagForm = document.getElementById('addFlagForm');
+        const prevFlagBtn = document.getElementById('prevFlagBtn');
+        const nextFlagBtn = document.getElementById('nextFlagBtn');
+        const editTextBtn = document.getElementById('editTextBtn');
+        const textEditModeIndicator = document.getElementById('textEditModeIndicator');
+        const textEditPanel = document.getElementById('textEditPanel');
+        const htmlTreeContainer = document.getElementById('htmlTreeContainer');
+        const liveTextEditor = document.getElementById('liveTextEditor');
+        const elementInfo = document.getElementById('elementInfo');
+        let currentPlayer = null;
+        let replayIframe = null;
+        let currentRecording = null;
+        let flags = [];
+        let currentFlagIndex = -1;
+        let textEditMode = false;
+        let currentSelectedElement = null;
+        let elementMap = new Map();
+        let hiddenElements = new Set();
+        let removedElements = new Map(); // Store removed elements with their position info: {element, parent, nextSibling, selector}
+        let selectorsToRemove = new Set(); // Track which selectors should stay removed during playback
+        let removalInterval = null;
+        let pickerMode = false;
+        let pickerTooltip = null;
+        let currentHoverElement = null;
+        let lastClickPosition = null;
+        let elementStackAtPosition = [];
+        let currentStackIndex = 0;
+        let currentOverlays = [];
+
+        // Color palette for element stack (similar to Chrome DevTools)
+        const stackColors = [
+            'rgba(103, 58, 183, 0.3)',   // Deep Purple
+            'rgba(33, 150, 243, 0.3)',   // Blue
+            'rgba(0, 188, 212, 0.3)',    // Cyan
+            'rgba(76, 175, 80, 0.3)',    // Green
+            'rgba(255, 152, 0, 0.3)',    // Orange
+            'rgba(244, 67, 54, 0.3)',    // Red
+            'rgba(233, 30, 99, 0.3)',    // Pink
+            'rgba(156, 39, 176, 0.3)',   // Purple
+        ];
+
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            fileName.textContent = file.name;
+
+            try {
+                const text = await file.text();
+                const recording = JSON.parse(text);
+
+                if (!recording.events || !Array.isArray(recording.events)) {
+                    throw new Error('Invalid recording format');
+                }
+
+                // Store current recording
+                currentRecording = recording;
+
+                // Clear hidden elements from previous recording
+                hiddenElements.clear();
+                removedElements.clear();
+                selectorsToRemove.clear();
+
+                // Stop removal interval if running
+                if (removalInterval) {
+                    clearInterval(removalInterval);
+                    removalInterval = null;
+                }
+
+                // Load flags if they exist
+                flags = recording.flags || [];
+                renderFlags();
+
+                // Update info
+                const date = new Date(recording.timestamp);
+                recordingInfo.innerHTML = `
+                    <strong>URL:</strong> ${recording.url || 'Unknown'} |
+                    <strong>Recorded:</strong> ${date.toLocaleString()} |
+                    <strong>Events:</strong> ${recording.events.length}
+                    ${flags.length > 0 ? `| <strong>Flags:</strong> ${flags.length}` : ''}
+                `;
+
+                // Clear previous player
+                if (currentPlayer) {
+                    playerContainer.innerHTML = '';
+                }
+
+                // Hide placeholder
+                placeholder.style.display = 'none';
+
+                // Create new player
+                currentPlayer = new rrwebPlayer({
+                    target: playerContainer,
+                    props: {
+                        events: recording.events,
+                        autoPlay: false,
+                        width: 1024,
+                        height: 768,
+                        showController: true,
+                        tags: {
+                            'Recording': recording.url || 'Unknown URL'
+                        }
+                    },
+                });
+
+                // Wait a bit for player to render, then find the iframe
+                setTimeout(() => {
+                    replayIframe = playerContainer.querySelector('iframe');
+                    if (replayIframe) {
+                        editHtmlBtn.style.display = 'inline-block';
+                        editTextBtn.style.display = 'inline-block';
+                        flagsBtn.style.display = 'inline-block';
+
+                        // If this is an edited recording, apply the edited HTML
+                        if (recording.edited && recording.editedHTML) {
+                            setTimeout(() => {
+                                try {
+                                    const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                                    iframeDoc.open();
+                                    iframeDoc.write(recording.editedHTML);
+                                    iframeDoc.close();
+
+                                    // Show indicator that this is edited
+                                    recordingInfo.innerHTML += ' <span style="background: #9b59b6; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">✏️ EDITED</span>';
+                                } catch (e) {
+                                    console.error('Error applying edited HTML:', e);
+                                }
+                            }, 1000);
+                        }
+                    }
+                }, 500);
+
+            } catch (error) {
+                alert('Error loading recording: ' + error.message);
+                fileName.textContent = 'Error loading file';
+                recordingInfo.textContent = '';
+                placeholder.style.display = 'flex';
+            }
+        });
+
+        // Trigger file input when label is clicked
+        document.querySelector('label[for="fileInput"]').addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Edit HTML button
+        editHtmlBtn.addEventListener('click', () => {
+            if (!replayIframe) {
+                alert('No replay iframe found. Make sure a recording is loaded.');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                const currentHtml = iframeDoc.documentElement.outerHTML;
+                htmlEditor.value = formatHtml(currentHtml);
+                editPanel.classList.add('open');
+                playerContainer.classList.add('editing');
+                editModeIndicator.classList.add('active');
+            } catch (error) {
+                alert('Unable to access iframe content: ' + error.message);
+            }
+        });
+
+        // Apply HTML changes
+        document.getElementById('applyHtmlBtn').addEventListener('click', () => {
+            if (!replayIframe) {
+                alert('No replay iframe found.');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                const newHtml = htmlEditor.value;
+
+                // Replace the entire document
+                iframeDoc.open();
+                iframeDoc.write(newHtml);
+                iframeDoc.close();
+
+                alert('HTML applied successfully!');
+            } catch (error) {
+                alert('Error applying HTML: ' + error.message);
+            }
+        });
+
+        // Refresh HTML from iframe
+        document.getElementById('refreshHtmlBtn').addEventListener('click', () => {
+            if (!replayIframe) {
+                alert('No replay iframe found.');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                const currentHtml = iframeDoc.documentElement.outerHTML;
+                htmlEditor.value = formatHtml(currentHtml);
+            } catch (error) {
+                alert('Error refreshing HTML: ' + error.message);
+            }
+        });
+
+        // Copy HTML to clipboard
+        document.getElementById('copyHtmlBtn').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(htmlEditor.value);
+                alert('HTML copied to clipboard!');
+            } catch (error) {
+                alert('Failed to copy to clipboard: ' + error.message);
+            }
+        });
+
+        // Close edit panel
+        function closeEditPanel() {
+            editPanel.classList.remove('open');
+            playerContainer.classList.remove('editing');
+            editModeIndicator.classList.remove('active');
+        }
+
+        // Format HTML for better readability (basic indentation)
+        function formatHtml(html) {
+            // Simple formatting - just add line breaks after tags
+            let formatted = html.replace(/></g, '>\n<');
+            return formatted;
+        }
+
+        // Keyboard shortcut: ESC to close panel
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (editPanel.classList.contains('open')) {
+                    closeEditPanel();
+                }
+                if (flagsPanel.classList.contains('open')) {
+                    closeFlagsPanel();
+                }
+            }
+        });
+
+        // FLAGS FUNCTIONALITY
+
+        // Toggle flags panel
+        flagsBtn.addEventListener('click', () => {
+            flagsPanel.classList.toggle('open');
+            if (flagsPanel.classList.contains('open')) {
+                playerContainer.classList.add('with-flags');
+            } else {
+                playerContainer.classList.remove('with-flags');
+            }
+        });
+
+        // Close flags panel
+        function closeFlagsPanel() {
+            flagsPanel.classList.remove('open');
+            playerContainer.classList.remove('with-flags');
+        }
+
+        // Show add flag form
+        addFlagBtn.addEventListener('click', () => {
+            addFlagForm.classList.add('active');
+            document.getElementById('flagLabelInput').focus();
+        });
+
+        // Cancel add flag
+        document.getElementById('cancelFlagBtn').addEventListener('click', () => {
+            addFlagForm.classList.remove('active');
+            document.getElementById('flagLabelInput').value = '';
+            document.getElementById('flagDescInput').value = '';
+        });
+
+        // Save flag
+        document.getElementById('saveFlagBtn').addEventListener('click', () => {
+            const label = document.getElementById('flagLabelInput').value.trim();
+            if (!label) {
+                alert('Please enter a flag label');
+                return;
+            }
+
+            const currentTime = getCurrentTime();
+            const description = document.getElementById('flagDescInput').value.trim();
+
+            const flag = {
+                id: Date.now(),
+                time: currentTime,
+                label: label,
+                description: description
+            };
+
+            flags.push(flag);
+            flags.sort((a, b) => a.time - b.time);
+            renderFlags();
+            updateFlagNavButtons();
+
+            // Close form and clear inputs
+            addFlagForm.classList.remove('active');
+            document.getElementById('flagLabelInput').value = '';
+            document.getElementById('flagDescInput').value = '';
+
+            // Update recording info
+            updateRecordingInfo();
+        });
+
+        // Get current playback time from player
+        function getCurrentTime() {
+            try {
+                // Try to get the current time from the rrweb player
+                const controller = playerContainer.querySelector('.rr-controller');
+                if (controller) {
+                    const timeDisplay = controller.querySelector('.rr-timeline__time');
+                    if (timeDisplay) {
+                        const text = timeDisplay.textContent;
+                        // Parse time from format like "00:05 / 01:30"
+                        const currentPart = text.split('/')[0].trim();
+                        const parts = currentPart.split(':');
+                        return parseInt(parts[0]) * 60 * 1000 + parseInt(parts[1]) * 1000;
+                    }
+                }
+            } catch (e) {
+                console.error('Error getting current time:', e);
+            }
+            return 0;
+        }
+
+        // Go to specific time in player
+        function goToTime(timeMs) {
+            try {
+                // Access the player's goto method if available
+                if (currentPlayer && currentPlayer.goto) {
+                    currentPlayer.goto(timeMs);
+                }
+            } catch (e) {
+                console.error('Error seeking to time:', e);
+            }
+        }
+
+        // Render flags list
+        function renderFlags() {
+            if (flags.length === 0) {
+                flagsList.innerHTML = `
+                    <div class="empty-flags">
+                        <div style="font-size: 48px; margin-bottom: 10px;">🚩</div>
+                        <p>No flags yet</p>
+                        <p style="font-size: 12px; margin-top: 10px;">Add flags to mark important moments in your recording</p>
+                    </div>
+                `;
+                return;
+            }
+
+            flagsList.innerHTML = flags.map((flag, index) => `
+                <div class="flag-item" data-flag-id="${flag.id}" data-flag-index="${index}">
+                    <div class="flag-item-header">
+                        <span class="flag-label">${flag.label}</span>
+                        <span class="flag-time">${formatTime(flag.time)}</span>
+                        <button class="flag-delete" onclick="deleteFlag(${flag.id})">×</button>
+                    </div>
+                    ${flag.description ? `<div class="flag-description">${flag.description}</div>` : ''}
+                </div>
+            `).join('');
+
+            // Add click handlers to flag items
+            document.querySelectorAll('.flag-item').forEach((item, index) => {
+                item.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('flag-delete')) return;
+                    currentFlagIndex = index;
+                    goToTime(flags[index].time);
+                    updateActiveFlagUI();
+                });
+            });
+
+            updateFlagNavButtons();
+        }
+
+        // Delete flag
+        function deleteFlag(flagId) {
+            if (confirm('Delete this flag?')) {
+                flags = flags.filter(f => f.id !== flagId);
+                renderFlags();
+                updateRecordingInfo();
+            }
+        }
+
+        // Format time in ms to MM:SS
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Navigate to previous flag
+        prevFlagBtn.addEventListener('click', () => {
+            if (currentFlagIndex > 0) {
+                currentFlagIndex--;
+                goToTime(flags[currentFlagIndex].time);
+                updateActiveFlagUI();
+            }
+        });
+
+        // Navigate to next flag
+        nextFlagBtn.addEventListener('click', () => {
+            if (currentFlagIndex < flags.length - 1) {
+                currentFlagIndex++;
+                goToTime(flags[currentFlagIndex].time);
+                updateActiveFlagUI();
+            }
+        });
+
+        // Update flag navigation buttons
+        function updateFlagNavButtons() {
+            prevFlagBtn.disabled = flags.length === 0 || currentFlagIndex <= 0;
+            nextFlagBtn.disabled = flags.length === 0 || currentFlagIndex >= flags.length - 1;
+        }
+
+        // Update active flag UI
+        function updateActiveFlagUI() {
+            document.querySelectorAll('.flag-item').forEach((item, index) => {
+                if (index === currentFlagIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            updateFlagNavButtons();
+        }
+
+        // Export recording with flags
+        document.getElementById('exportFlagsBtn').addEventListener('click', () => {
+            if (!currentRecording) {
+                alert('No recording loaded');
+                return;
+            }
+
+            const recordingWithFlags = {
+                ...currentRecording,
+                flags: flags
+            };
+
+            const blob = new Blob([JSON.stringify(recordingWithFlags, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recording-with-flags-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Update recording info
+        function updateRecordingInfo() {
+            if (!currentRecording) return;
+            const date = new Date(currentRecording.timestamp);
+            recordingInfo.innerHTML = `
+                <strong>URL:</strong> ${currentRecording.url || 'Unknown'} |
+                <strong>Recorded:</strong> ${date.toLocaleString()} |
+                <strong>Events:</strong> ${currentRecording.events.length}
+                ${flags.length > 0 ? `| <strong>Flags:</strong> ${flags.length}` : ''}
+            `;
+        }
+
+        // Keyboard shortcuts for flag navigation
+        document.addEventListener('keydown', (e) => {
+            // Don't trigger if typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === '[' || e.key === 'ArrowLeft') {
+                // Previous flag
+                if (currentFlagIndex > 0) {
+                    prevFlagBtn.click();
+                }
+            } else if (e.key === ']' || e.key === 'ArrowRight') {
+                // Next flag
+                if (currentFlagIndex < flags.length - 1) {
+                    nextFlagBtn.click();
+                }
+            }
+        });
+
+        // TEXT EDITING FUNCTIONALITY
+
+        // Toggle text edit panel
+        editTextBtn.addEventListener('click', () => {
+            textEditMode = !textEditMode;
+
+            if (textEditMode) {
+                openTextEditPanel();
+            } else {
+                closeTextEditPanel();
+            }
+        });
+
+        function openTextEditPanel() {
+            if (!replayIframe) {
+                alert('No replay iframe found');
+                textEditMode = false;
+                return;
+            }
+
+            try {
+                textEditPanel.classList.add('open');
+                playerContainer.classList.add('with-text-editor');
+                editTextBtn.textContent = '✏️ Exit Text Edit';
+                editTextBtn.style.background = '#e74c3c';
+                textEditModeIndicator.classList.add('active');
+
+                // Build HTML tree
+                buildHtmlTree();
+
+            } catch (error) {
+                alert('Error opening text editor: ' + error.message);
+                textEditMode = false;
+            }
+        }
+
+        function closeTextEditPanel() {
+            textEditPanel.classList.remove('open');
+            playerContainer.classList.remove('with-text-editor');
+            editTextBtn.textContent = '✏️ Edit Text';
+            editTextBtn.style.background = '#9b59b6';
+            textEditModeIndicator.classList.remove('active');
+            textEditMode = false;
+
+            // Clear selection
+            clearElementSelection();
+
+            // Keep observer running to maintain hidden elements
+            // Don't disconnect it here
+        }
+
+        function buildHtmlTree() {
+            const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+            elementMap.clear();
+
+            htmlTreeContainer.innerHTML = '';
+
+            // Build tree from body
+            traverseAndBuildTree(iframeDoc.body, htmlTreeContainer, 0);
+        }
+
+        function traverseAndBuildTree(element, container, depth) {
+            // Skip script, style, svg
+            if (['SCRIPT', 'STYLE', 'SVG', 'NOSCRIPT'].includes(element.tagName)) return;
+
+            const elementId = 'elem_' + Math.random().toString(36).substr(2, 9);
+            elementMap.set(elementId, element);
+
+            // Get text content (direct children only)
+            let textContent = '';
+            for (let child of element.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    textContent += child.textContent;
+                }
+            }
+            textContent = textContent.trim();
+
+            const hasText = textContent.length > 0;
+
+            // Create tree item
+            const item = document.createElement('div');
+            item.className = 'html-tree-item' + (hasText ? ' has-text' : '');
+            item.dataset.elementId = elementId;
+
+            // Indentation
+            const indent = '<span class="element-indent"></span>'.repeat(depth);
+
+            // Build display
+            const tag = element.tagName.toLowerCase();
+            let display = indent + '<span class="element-tag">&lt;' + tag + '&gt;</span>';
+
+            if (hasText) {
+                const preview = textContent.length > 50 ? textContent.substring(0, 50) + '...' : textContent;
+                display += '<span class="element-text-preview">"' + preview + '"</span>';
+            }
+
+            item.innerHTML = display;
+
+            // Click handler
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(elementId);
+            });
+
+            container.appendChild(item);
+
+            // Process children
+            Array.from(element.children).forEach(child => {
+                traverseAndBuildTree(child, container, depth + 1);
+            });
+        }
+
+        function selectElement(elementId) {
+            const element = elementMap.get(elementId);
+            if (!element) return;
+
+            // Clear previous selection
+            clearElementSelection();
+
+            // Mark as selected in tree
+            const treeItem = htmlTreeContainer.querySelector(`[data-element-id="${elementId}"]`);
+            if (treeItem) {
+                treeItem.classList.add('selected');
+                treeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Highlight on page
+            element.classList.add('text-edit-highlight');
+
+            // Scroll element into view
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Update editor
+            currentSelectedElement = element;
+            updateEditor();
+        }
+
+        function clearElementSelection() {
+            // Clear tree selection
+            htmlTreeContainer.querySelectorAll('.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Clear page highlight
+            if (replayIframe) {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                iframeDoc.querySelectorAll('.text-edit-highlight').forEach(el => {
+                    el.classList.remove('text-edit-highlight');
+                });
+            }
+
+            // Clear editor
+            currentSelectedElement = null;
+            liveTextEditor.value = '';
+            elementInfo.textContent = 'Select an element from the tree to edit its text';
+        }
+
+        function updateEditor() {
+            if (!currentSelectedElement) return;
+
+            // Get text content
+            let textContent = '';
+            for (let child of currentSelectedElement.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    textContent += child.textContent;
+                }
+            }
+
+            liveTextEditor.value = textContent;
+
+            // Update info
+            const tag = currentSelectedElement.tagName.toLowerCase();
+            const classes = currentSelectedElement.className ? '.' + currentSelectedElement.className.split(' ').join('.') : '';
+            const id = currentSelectedElement.id ? '#' + currentSelectedElement.id : '';
+            elementInfo.textContent = `Editing: <${tag}${id}${classes}>`;
+
+            // Update hide/show buttons
+            const isHidden = hiddenElements.has(currentSelectedElement);
+            document.getElementById('hideElementBtn').disabled = isHidden;
+            document.getElementById('showElementBtn').disabled = !isHidden;
+        }
+
+        // Live text editing
+        liveTextEditor.addEventListener('input', () => {
+            if (!currentSelectedElement) return;
+
+            const newText = liveTextEditor.value;
+
+            // Update only text nodes (preserve child elements)
+            const textNodes = [];
+            for (let child of currentSelectedElement.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    textNodes.push(child);
+                }
+            }
+
+            // Replace text content
+            if (textNodes.length > 0) {
+                textNodes[0].textContent = newText;
+                // Remove other text nodes
+                for (let i = 1; i < textNodes.length; i++) {
+                    textNodes[i].textContent = '';
+                }
+            } else {
+                // No text nodes, add one at the beginning
+                currentSelectedElement.insertBefore(
+                    document.createTextNode(newText),
+                    currentSelectedElement.firstChild
+                );
+            }
+        });
+
+        // Clear selection button
+        document.getElementById('clearSelectionBtn').addEventListener('click', () => {
+            clearElementSelection();
+        });
+
+        // Find text button
+        document.getElementById('findTextBtn').addEventListener('click', () => {
+            const searchText = prompt('Enter text to find:');
+            if (!searchText) return;
+
+            const searchLower = searchText.toLowerCase();
+
+            // Find in element map
+            for (let [elementId, element] of elementMap) {
+                let textContent = '';
+                for (let child of element.childNodes) {
+                    if (child.nodeType === Node.TEXT_NODE) {
+                        textContent += child.textContent;
+                    }
+                }
+
+                if (textContent.toLowerCase().includes(searchLower)) {
+                    selectElement(elementId);
+                    return;
+                }
+            }
+
+            alert('Text not found');
+        });
+
+        // Continuously remove elements that match selectors to remove
+        function startRemovalMonitoring() {
+            // Stop existing interval if any
+            if (removalInterval) {
+                clearInterval(removalInterval);
+            }
+
+            // Only start if we have selectors to remove
+            if (selectorsToRemove.size === 0) return;
+
+            removalInterval = setInterval(() => {
+                if (!replayIframe || selectorsToRemove.size === 0) return;
+
+                try {
+                    const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                    selectorsToRemove.forEach(selector => {
+                        try {
+                            const elements = iframeDoc.querySelectorAll(selector);
+                            elements.forEach(el => {
+                                if (el && el.parentElement) {
+                                    el.remove();
+                                }
+                            });
+                        } catch (e) {
+                            console.warn('Error removing element with selector:', selector, e);
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Error accessing iframe:', e);
+                }
+            }, 50); // Check every 50ms for fast response
+        }
+
+        // Generate unique CSS selector for an element
+        function getElementSelector(element) {
+            if (element.id) {
+                return '#' + element.id;
+            }
+
+            const tag = element.tagName.toLowerCase();
+            const classes = element.className ? '.' + element.className.trim().split(/\s+/).join('.') : '';
+
+            // Try to make it unique with parent context
+            let selector = tag + classes;
+
+            // If not unique, add nth-child
+            if (classes && document.querySelectorAll(selector).length > 1) {
+                const parent = element.parentElement;
+                if (parent) {
+                    const siblings = Array.from(parent.children);
+                    const index = siblings.indexOf(element) + 1;
+                    const parentTag = parent.tagName.toLowerCase();
+                    const parentId = parent.id ? '#' + parent.id : '';
+                    const parentClasses = parent.className ? '.' + parent.className.trim().split(/\s+/).join('.') : '';
+                    selector = `${parentTag}${parentId}${parentClasses} > ${selector}:nth-child(${index})`;
+                }
+            }
+
+            return selector;
+        }
+
+        // Hide element button
+        document.getElementById('hideElementBtn').addEventListener('click', () => {
+            if (!currentSelectedElement) return;
+
+            // Generate selector for this element
+            const selector = getElementSelector(currentSelectedElement);
+
+            // Store element info for restoration
+            const parent = currentSelectedElement.parentElement;
+            const nextSibling = currentSelectedElement.nextSibling;
+            const elementClone = currentSelectedElement.cloneNode(true);
+
+            removedElements.set(selector, {
+                element: elementClone,
+                parent: parent,
+                nextSibling: nextSibling,
+                selector: selector
+            });
+
+            // Add to selectors that should stay removed
+            selectorsToRemove.add(selector);
+
+            // Remove from DOM completely
+            currentSelectedElement.remove();
+            hiddenElements.add(currentSelectedElement); // Keep for UI state tracking
+
+            // Start monitoring to keep it removed
+            startRemovalMonitoring();
+
+            // Mark in tree
+            const elementId = getElementId(currentSelectedElement);
+            if (elementId) {
+                const treeItem = htmlTreeContainer.querySelector(`[data-element-id="${elementId}"]`);
+                if (treeItem) {
+                    treeItem.classList.add('element-hidden');
+                }
+            }
+
+            // Update buttons
+            updateEditor();
+        });
+
+        // Show element button
+        document.getElementById('showElementBtn').addEventListener('click', () => {
+            if (!currentSelectedElement) return;
+
+            // Get selector
+            const selector = getElementSelector(currentSelectedElement);
+
+            // Remove from tracking so it won't be removed anymore
+            selectorsToRemove.delete(selector);
+
+            // Stop monitoring if no more selectors
+            if (selectorsToRemove.size === 0 && removalInterval) {
+                clearInterval(removalInterval);
+                removalInterval = null;
+            }
+
+            // Restore element from removed elements
+            const removedInfo = removedElements.get(selector);
+            if (removedInfo) {
+                const { element, parent, nextSibling } = removedInfo;
+
+                // Re-insert element at its original position
+                if (parent) {
+                    if (nextSibling && nextSibling.parentElement === parent) {
+                        parent.insertBefore(element, nextSibling);
+                    } else {
+                        parent.appendChild(element);
+                    }
+                }
+
+                removedElements.delete(selector);
+            }
+
+            hiddenElements.delete(currentSelectedElement); // Keep UI state in sync
+
+            // Unmark in tree
+            const elementId = getElementId(currentSelectedElement);
+            if (elementId) {
+                const treeItem = htmlTreeContainer.querySelector(`[data-element-id="${elementId}"]`);
+                if (treeItem) {
+                    treeItem.classList.remove('element-hidden');
+                }
+            }
+
+            // Update buttons
+            updateEditor();
+        });
+
+        // Show all hidden elements
+        document.getElementById('showAllBtn').addEventListener('click', () => {
+            if (removedElements.size === 0 && hiddenElements.size === 0) {
+                alert('No hidden elements');
+                return;
+            }
+
+            const count = Math.max(removedElements.size, hiddenElements.size);
+
+            // Stop monitoring
+            selectorsToRemove.clear();
+            if (removalInterval) {
+                clearInterval(removalInterval);
+                removalInterval = null;
+            }
+
+            // Restore all removed elements
+            removedElements.forEach((removedInfo, selector) => {
+                const { element, parent, nextSibling } = removedInfo;
+
+                // Re-insert element at its original position
+                if (parent) {
+                    if (nextSibling && nextSibling.parentElement === parent) {
+                        parent.insertBefore(element, nextSibling);
+                    } else {
+                        parent.appendChild(element);
+                    }
+                }
+            });
+
+            // Clear both sets
+            removedElements.clear();
+            hiddenElements.clear();
+
+            // Update tree
+            htmlTreeContainer.querySelectorAll('.element-hidden').forEach(item => {
+                item.classList.remove('element-hidden');
+            });
+
+            alert(`Showed ${count} hidden element(s)`);
+
+            // Update buttons
+            if (currentSelectedElement) {
+                updateEditor();
+            }
+        });
+
+
+        // Helper function to get element ID from the map
+        function getElementId(element) {
+            for (let [id, el] of elementMap) {
+                if (el === element) {
+                    return id;
+                }
+            }
+            return null;
+        }
+
+        // Export edited recording
+        document.getElementById('exportEditedBtn').addEventListener('click', () => {
+            if (!currentRecording || !replayIframe) {
+                alert('No recording loaded or iframe not available');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                const editedHTML = iframeDoc.documentElement.outerHTML;
+
+                // Create edited recording with the modified HTML
+                const editedRecording = {
+                    ...currentRecording,
+                    edited: true,
+                    editedHTML: editedHTML,
+                    editedTimestamp: new Date().toISOString(),
+                    flags: flags // Include current flags
+                };
+
+                // Export as JSON
+                const blob = new Blob([JSON.stringify(editedRecording, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `recording-edited-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert('Edited recording exported successfully! All text changes and hidden elements are preserved.');
+            } catch (error) {
+                alert('Error exporting edited recording: ' + error.message);
+            }
+        });
+
+        // POP-OUT EDITOR WINDOW
+        let editorPopup = null;
+
+        document.getElementById('popoutEditorBtn').addEventListener('click', () => {
+            if (editorPopup && !editorPopup.closed) {
+                editorPopup.focus();
+                return;
+            }
+
+            // Create popup window
+            editorPopup = window.open('', 'TextEditor', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
+
+            if (!editorPopup) {
+                alert('Popup blocked! Please allow popups for this site.');
+                return;
+            }
+
+            // Build popup HTML
+            editorPopup.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Text Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .popup-header {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-bottom: 2px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .popup-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .popup-body {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .html-tree-container {
+            width: 50%;
+            border-right: 2px solid #444;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .html-tree-item {
+            padding: 8px 10px;
+            margin: 2px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            transition: background 0.2s;
+        }
+
+        .html-tree-item:hover {
+            background: #2d2d2d;
+        }
+
+        .html-tree-item.selected {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .html-tree-item.has-text {
+            color: #9cdcfe;
+        }
+
+        .html-tree-item.element-hidden {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .html-tree-item.element-hidden .element-tag {
+            color: #e74c3c;
+        }
+
+        .element-tag {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+
+        .element-text-preview {
+            color: #ce9178;
+            margin-left: 10px;
+            font-style: italic;
+        }
+
+        .element-indent {
+            display: inline-block;
+            width: 20px;
+        }
+
+        .text-editor-container {
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+        }
+
+        .element-info {
+            background: #2d2d2d;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #9cdcfe;
+            font-size: 13px;
+        }
+
+        .element-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .element-controls button {
+            flex: 1;
+        }
+
+        .live-text-editor {
+            flex: 1;
+            background: #1e1e1e;
+            border: 2px solid #444;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+        }
+
+        .live-text-editor:focus {
+            outline: none;
+            border-color: #9b59b6;
+        }
+
+        .editor-actions-bottom {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-header">
+        <h3>✏️ Live Text Editor</h3>
+        <span style="color: #666; font-size: 12px;">Connected to main window</span>
+    </div>
+    <div class="popup-body">
+        <div class="html-tree-container" id="htmlTreeContainer">
+            <div style="color: #666; text-align: center; padding: 40px;">
+                Loading HTML tree...
+            </div>
+        </div>
+        <div class="text-editor-container">
+            <div class="element-info" id="elementInfo">
+                Select an element from the tree to edit its text
+            </div>
+            <div class="element-controls">
+                <button id="pickerModeBtn" class="btn" style="background: #27ae60; color: white;">🎯 Pick Element from Page</button>
+            </div>
+            <div class="element-controls">
+                <button id="hideElementBtn" class="btn" style="background: #e74c3c; color: white;" disabled>👁️ Hide Element</button>
+                <button id="showElementBtn" class="btn" style="background: #27ae60; color: white;" disabled>👁️ Show Element</button>
+            </div>
+            <textarea id="liveTextEditor" class="live-text-editor" placeholder="Select an element to edit..."></textarea>
+            <div class="editor-actions-bottom">
+                <button id="clearSelectionBtn" class="btn" style="background: #95a5a6; color: white;">Clear Selection</button>
+                <button id="findTextBtn" class="btn" style="background: #667eea; color: white;">🔍 Find Text...</button>
+                <button id="showAllBtn" class="btn" style="background: #27ae60; color: white;">Show All Hidden</button>
+                <button id="exportEditedBtn" class="btn" style="background: #27ae60; color: white; flex: 1;">💾 Export Edited Recording</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            `);
+
+            // Close inline panel
+            closeTextEditPanel();
+
+            // Setup popup
+            setupPopupEditor();
+        });
+
+        function setupPopupEditor() {
+            if (!editorPopup || editorPopup.closed) return;
+
+            const popupDoc = editorPopup.document;
+
+            // Populate tree in popup
+            const popupTreeContainer = popupDoc.getElementById('htmlTreeContainer');
+            popupTreeContainer.innerHTML = htmlTreeContainer.innerHTML;
+
+            // Sync element map and hidden elements are already in parent window
+
+            // Add click handlers to tree items in popup
+            popupDoc.querySelectorAll('.html-tree-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const elementId = item.dataset.elementId;
+                    selectElementFromPopup(elementId);
+                });
+            });
+
+            // Live text editor in popup
+            const popupTextEditor = popupDoc.getElementById('liveTextEditor');
+            popupTextEditor.addEventListener('input', () => {
+                if (!currentSelectedElement) return;
+
+                const newText = popupTextEditor.value;
+
+                // Update text in main window iframe
+                const textNodes = [];
+                for (let child of currentSelectedElement.childNodes) {
+                    if (child.nodeType === Node.TEXT_NODE) {
+                        textNodes.push(child);
+                    }
+                }
+
+                if (textNodes.length > 0) {
+                    textNodes[0].textContent = newText;
+                    for (let i = 1; i < textNodes.length; i++) {
+                        textNodes[i].textContent = '';
+                    }
+                } else {
+                    currentSelectedElement.insertBefore(
+                        document.createTextNode(newText),
+                        currentSelectedElement.firstChild
+                    );
+                }
+            });
+
+            // Picker mode button
+            popupDoc.getElementById('pickerModeBtn').addEventListener('click', () => {
+                window.focus(); // Focus main window
+                pickerMode = !pickerMode;
+                if (pickerMode) {
+                    enablePickerMode();
+                    popupDoc.getElementById('pickerModeBtn').textContent = '🎯 Exit Picker Mode';
+                    popupDoc.getElementById('pickerModeBtn').style.background = '#e74c3c';
+                } else {
+                    disablePickerMode();
+                    popupDoc.getElementById('pickerModeBtn').textContent = '🎯 Pick Element from Page';
+                    popupDoc.getElementById('pickerModeBtn').style.background = '#27ae60';
+                }
+            });
+
+            // Hide element button
+            popupDoc.getElementById('hideElementBtn').addEventListener('click', () => {
+                if (!currentSelectedElement) return;
+
+                // Generate selector for this element
+                const selector = getElementSelector(currentSelectedElement);
+
+                // Store element info for restoration
+                const parent = currentSelectedElement.parentElement;
+                const nextSibling = currentSelectedElement.nextSibling;
+                const elementClone = currentSelectedElement.cloneNode(true);
+
+                removedElements.set(selector, {
+                    element: elementClone,
+                    parent: parent,
+                    nextSibling: nextSibling,
+                    selector: selector
+                });
+
+                // Add to selectors that should stay removed
+                selectorsToRemove.add(selector);
+
+                // Remove from DOM completely
+                currentSelectedElement.remove();
+                hiddenElements.add(currentSelectedElement); // Keep for UI state tracking
+
+                // Start monitoring to keep it removed
+                startRemovalMonitoring();
+
+                const elementId = getElementId(currentSelectedElement);
+                if (elementId) {
+                    const treeItem = popupTreeContainer.querySelector('[data-element-id="' + elementId + '"]');
+                    if (treeItem) treeItem.classList.add('element-hidden');
+                }
+                updatePopupEditor();
+            });
+
+            // Show element button
+            popupDoc.getElementById('showElementBtn').addEventListener('click', () => {
+                if (!currentSelectedElement) return;
+
+                // Get selector
+                const selector = getElementSelector(currentSelectedElement);
+
+                // Restore element from removed elements
+                const removedInfo = removedElements.get(selector);
+                if (removedInfo) {
+                    const { element, parent, nextSibling } = removedInfo;
+
+                    // Re-insert element at its original position
+                    if (parent) {
+                        if (nextSibling && nextSibling.parentElement === parent) {
+                            parent.insertBefore(element, nextSibling);
+                        } else {
+                            parent.appendChild(element);
+                        }
+                    }
+
+                    removedElements.delete(selector);
+                }
+
+                hiddenElements.delete(currentSelectedElement); // Keep UI state in sync
+
+                const elementId = getElementId(currentSelectedElement);
+                if (elementId) {
+                    const treeItem = popupTreeContainer.querySelector('[data-element-id="' + elementId + '"]');
+                    if (treeItem) treeItem.classList.remove('element-hidden');
+                }
+                updatePopupEditor();
+            });
+
+            // Clear selection button
+            popupDoc.getElementById('clearSelectionBtn').addEventListener('click', () => {
+                clearElementSelectionFromPopup();
+            });
+
+            // Find text button
+            popupDoc.getElementById('findTextBtn').addEventListener('click', () => {
+                const searchText = editorPopup.prompt('Enter text to find:');
+                if (!searchText) return;
+
+                const searchLower = searchText.toLowerCase();
+
+                for (let [elementId, element] of elementMap) {
+                    let textContent = '';
+                    for (let child of element.childNodes) {
+                        if (child.nodeType === Node.TEXT_NODE) {
+                            textContent += child.textContent;
+                        }
+                    }
+
+                    if (textContent.toLowerCase().includes(searchLower)) {
+                        selectElementFromPopup(elementId);
+                        return;
+                    }
+                }
+
+                editorPopup.alert('Text not found');
+            });
+
+            // Show all hidden button
+            popupDoc.getElementById('showAllBtn').addEventListener('click', () => {
+                if (removedElements.size === 0 && hiddenElements.size === 0) {
+                    editorPopup.alert('No hidden elements');
+                    return;
+                }
+
+                const count = Math.max(removedElements.size, hiddenElements.size);
+
+                // Restore all removed elements
+                removedElements.forEach((removedInfo, selector) => {
+                    const { element, parent, nextSibling } = removedInfo;
+
+                    // Re-insert element at its original position
+                    if (parent) {
+                        if (nextSibling && nextSibling.parentElement === parent) {
+                            parent.insertBefore(element, nextSibling);
+                        } else {
+                            parent.appendChild(element);
+                        }
+                    }
+                });
+
+                // Clear both sets
+                removedElements.clear();
+                hiddenElements.clear();
+
+                popupTreeContainer.querySelectorAll('.element-hidden').forEach(item => {
+                    item.classList.remove('element-hidden');
+                });
+
+                editorPopup.alert('Showed ' + count + ' hidden element(s)');
+                if (currentSelectedElement) {
+                    updatePopupEditor();
+                }
+            });
+
+            // Export edited button
+            popupDoc.getElementById('exportEditedBtn').addEventListener('click', () => {
+                if (!currentRecording || !replayIframe) {
+                    editorPopup.alert('No recording loaded or iframe not available');
+                    return;
+                }
+
+                try {
+                    const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                    const editedHTML = iframeDoc.documentElement.outerHTML;
+
+                    const editedRecording = {
+                        ...currentRecording,
+                        edited: true,
+                        editedHTML: editedHTML,
+                        editedTimestamp: new Date().toISOString(),
+                        flags: flags
+                    };
+
+                    const blob = new Blob([JSON.stringify(editedRecording, null, 2)], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = editorPopup.document.createElement('a');
+                    a.href = url;
+                    a.download = 'recording-edited-' + Date.now() + '.json';
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    editorPopup.alert('Edited recording exported successfully!');
+                } catch (error) {
+                    editorPopup.alert('Error exporting: ' + error.message);
+                }
+            });
+
+            // Watch for popup close
+            const checkPopupClosed = setInterval(() => {
+                if (editorPopup.closed) {
+                    clearInterval(checkPopupClosed);
+                    editorPopup = null;
+                }
+            }, 1000);
+        }
+
+        function selectElementFromPopup(elementId) {
+            const element = elementMap.get(elementId);
+            if (!element) return;
+
+            // Clear previous selection in both windows
+            clearElementSelectionFromPopup();
+
+            // Highlight in main window
+            element.classList.add('text-edit-highlight');
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            currentSelectedElement = element;
+
+            // Update popup tree
+            if (editorPopup && !editorPopup.closed) {
+                const popupDoc = editorPopup.document;
+                const treeItem = popupDoc.querySelector('[data-element-id="' + elementId + '"]');
+                if (treeItem) {
+                    treeItem.classList.add('selected');
+                    treeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                updatePopupEditor();
+            }
+        }
+
+        function clearElementSelectionFromPopup() {
+            if (editorPopup && !editorPopup.closed) {
+                const popupDoc = editorPopup.document;
+                popupDoc.querySelectorAll('.selected').forEach(item => {
+                    item.classList.remove('selected');
+                });
+
+                popupDoc.getElementById('liveTextEditor').value = '';
+                popupDoc.getElementById('elementInfo').textContent = 'Select an element from the tree to edit its text';
+                popupDoc.getElementById('hideElementBtn').disabled = true;
+                popupDoc.getElementById('showElementBtn').disabled = true;
+            }
+
+            if (replayIframe) {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+                iframeDoc.querySelectorAll('.text-edit-highlight').forEach(el => {
+                    el.classList.remove('text-edit-highlight');
+                });
+            }
+
+            currentSelectedElement = null;
+        }
+
+        function updatePopupEditor() {
+            if (!editorPopup || editorPopup.closed || !currentSelectedElement) return;
+
+            const popupDoc = editorPopup.document;
+
+            // Get text content
+            let textContent = '';
+            for (let child of currentSelectedElement.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    textContent += child.textContent;
+                }
+            }
+
+            popupDoc.getElementById('liveTextEditor').value = textContent;
+
+            const tag = currentSelectedElement.tagName.toLowerCase();
+            const classes = currentSelectedElement.className ? '.' + currentSelectedElement.className.split(' ').join('.') : '';
+            const id = currentSelectedElement.id ? '#' + currentSelectedElement.id : '';
+            popupDoc.getElementById('elementInfo').textContent = 'Editing: <' + tag + id + classes + '>';
+
+            const isHidden = hiddenElements.has(currentSelectedElement);
+            popupDoc.getElementById('hideElementBtn').disabled = isHidden;
+            popupDoc.getElementById('showElementBtn').disabled = !isHidden;
+        }
+
+        // ELEMENT PICKER MODE
+
+        // Toggle picker mode
+        document.getElementById('pickerModeBtn').addEventListener('click', () => {
+            pickerMode = !pickerMode;
+
+            if (pickerMode) {
+                enablePickerMode();
+            } else {
+                disablePickerMode();
+            }
+        });
+
+        function enablePickerMode() {
+            if (!replayIframe) {
+                alert('No replay iframe found');
+                pickerMode = false;
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Add picker mode class
+                iframeDoc.body.classList.add('element-picker-mode');
+
+                // Create tooltip
+                pickerTooltip = document.createElement('div');
+                pickerTooltip.className = 'picker-tooltip';
+                pickerTooltip.style.display = 'none';
+                document.body.appendChild(pickerTooltip);
+
+                // Add event listeners to iframe
+                iframeDoc.addEventListener('mousemove', handlePickerMouseMove);
+                iframeDoc.addEventListener('click', handlePickerClick);
+
+                // Update button
+                document.getElementById('pickerModeBtn').textContent = '🎯 Exit Picker Mode';
+                document.getElementById('pickerModeBtn').style.background = '#e74c3c';
+                elementInfo.textContent = '🎯 PICKER MODE: Click on any element on the page to select it';
+                elementInfo.style.background = '#27ae60';
+                elementInfo.style.color = 'white';
+
+            } catch (error) {
+                alert('Error enabling picker mode: ' + error.message);
+                pickerMode = false;
+            }
+        }
+
+        function disablePickerMode() {
+            if (!replayIframe) return;
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Remove picker mode class
+                iframeDoc.body.classList.remove('element-picker-mode');
+
+                // Remove event listeners
+                iframeDoc.removeEventListener('mousemove', handlePickerMouseMove);
+                iframeDoc.removeEventListener('click', handlePickerClick);
+
+                // Remove hover highlight
+                if (currentHoverElement) {
+                    currentHoverElement.classList.remove('element-picker-hover');
+                    currentHoverElement = null;
+                }
+
+                // Clear overlays
+                currentOverlays.forEach(overlay => overlay.remove());
+                currentOverlays = [];
+
+                // Remove tooltip
+                if (pickerTooltip) {
+                    pickerTooltip.remove();
+                    pickerTooltip = null;
+                }
+
+                // Reset stack
+                lastClickPosition = null;
+                elementStackAtPosition = [];
+                currentStackIndex = 0;
+
+                // Update button
+                document.getElementById('pickerModeBtn').textContent = '🎯 Pick Element from Page';
+                document.getElementById('pickerModeBtn').style.background = '#27ae60';
+                elementInfo.style.background = '';
+                elementInfo.style.color = '';
+
+                if (currentSelectedElement) {
+                    const tag = currentSelectedElement.tagName.toLowerCase();
+                    const classes = currentSelectedElement.className ? '.' + currentSelectedElement.className.split(' ').join('.') : '';
+                    const id = currentSelectedElement.id ? '#' + currentSelectedElement.id : '';
+                    elementInfo.textContent = `Editing: <${tag}${id}${classes}>`;
+                } else {
+                    elementInfo.textContent = 'Select an element from the tree to edit its text';
+                }
+
+            } catch (error) {
+                console.error('Error disabling picker mode:', error);
+            }
+        }
+
+        function handlePickerMouseMove(e) {
+            const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+            // Get all elements at this point
+            const elementsAtPoint = iframeDoc.elementsFromPoint(e.clientX, e.clientY);
+
+            if (!elementsAtPoint || elementsAtPoint.length === 0) return;
+
+            // Filter out body, html, and previously added overlays
+            const validElements = elementsAtPoint.filter(el =>
+                el.tagName !== 'BODY' &&
+                el.tagName !== 'HTML' &&
+                !el.classList.contains('element-stack-overlay')
+            );
+
+            // Clear previous overlays
+            currentOverlays.forEach(overlay => overlay.remove());
+            currentOverlays = [];
+
+            // Create overlays for each element in the stack
+            validElements.forEach((element, index) => {
+                const rect = element.getBoundingClientRect();
+                const color = stackColors[index % stackColors.length];
+
+                const overlay = iframeDoc.createElement('div');
+                overlay.className = 'element-stack-overlay';
+                overlay.style.position = 'absolute';
+                overlay.style.left = rect.left + 'px';
+                overlay.style.top = rect.top + 'px';
+                overlay.style.width = rect.width + 'px';
+                overlay.style.height = rect.height + 'px';
+                overlay.style.backgroundColor = color;
+                overlay.style.border = `2px solid ${color.replace('0.3', '0.8')}`;
+                overlay.style.zIndex = 100000 - index; // Stack from top to bottom
+                overlay.style.pointerEvents = 'none';
+
+                iframeDoc.body.appendChild(overlay);
+                currentOverlays.push(overlay);
+            });
+
+            // Update tooltip with all elements in stack
+            if (pickerTooltip) {
+                const tooltipContent = validElements.map((element, index) => {
+                    const tag = element.tagName.toLowerCase();
+                    const classes = element.className ? '.' + element.className.split(' ').filter(c => c && c !== 'element-picker-hover' && c !== 'element-stack-overlay').join('.') : '';
+                    const id = element.id ? '#' + element.id : '';
+                    const color = stackColors[index % stackColors.length].replace('0.3', '1');
+
+                    return `<div class="picker-tooltip-item">
+                        <div class="picker-tooltip-color" style="background: ${color}"></div>
+                        <span>&lt;${tag}${id}${classes}&gt;</span>
+                    </div>`;
+                }).join('');
+
+                pickerTooltip.innerHTML = tooltipContent;
+                pickerTooltip.style.display = 'block';
+                pickerTooltip.style.left = (e.clientX + 15) + 'px';
+                pickerTooltip.style.top = (e.clientY + 15) + 'px';
+            }
+
+            currentHoverElement = validElements[0];
+        }
+
+        function handlePickerClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+            // Get all elements at this point (from top to bottom)
+            const elementsAtPoint = iframeDoc.elementsFromPoint(e.clientX, e.clientY);
+
+            if (!elementsAtPoint || elementsAtPoint.length === 0) {
+                alert('No element found at this position');
+                return;
+            }
+
+            // Check if this is the same position as last click
+            const currentPosition = `${e.clientX},${e.clientY}`;
+            const isSamePosition = lastClickPosition === currentPosition;
+
+            if (!isSamePosition) {
+                // New position - rebuild stack from deepest to shallowest
+                elementStackAtPosition = [];
+
+                // Build stack in reverse order (deepest first)
+                for (let i = elementsAtPoint.length - 1; i >= 0; i--) {
+                    const elem = elementsAtPoint[i];
+
+                    // Skip body and html
+                    if (elem.tagName === 'BODY' || elem.tagName === 'HTML') {
+                        continue;
+                    }
+
+                    const elemId = getElementId(elem);
+                    if (elemId) {
+                        elementStackAtPosition.push({ element: elem, id: elemId });
+                    }
+                }
+
+                currentStackIndex = 0;
+                lastClickPosition = currentPosition;
+            } else {
+                // Same position - cycle to next element in stack
+                currentStackIndex++;
+                if (currentStackIndex >= elementStackAtPosition.length) {
+                    currentStackIndex = 0; // Loop back to deepest
+                }
+            }
+
+            if (elementStackAtPosition.length === 0) {
+                alert('No elements found in tree at this position');
+                return;
+            }
+
+            // Get the current element in the cycle
+            const currentItem = elementStackAtPosition[currentStackIndex];
+
+            // If popup is open, select via popup function, otherwise use regular selection
+            if (editorPopup && !editorPopup.closed) {
+                selectElementFromPopup(currentItem.id);
+            } else {
+                selectElement(currentItem.id);
+            }
+
+            // Update info to show stack position
+            const stackInfo = elementStackAtPosition.length > 1
+                ? ` (${currentStackIndex + 1} of ${elementStackAtPosition.length})`
+                : '';
+
+            const tag = currentItem.element.tagName.toLowerCase();
+            const classes = currentItem.element.className ? '.' + currentItem.element.className.split(' ').join('.') : '';
+            const id = currentItem.element.id ? '#' + currentItem.element.id : '';
+
+            // Update info in either main window or popup
+            if (editorPopup && !editorPopup.closed) {
+                const popupDoc = editorPopup.document;
+                popupDoc.getElementById('elementInfo').textContent = `🎯 Selected: <${tag}${id}${classes}>${stackInfo} - Click same spot to cycle up`;
+                popupDoc.getElementById('elementInfo').style.background = '#667eea';
+                popupDoc.getElementById('elementInfo').style.color = 'white';
+            } else {
+                elementInfo.textContent = `🎯 Selected: <${tag}${id}${classes}>${stackInfo} - Click same spot to cycle up`;
+                elementInfo.style.background = '#667eea';
+                elementInfo.style.color = 'white';
+            }
+        }
+    </script>
+</body>
+</html>

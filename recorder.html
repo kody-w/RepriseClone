@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recorder - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+</head>
+<body class="recorder-page">
+    <div class="controls-bar">
+        <div class="controls-content">
+            <a href="index.html" class="back-link">← Back</a>
+
+            <div class="url-input-group">
+                <input type="text" id="urlInput" placeholder="Enter URL to record (e.g., demo.html or https://example.com)" value="demo.html">
+                <button id="loadUrlBtn" class="btn btn-small">Load</button>
+            </div>
+
+            <div class="recording-controls">
+                <button id="recordBtn" class="btn btn-primary">Start Recording</button>
+                <button id="stopBtn" class="btn btn-danger" disabled>Stop Recording</button>
+                <button id="exportBtn" class="btn btn-success" disabled>Export Recording</button>
+                <span id="recordingStatus" class="status-indicator"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="iframe-container">
+        <iframe id="recordFrame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"></iframe>
+    </div>
+
+    <script>
+        let events = [];
+        let stopRecording = null;
+        let isRecording = false;
+
+        const recordBtn = document.getElementById('recordBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const loadUrlBtn = document.getElementById('loadUrlBtn');
+        const urlInput = document.getElementById('urlInput');
+        const recordFrame = document.getElementById('recordFrame');
+        const statusIndicator = document.getElementById('recordingStatus');
+
+        // Load URL into iframe
+        loadUrlBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                recordFrame.src = url;
+                events = [];
+                isRecording = false;
+                updateUI();
+            }
+        });
+
+        // Load default URL on page load
+        window.addEventListener('load', () => {
+            if (urlInput.value) {
+                recordFrame.src = urlInput.value;
+            }
+        });
+
+        // Start recording
+        recordBtn.addEventListener('click', () => {
+            if (!recordFrame.contentDocument) {
+                alert('Please load a URL first');
+                return;
+            }
+
+            events = [];
+            isRecording = true;
+
+            try {
+                stopRecording = rrweb.record({
+                    emit(event) {
+                        events.push(event);
+                    },
+                    recordCanvas: true,
+                    collectFonts: true,
+                }, recordFrame.contentDocument);
+
+                updateUI();
+            } catch (error) {
+                alert('Error starting recording: ' + error.message);
+                isRecording = false;
+                updateUI();
+            }
+        });
+
+        // Stop recording
+        stopBtn.addEventListener('click', () => {
+            if (stopRecording) {
+                stopRecording();
+                stopRecording = null;
+            }
+            isRecording = false;
+            updateUI();
+        });
+
+        // Export recording
+        exportBtn.addEventListener('click', () => {
+            if (events.length === 0) {
+                alert('No recording to export');
+                return;
+            }
+
+            const recording = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                url: urlInput.value,
+                events: events
+            };
+
+            const blob = new Blob([JSON.stringify(recording, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `recording-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        function updateUI() {
+            recordBtn.disabled = isRecording;
+            stopBtn.disabled = !isRecording;
+            exportBtn.disabled = events.length === 0;
+
+            if (isRecording) {
+                statusIndicator.textContent = `Recording... (${events.length} events)`;
+                statusIndicator.className = 'status-indicator recording';
+            } else if (events.length > 0) {
+                statusIndicator.textContent = `Stopped (${events.length} events captured)`;
+                statusIndicator.className = 'status-indicator stopped';
+            } else {
+                statusIndicator.textContent = 'Ready';
+                statusIndicator.className = 'status-indicator ready';
+            }
+        }
+
+        // Update event count while recording
+        setInterval(() => {
+            if (isRecording) {
+                updateUI();
+            }
+        }, 500);
+    </script>
+</body>
+</html>

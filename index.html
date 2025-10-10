@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprise Clone - Demo Recorder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Reprise Clone</h1>
+            <p class="subtitle">Record and replay browser demos</p>
+        </header>
+
+        <main>
+            <div class="card-grid">
+                <div class="card" style="border: 3px solid #667eea;">
+                    <div style="background: #667eea; color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 10px;">RECOMMENDED</div>
+                    <div class="card-icon">🔖</div>
+                    <h2>Bookmarklet Recorder</h2>
+                    <p>Drag a bookmark to record ANY webpage (works on external sites!)</p>
+                    <a href="bookmarklet.html" class="btn btn-primary">Get Bookmarklet</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon play-icon">▶</div>
+                    <h2>Replay Demo</h2>
+                    <p>Load and replay previously recorded demos</p>
+                    <a href="player.html" class="btn btn-secondary">Open Player</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon demo-icon">🎭</div>
+                    <h2>Demo Page</h2>
+                    <p>Test the recorder with our interactive demo page</p>
+                    <a href="demo.html" class="btn btn-tertiary" target="_blank">Open Demo</a>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon record-icon">⏺</div>
+                    <h2>Iframe Recorder</h2>
+                    <p>Record local pages in an iframe (limited to same-origin)</p>
+                    <a href="recorder.html" class="btn" style="background: #95a5a6; color: white;">Open Recorder</a>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>How it works</h3>
+                <ol>
+                    <li><strong>Get the Bookmarklet:</strong> Drag the recorder bookmark to your bookmarks bar (one-time setup)</li>
+                    <li><strong>Record Any Page:</strong> Navigate to any website and click the bookmarklet to start recording</li>
+                    <li><strong>Capture Interactions:</strong> All clicks, inputs, scrolling, and DOM changes are recorded</li>
+                    <li><strong>Export:</strong> Save your recording as a JSON file when you're done</li>
+                    <li><strong>Replay:</strong> Load the JSON file in the player to watch the demo playback with full controls</li>
+                </ol>
+            </div>
+        </main>
+
+        <footer>
+            <p>Built with <a href="https://www.rrweb.io/" target="_blank">rrweb</a></p>
+        </footer>
+    </div>
+</body>
+</html>
