@@ -158,6 +158,48 @@
             color: #e0e0e0;
         }
 
+        .frame-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .frame-action-btn {
+            padding: 4px 8px;
+            font-size: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .frame-action-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.9;
+        }
+
+        .duplicate-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .export-btn {
+            background: #27ae60;
+            color: white;
+        }
+
+        .replace-btn {
+            background: #f39c12;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
         .editor-panel {
             background: #2d2d2d;
             border-top: 2px solid #444;
@@ -262,51 +304,110 @@
     <div class="animator-controls">
         <a href="player.html" class="back-link">← Back to Player</a>
         <a href="tutorial.html" class="back-link" style="background: #667eea;">📚 Tutorial</a>
+        <a href="wysiwyg-editor.html" class="back-link" style="background: #e67e22;">✏️ WYSIWYG Editor</a>
         <h2 style="color: white; margin: 0; flex: 1;">🎨 Static Page Animator</h2>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <label style="color: #999; font-size: 13px;">Mode:</label>
+            <select id="modeSelector" style="background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 6px; padding: 6px 12px; font-size: 13px;">
+                <option value="template">Template Editor</option>
+                <option value="animation">Frame Animation</option>
+            </select>
+        </div>
         <span id="statusBadge" class="status-badge waiting">Waiting for files...</span>
     </div>
 
     <div class="animator-main">
         <div class="animator-sidebar">
-            <div class="sidebar-section">
-                <h3>📄 Template HTML</h3>
-                <div id="htmlUploadArea" class="file-upload-area">
-                    <p>📁 Click to upload template HTML</p>
-                    <p style="font-size: 11px; color: #666;">Static page with dynamic elements removed</p>
+            <!-- TEMPLATE MODE SECTIONS -->
+            <div id="templateModeSections">
+                <div class="sidebar-section">
+                    <h3>📄 Template HTML</h3>
+                    <div id="htmlUploadArea" class="file-upload-area">
+                        <p>📁 Click to upload template HTML</p>
+                        <p style="font-size: 11px; color: #666;">Static page with dynamic elements removed</p>
+                    </div>
+                    <input type="file" id="htmlInput" accept=".html" style="display: none;">
+                    <p id="htmlStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No file loaded</p>
                 </div>
-                <input type="file" id="htmlInput" accept=".html" style="display: none;">
-                <p id="htmlStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No file loaded</p>
-            </div>
 
-            <div class="sidebar-section">
-                <h3>🗺️ Mapping JSON</h3>
-                <div id="jsonUploadArea" class="file-upload-area">
-                    <p>📁 Click to upload mapping JSON</p>
-                    <p style="font-size: 11px; color: #666;">Dynamic element selectors</p>
+                <div class="sidebar-section">
+                    <h3>🗺️ Mapping JSON</h3>
+                    <div id="jsonUploadArea" class="file-upload-area">
+                        <p>📁 Click to upload mapping JSON</p>
+                        <p style="font-size: 11px; color: #666;">Dynamic element selectors</p>
+                    </div>
+                    <input type="file" id="jsonInput" accept=".json" style="display: none;">
+                    <p id="jsonStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No file loaded</p>
                 </div>
-                <input type="file" id="jsonInput" accept=".json" style="display: none;">
-                <p id="jsonStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No file loaded</p>
-            </div>
 
-            <div class="sidebar-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                <h3>🎬 Dynamic Elements (<span id="dynamicCount">0</span>)</h3>
-                <div class="dynamic-list" id="dynamicList">
-                    <div class="info-box">
-                        <p><strong>How it works:</strong></p>
-                        <p>1. Load template HTML (static page)</p>
-                        <p>2. Load mapping JSON (defines dynamic areas)</p>
-                        <p>3. Click dynamic elements to edit them</p>
-                        <p>4. Static elements are locked 🔒</p>
+                <div class="sidebar-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <h3>🎬 Dynamic Elements (<span id="dynamicCount">0</span>)</h3>
+                    <div class="dynamic-list" id="dynamicList">
+                        <div class="info-box">
+                            <p><strong>How it works:</strong></p>
+                            <p>1. Load template HTML (static page)</p>
+                            <p>2. Load mapping JSON (defines dynamic areas)</p>
+                            <p>3. Click dynamic elements to edit them</p>
+                            <p>4. Static elements are locked 🔒</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="editor-panel" id="editorPanel" style="display: none;">
+                    <h4 id="editorTitle">Edit Dynamic Element</h4>
+                    <textarea id="dynamicEditor" placeholder="Select a dynamic element to edit..."></textarea>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button id="applyChanges" class="btn" style="background: #27ae60; color: white; flex: 1;">✓ Apply</button>
+                        <button id="revertChanges" class="btn" style="background: #e74c3c; color: white; flex: 1;">↶ Revert</button>
                     </div>
                 </div>
             </div>
 
-            <div class="editor-panel" id="editorPanel" style="display: none;">
-                <h4 id="editorTitle">Edit Dynamic Element</h4>
-                <textarea id="dynamicEditor" placeholder="Select a dynamic element to edit..."></textarea>
-                <div style="margin-top: 10px; display: flex; gap: 10px;">
-                    <button id="applyChanges" class="btn" style="background: #27ae60; color: white; flex: 1;">✓ Apply</button>
-                    <button id="revertChanges" class="btn" style="background: #e74c3c; color: white; flex: 1;">↶ Revert</button>
+            <!-- ANIMATION MODE SECTIONS -->
+            <div id="animationModeSections" style="display: none; height: 100%; flex-direction: column;">
+                <div class="sidebar-section">
+                    <h3>🎬 Frame Files (<span id="frameCount">0</span>)</h3>
+                    <div id="framesUploadArea" class="file-upload-area">
+                        <p>📁 Click to upload HTML frames</p>
+                        <p style="font-size: 11px; color: #666;">Select multiple .html files</p>
+                    </div>
+                    <input type="file" id="framesInput" accept=".html" multiple style="display: none;">
+                    <p id="framesStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No frames loaded</p>
+                    <button id="clearFrames" class="btn" style="background: #e74c3c; color: white; width: 100%; margin-top: 10px; display: none;">🗑️ Clear All Frames</button>
+                </div>
+
+                <div class="sidebar-section" style="border-bottom: none;">
+                    <h3>▶️ Animation Controls</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="playAnimationBtn" class="btn" style="background: #27ae60; color: white; flex: 1;" disabled>▶️ Play</button>
+                        <button id="stopAnimationBtn" class="btn" style="background: #e74c3c; color: white; flex: 1;" disabled>⏹ Stop</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <button id="prevFrameBtn" class="btn" style="background: #3498db; color: white; flex: 1;" disabled>← Prev</button>
+                        <button id="nextFrameBtn" class="btn" style="background: #3498db; color: white; flex: 1;" disabled>Next →</button>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label style="color: #fff; font-size: 13px; display: block; margin-bottom: 5px;">
+                            Speed: <span id="speedValue">1.0s</span> per frame
+                        </label>
+                        <input type="range" id="animationSpeed" min="0.5" max="3" step="0.1" value="1.0" style="width: 100%;">
+                    </div>
+                    <div style="color: #999; font-size: 13px; text-align: center; padding: 10px; background: #1a1a1a; border-radius: 6px;">
+                        Frame: <span id="currentFrameNum" style="color: #fff; font-weight: bold;">-</span> / <span id="totalFrameNum" style="color: #fff; font-weight: bold;">-</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section" style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                    <h3>📋 Frame List</h3>
+                    <div class="dynamic-list" id="frameList">
+                        <div class="info-box">
+                            <p><strong>How it works:</strong></p>
+                            <p>1. Upload multiple HTML files as frames</p>
+                            <p>2. Click frames to view them individually</p>
+                            <p>3. Use Play button to animate through frames</p>
+                            <p>4. Adjust speed with the slider</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -324,6 +425,8 @@
     </div>
 
     <script>
+        // Global state
+        let currentMode = 'template';
         let templateHTML = null;
         let mappingData = null;
         let previewIframe = null;
@@ -331,6 +434,35 @@
         let currentSelectedSelector = null;
         let originalContent = {};
 
+        // Animation mode state
+        let frames = [];
+        let currentFrameIndex = 0;
+        let animationInterval = null;
+        let animationSpeed = 1.0;
+
+        // Mode selector
+        document.getElementById('modeSelector').addEventListener('change', (e) => {
+            currentMode = e.target.value;
+            switchMode(currentMode);
+        });
+
+        function switchMode(mode) {
+            const templateSections = document.getElementById('templateModeSections');
+            const animationSections = document.getElementById('animationModeSections');
+
+            if (mode === 'template') {
+                templateSections.style.display = 'block';
+                animationSections.style.display = 'none';
+                document.getElementById('statusBadge').textContent = 'Waiting for files...';
+                document.getElementById('statusBadge').className = 'status-badge waiting';
+            } else {
+                templateSections.style.display = 'none';
+                animationSections.style.display = 'flex';
+                updateAnimationStatus();
+            }
+        }
+
+        // TEMPLATE MODE FUNCTIONS
         // File upload handlers
         document.getElementById('htmlUploadArea').addEventListener('click', () => {
             document.getElementById('htmlInput').click();
@@ -640,6 +772,418 @@
         document.getElementById('dynamicEditor').addEventListener('input', (e) => {
             if (currentSelectedElement) {
                 currentSelectedElement.textContent = e.target.value;
+            }
+        });
+
+        // ANIMATION MODE FUNCTIONS
+        document.getElementById('framesUploadArea').addEventListener('click', () => {
+            document.getElementById('framesInput').click();
+        });
+
+        document.getElementById('framesInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            try {
+                // Load all frames
+                for (const file of files) {
+                    const htmlContent = await file.text();
+                    frames.push({
+                        name: file.name,
+                        html: htmlContent,
+                        id: Date.now() + Math.random()
+                    });
+                }
+
+                // Sort frames by name (helps with sequential naming)
+                frames.sort((a, b) => a.name.localeCompare(b.name));
+
+                updateFrameList();
+                updateAnimationStatus();
+                updateAnimationControls();
+
+                // Show first frame
+                if (frames.length > 0) {
+                    currentFrameIndex = 0;
+                    displayFrame(0);
+                }
+
+                // Update UI
+                document.getElementById('framesUploadArea').classList.add('loaded');
+                document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
+                document.getElementById('framesStatus').style.color = '#27ae60';
+                document.getElementById('clearFrames').style.display = 'block';
+
+            } catch (error) {
+                alert('Error loading frames: ' + error.message);
+            }
+        });
+
+        document.getElementById('clearFrames').addEventListener('click', () => {
+            if (!confirm('Clear all frames?')) return;
+
+            frames = [];
+            currentFrameIndex = 0;
+            stopAnimation();
+
+            updateFrameList();
+            updateAnimationStatus();
+            updateAnimationControls();
+
+            document.getElementById('framesUploadArea').classList.remove('loaded');
+            document.getElementById('framesStatus').textContent = 'No frames loaded';
+            document.getElementById('framesStatus').style.color = '#999';
+            document.getElementById('clearFrames').style.display = 'none';
+            document.getElementById('pageContainer').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'block';
+        });
+
+        function updateFrameList() {
+            const frameList = document.getElementById('frameList');
+            frameList.innerHTML = '';
+
+            if (frames.length === 0) {
+                frameList.innerHTML = `
+                    <div class="info-box">
+                        <p><strong>How it works:</strong></p>
+                        <p>1. Upload multiple HTML files as frames</p>
+                        <p>2. Click frames to view them individually</p>
+                        <p>3. Use Play button to animate through frames</p>
+                        <p>4. Adjust speed with the slider</p>
+                    </div>
+                `;
+                return;
+            }
+
+            frames.forEach((frame, index) => {
+                const item = document.createElement('div');
+                item.className = 'dynamic-item';
+                if (index === currentFrameIndex) {
+                    item.classList.add('selected');
+                }
+                item.dataset.frameIndex = index;
+
+                const frameContent = document.createElement('div');
+                frameContent.innerHTML = `
+                    <div class="dynamic-item-selector">Frame ${index + 1}</div>
+                    <div class="dynamic-item-preview">${frame.name}</div>
+                `;
+                frameContent.addEventListener('click', () => {
+                    stopAnimation();
+                    currentFrameIndex = index;
+                    displayFrame(index);
+                    updateFrameList();
+                });
+
+                // Action buttons
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'frame-actions';
+
+                const duplicateBtn = document.createElement('button');
+                duplicateBtn.className = 'frame-action-btn duplicate-btn';
+                duplicateBtn.textContent = '📋 Duplicate';
+                duplicateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    duplicateFrame(index);
+                });
+
+                const exportBtn = document.createElement('button');
+                exportBtn.className = 'frame-action-btn export-btn';
+                exportBtn.textContent = '💾 Export';
+                exportBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    exportFrame(index);
+                });
+
+                const replaceBtn = document.createElement('button');
+                replaceBtn.className = 'frame-action-btn replace-btn';
+                replaceBtn.textContent = '🔄 Replace';
+                replaceBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    replaceFrame(index);
+                });
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'frame-action-btn delete-btn';
+                deleteBtn.textContent = '🗑️ Delete';
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteFrame(index);
+                });
+
+                actionsDiv.appendChild(duplicateBtn);
+                actionsDiv.appendChild(exportBtn);
+                actionsDiv.appendChild(replaceBtn);
+                actionsDiv.appendChild(deleteBtn);
+
+                item.appendChild(frameContent);
+                item.appendChild(actionsDiv);
+                frameList.appendChild(item);
+            });
+
+            // Update frame counter
+            document.getElementById('frameCount').textContent = frames.length;
+        }
+
+        function displayFrame(index) {
+            if (index < 0 || index >= frames.length) return;
+
+            currentFrameIndex = index;
+
+            // Show page container
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('pageContainer').style.display = 'block';
+
+            // Load frame into iframe
+            previewIframe = document.getElementById('previewIframe');
+            const frame = frames[index];
+            const blob = new Blob([frame.html], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+
+            previewIframe.onload = () => {
+                URL.revokeObjectURL(url);
+            };
+
+            previewIframe.src = url;
+
+            // Update frame indicator
+            document.getElementById('currentFrameNum').textContent = index + 1;
+            document.getElementById('totalFrameNum').textContent = frames.length;
+
+            // Update frame list selection
+            document.querySelectorAll('#frameList .dynamic-item').forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function updateAnimationStatus() {
+            if (frames.length === 0) {
+                document.getElementById('statusBadge').textContent = 'Waiting for frames...';
+                document.getElementById('statusBadge').className = 'status-badge waiting';
+            } else {
+                document.getElementById('statusBadge').textContent = `${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
+                document.getElementById('statusBadge').className = 'status-badge ready';
+            }
+        }
+
+        function updateAnimationControls() {
+            const hasFrames = frames.length > 0;
+            document.getElementById('playAnimationBtn').disabled = !hasFrames;
+            document.getElementById('stopAnimationBtn').disabled = !hasFrames;
+            document.getElementById('prevFrameBtn').disabled = !hasFrames;
+            document.getElementById('nextFrameBtn').disabled = !hasFrames;
+            document.getElementById('animationSpeed').disabled = !hasFrames;
+        }
+
+        // Animation controls
+        document.getElementById('playAnimationBtn').addEventListener('click', () => {
+            playAnimation();
+        });
+
+        document.getElementById('stopAnimationBtn').addEventListener('click', () => {
+            stopAnimation();
+        });
+
+        document.getElementById('prevFrameBtn').addEventListener('click', () => {
+            stopAnimation();
+            if (currentFrameIndex > 0) {
+                displayFrame(currentFrameIndex - 1);
+            } else {
+                displayFrame(frames.length - 1); // Loop to end
+            }
+        });
+
+        document.getElementById('nextFrameBtn').addEventListener('click', () => {
+            stopAnimation();
+            if (currentFrameIndex < frames.length - 1) {
+                displayFrame(currentFrameIndex + 1);
+            } else {
+                displayFrame(0); // Loop to start
+            }
+        });
+
+        document.getElementById('animationSpeed').addEventListener('input', (e) => {
+            animationSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = animationSpeed.toFixed(1) + 's';
+
+            // Restart animation if playing
+            if (animationInterval) {
+                stopAnimation();
+                playAnimation();
+            }
+        });
+
+        function playAnimation() {
+            if (frames.length === 0) return;
+
+            stopAnimation(); // Clear any existing interval
+
+            // Start from current frame
+            let index = currentFrameIndex;
+
+            animationInterval = setInterval(() => {
+                displayFrame(index);
+                index = (index + 1) % frames.length; // Loop back to start
+            }, animationSpeed * 1000);
+
+            // Visual feedback
+            document.getElementById('playAnimationBtn').style.opacity = '0.5';
+            document.getElementById('stopAnimationBtn').style.opacity = '1';
+        }
+
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+
+            // Visual feedback
+            document.getElementById('playAnimationBtn').style.opacity = '1';
+            document.getElementById('stopAnimationBtn').style.opacity = '0.5';
+        }
+
+        // Frame management functions
+        function duplicateFrame(index) {
+            if (index < 0 || index >= frames.length) return;
+
+            const originalFrame = frames[index];
+            const duplicatedFrame = {
+                name: originalFrame.name.replace('.html', '') + '-copy.html',
+                html: originalFrame.html,
+                id: Date.now() + Math.random()
+            };
+
+            // Insert after the original frame
+            frames.splice(index + 1, 0, duplicatedFrame);
+
+            // Update UI
+            updateFrameList();
+            updateAnimationStatus();
+            updateAnimationControls();
+
+            // Show the duplicated frame
+            currentFrameIndex = index + 1;
+            displayFrame(currentFrameIndex);
+
+            // Update status
+            document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
+        }
+
+        function exportFrame(index) {
+            if (index < 0 || index >= frames.length) return;
+
+            const frame = frames[index];
+            const filename = frame.name.replace('.html', '') + '-exported.html';
+
+            // Download the frame HTML
+            const blob = new Blob([frame.html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function replaceFrame(index) {
+            if (index < 0 || index >= frames.length) return;
+
+            // Create a hidden file input for this specific frame
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.html';
+            fileInput.style.display = 'none';
+
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                try {
+                    const htmlContent = await file.text();
+
+                    // Replace the frame
+                    frames[index] = {
+                        name: file.name,
+                        html: htmlContent,
+                        id: Date.now() + Math.random()
+                    };
+
+                    // Update UI
+                    updateFrameList();
+                    displayFrame(index);
+
+                    // Cleanup
+                    document.body.removeChild(fileInput);
+                } catch (error) {
+                    alert('Error loading replacement file: ' + error.message);
+                    document.body.removeChild(fileInput);
+                }
+            });
+
+            document.body.appendChild(fileInput);
+            fileInput.click();
+        }
+
+        function deleteFrame(index) {
+            if (index < 0 || index >= frames.length) return;
+
+            if (!confirm(`Delete Frame ${index + 1}?`)) return;
+
+            // Remove the frame
+            frames.splice(index, 1);
+
+            // Adjust current index if necessary
+            if (currentFrameIndex >= frames.length) {
+                currentFrameIndex = Math.max(0, frames.length - 1);
+            }
+
+            // Update UI
+            updateFrameList();
+            updateAnimationStatus();
+            updateAnimationControls();
+
+            // Show the new current frame or hide container if no frames
+            if (frames.length > 0) {
+                displayFrame(currentFrameIndex);
+            } else {
+                document.getElementById('pageContainer').style.display = 'none';
+                document.getElementById('placeholder').style.display = 'block';
+            }
+
+            // Update status
+            if (frames.length > 0) {
+                document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
+            } else {
+                document.getElementById('framesUploadArea').classList.remove('loaded');
+                document.getElementById('framesStatus').textContent = 'No frames loaded';
+                document.getElementById('framesStatus').style.color = '#999';
+                document.getElementById('clearFrames').style.display = 'none';
+            }
+        }
+
+        // Keyboard shortcuts for animation mode
+        document.addEventListener('keydown', (e) => {
+            if (currentMode !== 'animation' || frames.length === 0) return;
+
+            if (e.key === 'ArrowLeft' || e.key === '[') {
+                e.preventDefault();
+                document.getElementById('prevFrameBtn').click();
+            } else if (e.key === 'ArrowRight' || e.key === ']') {
+                e.preventDefault();
+                document.getElementById('nextFrameBtn').click();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                if (animationInterval) {
+                    stopAnimation();
+                } else {
+                    playAnimation();
+                }
             }
         });
     </script>

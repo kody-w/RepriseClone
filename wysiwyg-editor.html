@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WYSIWYG Frame Editor - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .editor-page {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .editor-header {
+            background: #2d2d2d;
+            border-bottom: 2px solid #444;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .editor-header h1 {
+            color: white;
+            margin: 0;
+            font-size: 24px;
+            flex: 1;
+        }
+
+        .editor-toolbar {
+            background: #2d2d2d;
+            border-bottom: 2px solid #444;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 5px;
+            padding: 5px;
+            border-right: 2px solid #444;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        .toolbar-btn {
+            padding: 8px 12px;
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .toolbar-btn:hover:not(:disabled) {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .toolbar-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .toolbar-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .editor-sidebar {
+            width: 300px;
+            background: #2d2d2d;
+            border-right: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 2px solid #444;
+        }
+
+        .sidebar-section h3 {
+            color: white;
+            margin: 0 0 15px 0;
+            font-size: 16px;
+        }
+
+        .upload-area {
+            background: #1a1a1a;
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #252525;
+            border-color: #764ba2;
+        }
+
+        .upload-area.loaded {
+            border-color: #27ae60;
+            border-style: solid;
+        }
+
+        .upload-area p {
+            color: #999;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .upload-area.loaded p {
+            color: #27ae60;
+        }
+
+        .editor-content {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 20px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .editable-frame {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-height: 600px;
+        }
+
+        .editable-frame [contenteditable="true"] {
+            outline: 2px dashed transparent;
+            transition: all 0.3s;
+            cursor: text;
+            padding: 2px;
+        }
+
+        .editable-frame [contenteditable="true"]:hover {
+            outline-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+        }
+
+        .editable-frame [contenteditable="true"]:focus {
+            outline-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
+        }
+
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .placeholder h2 {
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .element-info {
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .element-info p {
+            color: #999;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .element-info strong {
+            color: white;
+        }
+
+        .color-input {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .back-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-badge.ready {
+            background: #27ae60;
+            color: white;
+        }
+
+        .status-badge.waiting {
+            background: #f39c12;
+            color: white;
+        }
+
+        .export-btn {
+            padding: 10px 20px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body class="editor-page">
+    <div class="editor-header">
+        <a href="animator.html" class="back-link">← Back to Animator</a>
+        <h1>✏️ WYSIWYG Frame Editor</h1>
+        <span id="statusBadge" class="status-badge waiting">No frame loaded</span>
+        <button id="exportBtn" class="export-btn" disabled>💾 Export Frame</button>
+    </div>
+
+    <div class="editor-toolbar" id="toolbar" style="display: none;">
+        <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('bold')" title="Bold"><b>B</b></button>
+            <button class="toolbar-btn" onclick="execCmd('italic')" title="Italic"><i>I</i></button>
+            <button class="toolbar-btn" onclick="execCmd('underline')" title="Underline"><u>U</u></button>
+            <button class="toolbar-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+        </div>
+        <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('justifyLeft')" title="Align Left">≡</button>
+            <button class="toolbar-btn" onclick="execCmd('justifyCenter')" title="Align Center">≣</button>
+            <button class="toolbar-btn" onclick="execCmd('justifyRight')" title="Align Right">≡</button>
+        </div>
+        <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List">• List</button>
+            <button class="toolbar-btn" onclick="execCmd('insertOrderedList')" title="Numbered List">1. List</button>
+        </div>
+        <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="changeFontSize('larger')" title="Increase Font Size">A+</button>
+            <button class="toolbar-btn" onclick="changeFontSize('smaller')" title="Decrease Font Size">A-</button>
+        </div>
+        <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('removeFormat')" title="Clear Formatting">🗑️ Clear</button>
+            <button class="toolbar-btn" onclick="execCmd('undo')" title="Undo">↶</button>
+            <button class="toolbar-btn" onclick="execCmd('redo')" title="Redo">↷</button>
+        </div>
+    </div>
+
+    <div class="editor-main">
+        <div class="editor-sidebar">
+            <div class="sidebar-section">
+                <h3>📁 Load Frame</h3>
+                <div id="uploadArea" class="upload-area">
+                    <p>📄 Click to upload HTML frame</p>
+                    <p style="font-size: 11px;">Upload a frame to edit</p>
+                </div>
+                <input type="file" id="fileInput" accept=".html" style="display: none;">
+            </div>
+
+            <div class="sidebar-section">
+                <h3>ℹ️ Instructions</h3>
+                <div class="element-info">
+                    <p><strong>How to use:</strong></p>
+                    <p>1. Upload an HTML frame</p>
+                    <p>2. Click on any text to edit it</p>
+                    <p>3. Use toolbar for formatting</p>
+                    <p>4. Export when done</p>
+                    <p>5. Replace in animator</p>
+                </div>
+            </div>
+
+            <div class="sidebar-section" id="editingSection" style="display: none;">
+                <h3>🎨 Current Element</h3>
+                <div class="element-info">
+                    <p><strong>Tag:</strong> <span id="currentTag">-</span></p>
+                    <p><strong>Classes:</strong> <span id="currentClasses">-</span></p>
+                </div>
+                <div style="margin-top: 15px;">
+                    <label style="color: white; font-size: 13px; display: block; margin-bottom: 5px;">Text Color:</label>
+                    <input type="color" id="textColor" class="color-input" onchange="changeTextColor()">
+                </div>
+                <div style="margin-top: 15px;">
+                    <label style="color: white; font-size: 13px; display: block; margin-bottom: 5px;">Background:</label>
+                    <input type="color" id="bgColor" class="color-input" onchange="changeBgColor()">
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-content">
+            <div id="placeholder" class="placeholder">
+                <div class="placeholder-icon">✏️</div>
+                <h2>WYSIWYG Frame Editor</h2>
+                <p>Upload an HTML frame to start editing</p>
+            </div>
+            <div id="editableFrame" class="editable-frame" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let originalHTML = '';
+        let originalFilename = '';
+        let currentEditingElement = null;
+
+        // Upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#764ba2';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#667eea';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            if (!file.name.endsWith('.html')) {
+                alert('Please upload an HTML file');
+                return;
+            }
+
+            originalFilename = file.name;
+            originalHTML = await file.text();
+
+            // Update UI
+            uploadArea.classList.add('loaded');
+            uploadArea.querySelector('p').textContent = '✓ ' + file.name;
+
+            // Load into editor
+            loadFrame();
+        }
+
+        function loadFrame() {
+            const editableFrame = document.getElementById('editableFrame');
+            const placeholder = document.getElementById('placeholder');
+
+            // Parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(originalHTML, 'text/html');
+
+            // Make all text elements editable
+            makeElementsEditable(doc.body);
+
+            // Load into editor
+            editableFrame.innerHTML = doc.body.innerHTML;
+            editableFrame.style.display = 'block';
+            placeholder.style.display = 'none';
+
+            // Show toolbar
+            document.getElementById('toolbar').style.display = 'flex';
+
+            // Update status
+            document.getElementById('statusBadge').textContent = 'Ready to edit';
+            document.getElementById('statusBadge').className = 'status-badge ready';
+            document.getElementById('exportBtn').disabled = false;
+
+            // Add click listeners to editable elements
+            setupEditableElements();
+        }
+
+        function makeElementsEditable(element) {
+            // Text elements that should be editable
+            const editableSelectors = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'a', 'li', 'td', 'th', 'label', 'button'];
+
+            editableSelectors.forEach(selector => {
+                const elements = element.querySelectorAll(selector);
+                elements.forEach(el => {
+                    // Only make it editable if it has direct text content
+                    if (hasDirectTextContent(el)) {
+                        el.setAttribute('contenteditable', 'true');
+                    }
+                });
+            });
+        }
+
+        function hasDirectTextContent(element) {
+            // Check if element has text nodes as direct children
+            for (let node of element.childNodes) {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function setupEditableElements() {
+            const editableFrame = document.getElementById('editableFrame');
+            const editableElements = editableFrame.querySelectorAll('[contenteditable="true"]');
+
+            editableElements.forEach(el => {
+                el.addEventListener('focus', () => {
+                    currentEditingElement = el;
+                    updateElementInfo(el);
+                    document.getElementById('editingSection').style.display = 'block';
+                });
+
+                el.addEventListener('blur', () => {
+                    // Keep the info visible even after blur
+                });
+            });
+        }
+
+        function updateElementInfo(element) {
+            document.getElementById('currentTag').textContent = element.tagName.toLowerCase();
+            document.getElementById('currentClasses').textContent = element.className || 'none';
+
+            // Get current colors
+            const computedStyle = window.getComputedStyle(element);
+            const textColor = rgbToHex(computedStyle.color);
+            const bgColor = rgbToHex(computedStyle.backgroundColor);
+
+            document.getElementById('textColor').value = textColor;
+            document.getElementById('bgColor').value = bgColor;
+        }
+
+        function rgbToHex(rgb) {
+            // Convert rgb(r, g, b) to #rrggbb
+            if (rgb.startsWith('rgb')) {
+                const matches = rgb.match(/\d+/g);
+                if (matches && matches.length >= 3) {
+                    const r = parseInt(matches[0]).toString(16).padStart(2, '0');
+                    const g = parseInt(matches[1]).toString(16).padStart(2, '0');
+                    const b = parseInt(matches[2]).toString(16).padStart(2, '0');
+                    return '#' + r + g + b;
+                }
+            }
+            return '#000000';
+        }
+
+        // Toolbar commands
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        function changeFontSize(direction) {
+            if (direction === 'larger') {
+                execCmd('fontSize', 7);
+            } else {
+                execCmd('fontSize', 1);
+            }
+        }
+
+        function changeTextColor() {
+            const color = document.getElementById('textColor').value;
+            if (currentEditingElement) {
+                currentEditingElement.style.color = color;
+            }
+        }
+
+        function changeBgColor() {
+            const color = document.getElementById('bgColor').value;
+            if (currentEditingElement) {
+                currentEditingElement.style.backgroundColor = color;
+            }
+        }
+
+        // Export function
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const editableFrame = document.getElementById('editableFrame');
+
+            // Clone the content
+            const clone = editableFrame.cloneNode(true);
+
+            // Remove contenteditable attributes
+            const editableElements = clone.querySelectorAll('[contenteditable]');
+            editableElements.forEach(el => {
+                el.removeAttribute('contenteditable');
+            });
+
+            // Create full HTML document
+            const parser = new DOMParser();
+            const originalDoc = parser.parseFromString(originalHTML, 'text/html');
+
+            // Replace body content
+            originalDoc.body.innerHTML = clone.innerHTML;
+
+            // Generate HTML string
+            const htmlContent = '<!DOCTYPE html>\n' + originalDoc.documentElement.outerHTML;
+
+            // Download
+            const filename = originalFilename.replace('.html', '') + '-edited.html';
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show success message
+            const originalBtnText = document.getElementById('exportBtn').textContent;
+            document.getElementById('exportBtn').textContent = '✓ Exported!';
+            setTimeout(() => {
+                document.getElementById('exportBtn').textContent = originalBtnText;
+            }, 2000);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        execCmd('bold');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        execCmd('italic');
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        execCmd('underline');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

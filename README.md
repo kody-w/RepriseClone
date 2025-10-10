@@ -117,6 +117,83 @@ Flags allow you to mark important moments and navigate through your recording st
 - Build interactive tutorials
 - Navigate long recordings efficiently
 
+### Frame-Based Animation
+
+Turn your flags into custom animations by capturing individual frames:
+
+**Capturing Frames:**
+1. Load a recording and open the **🚩 Flags** panel
+2. Add flags at moments you want to capture
+3. Navigate to each flag (using prev/next or clicking)
+4. Click **"📸 Capture Current Frame"** at each flag
+5. The flag gets a 🎬 indicator showing a frame is captured
+6. Make edits to the page (text, hide elements, etc.)
+7. Capture another frame at the next flag
+
+**Playing Animations:**
+1. Once you have frames captured at multiple flags
+2. Click **"▶️ Play Animation"**
+3. The player automatically cycles through your frames
+4. Adjust **Animation Speed** slider (0.5s - 3s per frame)
+5. Click **"⏹ Stop Animation"** to stop
+
+**Navigation with Frames:**
+- When clicking flags with captured frames, the frame loads instead of seeking video
+- Press **"← Prev"** or **"Next →"** to step through frames manually
+- Each frame shows your custom edits
+- Create custom animations by editing each frame differently
+
+**Workflow Example:**
+```
+1. Record a demo
+2. Add flags at: "Start", "Middle", "End"
+3. Go to "Start" flag → Edit text to "Welcome!" → Capture frame
+4. Go to "Middle" flag → Edit text to "Feature Demo" → Capture frame
+5. Go to "End" flag → Edit text to "Thank You!" → Capture frame
+6. Click "Play Animation" → Watch text change automatically!
+```
+
+**Export Options:**
+
+1. **Export with Flags** - Saves full recording + flags + frames (large file)
+   - Frame data includes full HTML snapshot
+   - Re-import to continue editing or playing animation
+   - Includes original rrweb event stream
+
+2. **🎬 Export Framed Animation** - Saves ONLY frames (lightweight!)
+   - **No rrweb events** - just the captured frames
+   - **Massive data savings** (typically 50-90% smaller)
+   - Plays through frames step-by-step
+   - Can be loaded in player like a normal recording
+   - Perfect for sharing animated demos
+
+**Framed Animation Format:**
+```json
+{
+  "type": "framed-animation",
+  "version": "1.0",
+  "frames": [
+    { "id": 123, "label": "Intro", "html": "..." },
+    { "id": 456, "label": "Demo", "html": "..." }
+  ]
+}
+```
+
+**Loading Framed Animations:**
+- Load like any recording - player auto-detects the format
+- Shows **"🎬 FRAMED ANIMATION"** badge
+- Custom playback controls (Play, Prev, Next, Speed)
+- No timeline scrubbing - just frame-by-frame navigation
+- All editing tools still work (text editor, hide/show, etc.)
+
+**Use Cases:**
+- Custom product demos with changing content
+- Animated tutorials with step-by-step changes
+- Before/after comparisons
+- Multi-state UI demonstrations
+- Interactive presentations
+- **Sharing lightweight animated demos** (small file size!)
+
 ### Editing Text with Visual Tree (Easy Mode)
 
 The powerful visual editor with live preview:
@@ -287,6 +364,49 @@ The Static Page Animator is a specialized tool for editing ONLY the dynamic elem
 8. Export edited version
 ```
 
+#### Mode 2: Frame Animation (Multi-Frame Playback)
+
+Create animations from multiple HTML frames with full frame management:
+
+1. Open `animator.html`
+2. Switch mode to **"Frame Animation"**
+3. Upload multiple HTML frames (snapshots, exported frames, etc.)
+4. Frames load in sequential order (sorted by filename)
+5. Click any frame to view it
+6. Use **Play** button to animate through frames automatically
+7. Adjust animation speed (0.5s - 3s per frame)
+
+**Frame Management Actions:**
+
+Each frame has action buttons:
+- **📋 Duplicate** - Creates a copy of the frame inserted right after
+- **💾 Export** - Downloads the frame as HTML file for external editing
+- **🔄 Replace** - Upload a new HTML file to replace this frame
+- **🗑️ Delete** - Remove the frame from the animation
+
+**Workflow Example:**
+```
+1. Upload initial frames (frame1.html, frame2.html, frame3.html)
+2. Click "Export" on frame2 to download it
+3. Edit frame2 externally (change text, modify elements, etc.)
+4. Click "Replace" on frame2 and upload the edited version
+5. The animation now uses your updated frame
+6. Duplicate frame3 to create variations
+7. Play animation to see the result
+```
+
+**Perfect for:**
+- Iterating on frame designs without losing originals
+- Making external edits and re-importing
+- Creating frame variations by duplicating and modifying
+- Building complex multi-frame animations step by step
+- Testing different versions of the same frame
+
+**Keyboard Shortcuts:**
+- `←` or `[` - Previous frame
+- `→` or `]` - Next frame
+- `Space` - Play/Pause animation
+
 ## Recording Tips
 
 1. **Use the Bookmarklet**: The bookmarklet works on ANY webpage, including external sites
@@ -294,6 +414,97 @@ The Static Page Animator is a specialized tool for editing ONLY the dynamic elem
 3. **File size**: Complex pages with many interactions can produce large JSON files
 4. **Draggable Controls**: The bookmarklet control panel can be dragged anywhere on the page
 5. **Multiple Recordings**: Each export gets a unique timestamp - you can record multiple sessions
+
+## WYSIWYG Frame Editor (Visual Editing)
+
+The WYSIWYG (What You See Is What You Get) editor provides a visual interface for editing HTML frames:
+
+1. Open `wysiwyg-editor.html`
+2. Upload an HTML frame (snapshot, exported frame, etc.)
+3. Click on any text element to edit it directly
+4. Use the toolbar for rich text formatting:
+   - **Bold, Italic, Underline, Strikethrough**
+   - **Text alignment** (left, center, right)
+   - **Lists** (bullet points, numbered)
+   - **Font size** adjustment
+   - **Clear formatting**, Undo, Redo
+5. Select elements to change:
+   - **Text color** (color picker)
+   - **Background color** (color picker)
+6. Export the edited frame
+7. Use the **Replace** button in animator to upload the edited version
+
+**Features:**
+- Live WYSIWYG editing - see changes as you make them
+- Click-to-edit interface - no code knowledge needed
+- Rich text toolbar with common formatting options
+- Color pickers for text and background
+- Element information panel shows current tag and classes
+- Preserves all original HTML structure and styles
+- Exports with `-edited` suffix for easy identification
+- Keyboard shortcuts (Ctrl/Cmd + B/I/U)
+
+**Workflow with Animator:**
+```
+1. In animator, export frame 3
+2. Open WYSIWYG editor
+3. Upload frame 3
+4. Click on heading and change text
+5. Make text bold and change color
+6. Export edited frame
+7. Back in animator, click "Replace" on frame 3
+8. Upload the edited frame
+9. Animation now shows your changes
+```
+
+**Perfect for:**
+- Quick text edits without opening code editors
+- Non-technical users making content changes
+- Visual formatting adjustments
+- Rapid prototyping of frame variations
+- Testing different color schemes
+- Making small tweaks to frames
+
+**Use Cases:**
+- Edit product names or prices in demo frames
+- Change marketing copy quickly
+- Adjust text colors for better visibility
+- Format text with bold/italic for emphasis
+- Test different heading styles
+
+## Frame Splitter (Modular File Export)
+
+The Frame Splitter tool allows you to split monolithic HTML frames into separate, modular files:
+
+1. Open `frame-splitter.html`
+2. Upload an HTML frame (snapshot, exported frame, etc.)
+3. The tool automatically extracts:
+   - **HTML** - Clean structure with external CSS/JS references
+   - **CSS** - All styles from `<style>` tags and inline styles
+   - **JavaScript** - All scripts from `<script>` tags and inline event handlers
+4. Configure extraction options:
+   - Extract inline styles (converts `style=""` to CSS classes)
+   - Extract inline scripts (converts `onclick=""` to event listeners)
+   - Beautify output (formatted with indentation)
+   - Include comments (explanatory comments in output)
+5. Preview extracted code in real-time
+6. Export files individually or all at once
+
+**Use Cases:**
+- Convert single-file exports to modular projects
+- Clean up inline styles and scripts
+- Prepare frames for easier editing and maintenance
+- Create reusable CSS/JS from snapshots
+- Organize exported snapshots into proper web projects
+
+**Features:**
+- Drag-and-drop file upload
+- Real-time statistics (elements, CSS rules, JS scripts)
+- Live code preview with syntax highlighting
+- Individual or batch file export
+- Smart extraction of inline styles and scripts
+- Automatic class name generation for extracted styles
+- Event handler conversion to modern event listeners
 
 ## File Structure
 
@@ -305,6 +516,8 @@ RepriseClone/
 ├── recorder.html       # Iframe-based recording interface
 ├── player.html         # Playback interface with editing tools
 ├── animator.html       # Static Page Animator for template editing
+├── wysiwyg-editor.html # WYSIWYG visual editor for frames
+├── frame-splitter.html # Frame Splitter for modular file export
 ├── demo.html          # Sample page for testing
 ├── styles.css         # Shared styles
 └── README.md          # This file

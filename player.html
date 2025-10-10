@@ -152,6 +152,15 @@
             background: #3d3d3d;
         }
 
+        .flag-item.has-frame {
+            border-left-color: #3498db;
+            background: linear-gradient(to right, #2d3d4d, #2d2d2d);
+        }
+
+        .flag-item.has-frame:hover {
+            background: linear-gradient(to right, #3d4d5d, #3d3d3d);
+        }
+
         .flag-item-header {
             display: flex;
             justify-content: space-between;
@@ -548,7 +557,21 @@
                     <button id="cancelFlagBtn" class="btn" style="flex: 1; background: #95a5a6; color: white;">Cancel</button>
                 </div>
             </div>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #444;">
+                <h4 style="color: #fff; margin-bottom: 10px; font-size: 14px;">🎬 Frame Animation</h4>
+                <button id="captureFrameBtn" class="btn" style="width: 100%; background: #3498db; color: white; margin-bottom: 5px;">📸 Capture Current Frame</button>
+                <button id="playAnimationBtn" class="btn" style="width: 100%; background: #27ae60; color: white; margin-bottom: 5px;">▶️ Play Animation</button>
+                <button id="stopAnimationBtn" class="btn" style="width: 100%; background: #e74c3c; color: white; margin-bottom: 5px; display: none;">⏹ Stop Animation</button>
+                <div style="margin-top: 10px;">
+                    <label style="color: #999; font-size: 12px; display: block; margin-bottom: 5px;">Animation Speed</label>
+                    <input type="range" id="animationSpeed" min="500" max="3000" value="1500" step="100" style="width: 100%;">
+                    <div style="color: #999; font-size: 11px; text-align: center; margin-top: 5px;">
+                        <span id="speedLabel">1.5s per frame</span>
+                    </div>
+                </div>
+            </div>
             <button id="exportFlagsBtn" class="btn btn-secondary" style="width: 100%; margin-top: 10px;">Export with Flags</button>
+            <button id="exportFramedAnimationBtn" class="btn" style="width: 100%; margin-top: 5px; background: #9b59b6; color: white;">🎬 Export Framed Animation</button>
         </div>
     </div>
 
@@ -643,6 +666,9 @@
         let flags = [];
         let currentFlagIndex = -1;
         let textEditMode = false;
+        let animationMode = false;
+        let animationInterval = null;
+        let frameData = new Map(); // Store frame snapshots for each flag
         let currentSelectedElement = null;
         let elementMap = new Map();
         let hiddenElements = new Set();
@@ -685,6 +711,12 @@
                 const text = await file.text();
                 const recording = JSON.parse(text);
 
+                // Check if this is a framed animation
+                if (recording.type === 'framed-animation') {
+                    loadFramedAnimation(recording);
+                    return;
+                }
+
                 if (!recording.events || !Array.isArray(recording.events)) {
                     throw new Error('Invalid recording format');
                 }
@@ -705,6 +737,15 @@
 
                 // Load flags if they exist
                 flags = recording.flags || [];
+
+                // Load frames if they exist
+                frameData.clear();
+                if (recording.frames) {
+                    Object.keys(recording.frames).forEach(key => {
+                        frameData.set(parseInt(key), recording.frames[key]);
+                    });
+                }
+
                 renderFlags();
 
                 // Update info
@@ -981,23 +1022,36 @@
                 return;
             }
 
-            flagsList.innerHTML = flags.map((flag, index) => `
-                <div class="flag-item" data-flag-id="${flag.id}" data-flag-index="${index}">
+            flagsList.innerHTML = flags.map((flag, index) => {
+                const hasFrame = frameData.has(flag.id);
+                return `
+                <div class="flag-item ${hasFrame ? 'has-frame' : ''}" data-flag-id="${flag.id}" data-flag-index="${index}">
                     <div class="flag-item-header">
-                        <span class="flag-label">${flag.label}</span>
+                        <span class="flag-label">
+                            ${hasFrame ? '🎬 ' : ''}${flag.label}
+                        </span>
                         <span class="flag-time">${formatTime(flag.time)}</span>
                         <button class="flag-delete" onclick="deleteFlag(${flag.id})">×</button>
                     </div>
                     ${flag.description ? `<div class="flag-description">${flag.description}</div>` : ''}
+                    ${hasFrame ? '<div class="flag-frame-indicator" style="color: #3498db; font-size: 11px; margin-top: 5px;">📸 Frame captured</div>' : ''}
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             // Add click handlers to flag items
             document.querySelectorAll('.flag-item').forEach((item, index) => {
                 item.addEventListener('click', (e) => {
                     if (e.target.classList.contains('flag-delete')) return;
                     currentFlagIndex = index;
-                    goToTime(flags[index].time);
+                    const flag = flags[index];
+
+                    // Load frame if it exists, otherwise just go to time
+                    if (frameData.has(flag.id)) {
+                        loadFrame(flag.id);
+                    } else {
+                        goToTime(flag.time);
+                    }
                     updateActiveFlagUI();
                 });
             });
@@ -1026,7 +1080,12 @@
         prevFlagBtn.addEventListener('click', () => {
             if (currentFlagIndex > 0) {
                 currentFlagIndex--;
-                goToTime(flags[currentFlagIndex].time);
+                const flag = flags[currentFlagIndex];
+                if (frameData.has(flag.id)) {
+                    loadFrame(flag.id);
+                } else {
+                    goToTime(flag.time);
+                }
                 updateActiveFlagUI();
             }
         });
@@ -1035,7 +1094,12 @@
         nextFlagBtn.addEventListener('click', () => {
             if (currentFlagIndex < flags.length - 1) {
                 currentFlagIndex++;
-                goToTime(flags[currentFlagIndex].time);
+                const flag = flags[currentFlagIndex];
+                if (frameData.has(flag.id)) {
+                    loadFrame(flag.id);
+                } else {
+                    goToTime(flag.time);
+                }
                 updateActiveFlagUI();
             }
         });
@@ -1045,6 +1109,387 @@
             prevFlagBtn.disabled = flags.length === 0 || currentFlagIndex <= 0;
             nextFlagBtn.disabled = flags.length === 0 || currentFlagIndex >= flags.length - 1;
         }
+
+        // FRAMED ANIMATION LOADER
+
+        function loadFramedAnimation(animation) {
+            console.log('Loading framed animation:', animation);
+
+            // Clear previous player
+            if (currentPlayer) {
+                playerContainer.innerHTML = '';
+                currentPlayer = null;
+            }
+
+            // Store as special recording
+            currentRecording = {
+                type: 'framed-animation',
+                timestamp: animation.timestamp,
+                url: animation.url,
+                frames: animation.frames
+            };
+
+            // Load frames
+            flags = animation.frames.map(f => ({
+                id: f.id,
+                time: f.time,
+                label: f.label,
+                description: f.description
+            }));
+
+            frameData.clear();
+            animation.frames.forEach(frame => {
+                frameData.set(frame.id, {
+                    html: frame.html,
+                    timestamp: Date.now(),
+                    flagId: frame.id
+                });
+            });
+
+            renderFlags();
+
+            // Update info
+            const date = new Date(animation.timestamp);
+            recordingInfo.innerHTML = `
+                <strong>🎬 FRAMED ANIMATION</strong> |
+                <strong>URL:</strong> ${animation.url || 'Unknown'} |
+                <strong>Created:</strong> ${date.toLocaleString()} |
+                <strong>Frames:</strong> ${animation.frames.length}
+            `;
+
+            // Hide placeholder
+            placeholder.style.display = 'none';
+
+            // Create custom frame player
+            playerContainer.innerHTML = `
+                <div style="width: 100%; height: 100%; background: white; display: flex; flex-direction: column;">
+                    <div style="background: #2d2d2d; padding: 15px; border-bottom: 2px solid #444; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <div style="background: #9b59b6; padding: 8px 12px; border-radius: 6px; color: white; font-weight: bold; font-size: 13px;">
+                            🎬 FRAMED ANIMATION
+                        </div>
+                        <button id="framePlayerPlay" class="btn" style="background: #27ae60; color: white;">▶️ Play</button>
+                        <button id="framePlayerStop" class="btn" style="background: #e74c3c; color: white; display: none;">⏹ Stop</button>
+                        <button id="framePlayerPrev" class="btn" style="background: #667eea; color: white;">← Prev</button>
+                        <button id="framePlayerNext" class="btn" style="background: #667eea; color: white;">Next →</button>
+                        <div style="flex: 1; color: white; text-align: center; min-width: 200px;">
+                            <span id="framePlayerStatus">Frame <span id="framePlayerCurrent">1</span> of <span id="framePlayerTotal">${animation.frames.length}</span></span>
+                            <br>
+                            <span id="framePlayerLabel" style="font-size: 14px; color: #999;">-</span>
+                        </div>
+                        <div style="color: white; font-size: 13px;">
+                            Speed:
+                            <input type="range" id="framePlayerSpeed" min="500" max="3000" value="1500" step="100" style="width: 100px; vertical-align: middle;">
+                            <span id="framePlayerSpeedLabel">1.5s</span>
+                        </div>
+                    </div>
+                    <div style="background: #f0f8ff; padding: 10px; border-bottom: 2px solid #3498db; color: #333; font-size: 13px; text-align: center;">
+                        ℹ️ This is a lightweight animation file (${animation.frames.length} frames). All editing tools work normally! Use flags panel for navigation.
+                    </div>
+                    <iframe id="framePlayerIframe" style="flex: 1; width: 100%; border: none;"></iframe>
+                </div>
+            `;
+
+            // Get references
+            replayIframe = document.getElementById('framePlayerIframe');
+            currentFlagIndex = 0;
+
+            // Show buttons
+            editHtmlBtn.style.display = 'inline-block';
+            editTextBtn.style.display = 'inline-block';
+            flagsBtn.style.display = 'inline-block';
+            document.getElementById('snapshotBtn').style.display = 'inline-block';
+            document.getElementById('snapshotUploadBtn').style.display = 'inline-block';
+            document.getElementById('templateBtn').style.display = 'inline-block';
+
+            // Load first frame
+            loadFrame(animation.frames[0].id);
+            updateFramePlayerUI();
+
+            // Setup controls
+            setupFramePlayerControls();
+        }
+
+        let framePlayerPlaying = false;
+        let framePlayerInterval = null;
+
+        function setupFramePlayerControls() {
+            const playBtn = document.getElementById('framePlayerPlay');
+            const stopBtn = document.getElementById('framePlayerStop');
+            const prevBtn = document.getElementById('framePlayerPrev');
+            const nextBtn = document.getElementById('framePlayerNext');
+            const speedSlider = document.getElementById('framePlayerSpeed');
+            const speedLabel = document.getElementById('framePlayerSpeedLabel');
+
+            // Play button
+            playBtn.addEventListener('click', () => {
+                if (framePlayerPlaying) return;
+
+                framePlayerPlaying = true;
+                playBtn.style.display = 'none';
+                stopBtn.style.display = 'inline-block';
+
+                const speed = parseInt(speedSlider.value);
+
+                function nextFrame() {
+                    if (!framePlayerPlaying) return;
+
+                    currentFlagIndex++;
+                    if (currentFlagIndex >= flags.length) {
+                        currentFlagIndex = 0;
+                    }
+
+                    loadFrame(flags[currentFlagIndex].id);
+                    updateFramePlayerUI();
+
+                    framePlayerInterval = setTimeout(nextFrame, speed);
+                }
+
+                nextFrame();
+            });
+
+            // Stop button
+            stopBtn.addEventListener('click', () => {
+                framePlayerPlaying = false;
+                if (framePlayerInterval) {
+                    clearTimeout(framePlayerInterval);
+                    framePlayerInterval = null;
+                }
+                playBtn.style.display = 'inline-block';
+                stopBtn.style.display = 'none';
+            });
+
+            // Previous button
+            prevBtn.addEventListener('click', () => {
+                if (currentFlagIndex > 0) {
+                    currentFlagIndex--;
+                    loadFrame(flags[currentFlagIndex].id);
+                    updateFramePlayerUI();
+                }
+            });
+
+            // Next button
+            nextBtn.addEventListener('click', () => {
+                if (currentFlagIndex < flags.length - 1) {
+                    currentFlagIndex++;
+                    loadFrame(flags[currentFlagIndex].id);
+                    updateFramePlayerUI();
+                }
+            });
+
+            // Speed slider
+            speedSlider.addEventListener('input', (e) => {
+                const speed = parseInt(e.target.value);
+                const seconds = (speed / 1000).toFixed(1);
+                speedLabel.textContent = `${seconds}s`;
+            });
+        }
+
+        function updateFramePlayerUI() {
+            const currentEl = document.getElementById('framePlayerCurrent');
+            const labelEl = document.getElementById('framePlayerLabel');
+            if (currentEl) {
+                currentEl.textContent = currentFlagIndex + 1;
+            }
+            if (labelEl && flags[currentFlagIndex]) {
+                labelEl.textContent = flags[currentFlagIndex].label;
+            }
+        }
+
+        // FRAME ANIMATION SYSTEM
+
+        // Capture current frame
+        function captureFrame() {
+            if (!replayIframe) {
+                alert('No replay iframe found. Make sure a recording is loaded.');
+                return;
+            }
+
+            // Find the flag at current position
+            const currentTime = getCurrentTime();
+            const nearestFlag = flags.find(f => Math.abs(f.time - currentTime) < 1000); // Within 1 second
+
+            if (!nearestFlag) {
+                alert('Please position on a flag (within 1 second) to capture its frame.\n\nAdd a flag first if needed!');
+                return;
+            }
+
+            try {
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Capture the full HTML
+                const htmlContent = iframeDoc.documentElement.outerHTML;
+
+                // Store frame data
+                frameData.set(nearestFlag.id, {
+                    html: htmlContent,
+                    timestamp: Date.now(),
+                    flagId: nearestFlag.id
+                });
+
+                // Update UI
+                renderFlags();
+
+                alert(`Frame captured for "${nearestFlag.label}"! 🎬\n\nNavigate between flags to see frame changes.`);
+            } catch (error) {
+                alert('Error capturing frame: ' + error.message);
+                console.error('Frame capture error:', error);
+            }
+        }
+
+        // Load a frame
+        function loadFrame(flagId) {
+            if (!frameData.has(flagId)) {
+                console.warn('No frame data for flag:', flagId);
+                return;
+            }
+
+            if (!replayIframe) {
+                console.warn('No replay iframe');
+                return;
+            }
+
+            try {
+                const frame = frameData.get(flagId);
+                const iframeDoc = replayIframe.contentDocument || replayIframe.contentWindow.document;
+
+                // Replace the document HTML
+                iframeDoc.open();
+                iframeDoc.write(frame.html);
+                iframeDoc.close();
+
+                console.log('Loaded frame for flag:', flagId);
+            } catch (error) {
+                console.error('Error loading frame:', error);
+                alert('Error loading frame: ' + error.message);
+            }
+        }
+
+        // Play animation through flags
+        function playAnimation() {
+            if (flags.length === 0) {
+                alert('No flags to animate. Add some flags first!');
+                return;
+            }
+
+            const framesWithData = flags.filter(f => frameData.has(f.id));
+            if (framesWithData.length === 0) {
+                alert('No captured frames. Capture frames at your flags first!\n\nClick "📸 Capture Current Frame" at each flag.');
+                return;
+            }
+
+            animationMode = true;
+            currentFlagIndex = -1; // Start before first flag
+
+            // UI updates
+            document.getElementById('playAnimationBtn').style.display = 'none';
+            document.getElementById('stopAnimationBtn').style.display = 'block';
+
+            const speed = parseInt(document.getElementById('animationSpeed').value);
+
+            // Animation loop
+            function nextFrame() {
+                if (!animationMode) return;
+
+                currentFlagIndex++;
+
+                if (currentFlagIndex >= flags.length) {
+                    // Loop back to start
+                    currentFlagIndex = 0;
+                }
+
+                const flag = flags[currentFlagIndex];
+
+                // Load frame if it exists
+                if (frameData.has(flag.id)) {
+                    loadFrame(flag.id);
+                }
+
+                updateActiveFlagUI();
+
+                // Schedule next frame
+                animationInterval = setTimeout(nextFrame, speed);
+            }
+
+            // Start animation
+            nextFrame();
+        }
+
+        // Stop animation
+        function stopAnimation() {
+            animationMode = false;
+            if (animationInterval) {
+                clearTimeout(animationInterval);
+                animationInterval = null;
+            }
+
+            // UI updates
+            document.getElementById('playAnimationBtn').style.display = 'block';
+            document.getElementById('stopAnimationBtn').style.display = 'none';
+        }
+
+        // Animation speed slider
+        document.getElementById('animationSpeed').addEventListener('input', (e) => {
+            const speed = parseInt(e.target.value);
+            const seconds = (speed / 1000).toFixed(1);
+            document.getElementById('speedLabel').textContent = `${seconds}s per frame`;
+        });
+
+        // Capture frame button
+        document.getElementById('captureFrameBtn').addEventListener('click', captureFrame);
+
+        // Play animation button
+        document.getElementById('playAnimationBtn').addEventListener('click', playAnimation);
+
+        // Stop animation button
+        document.getElementById('stopAnimationBtn').addEventListener('click', stopAnimation);
+
+        // Export framed animation
+        document.getElementById('exportFramedAnimationBtn').addEventListener('click', () => {
+            if (flags.length === 0) {
+                alert('No flags to export. Add some flags first!');
+                return;
+            }
+
+            const framesWithData = flags.filter(f => frameData.has(f.id));
+            if (framesWithData.length === 0) {
+                alert('No captured frames. Capture frames at your flags first!\n\nGo to each flag and click "📸 Capture Current Frame"');
+                return;
+            }
+
+            // Build framed animation format
+            const framedAnimation = {
+                type: 'framed-animation',
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                url: currentRecording ? currentRecording.url : null,
+                originalRecording: currentRecording ? currentRecording.timestamp : null,
+                frames: framesWithData.map(flag => {
+                    const frame = frameData.get(flag.id);
+                    return {
+                        id: flag.id,
+                        label: flag.label,
+                        description: flag.description || '',
+                        time: flag.time,
+                        html: frame.html
+                    };
+                })
+            };
+
+            // Calculate size savings
+            const originalSize = JSON.stringify(currentRecording).length;
+            const animationSize = JSON.stringify(framedAnimation).length;
+            const savings = Math.round((1 - animationSize / originalSize) * 100);
+
+            const blob = new Blob([JSON.stringify(framedAnimation, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `framed-animation-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert(`🎬 Framed Animation Exported!\n\nFrames: ${framesWithData.length}\nOriginal size: ${(originalSize / 1024).toFixed(1)} KB\nAnimation size: ${(animationSize / 1024).toFixed(1)} KB\nData savings: ${savings}%\n\nThis lightweight file can be loaded in the player and will play through your frames!`);
+        });
 
         // Update active flag UI
         function updateActiveFlagUI() {
@@ -1058,16 +1503,23 @@
             updateFlagNavButtons();
         }
 
-        // Export recording with flags
+        // Export recording with flags and frames
         document.getElementById('exportFlagsBtn').addEventListener('click', () => {
             if (!currentRecording) {
                 alert('No recording loaded');
                 return;
             }
 
+            // Convert frameData Map to object for JSON serialization
+            const framesObj = {};
+            frameData.forEach((value, key) => {
+                framesObj[key] = value;
+            });
+
             const recordingWithFlags = {
                 ...currentRecording,
-                flags: flags
+                flags: flags,
+                frames: framesObj
             };
 
             const blob = new Blob([JSON.stringify(recordingWithFlags, null, 2)], {type: 'application/json'});
@@ -1077,17 +1529,24 @@
             a.download = `recording-with-flags-${Date.now()}.json`;
             a.click();
             URL.revokeObjectURL(url);
+
+            const frameCount = Object.keys(framesObj).length;
+            if (frameCount > 0) {
+                alert(`Exported recording with ${flags.length} flag(s) and ${frameCount} frame(s)! 🎬`);
+            }
         });
 
         // Update recording info
         function updateRecordingInfo() {
             if (!currentRecording) return;
             const date = new Date(currentRecording.timestamp);
+            const frameCount = frameData.size;
             recordingInfo.innerHTML = `
                 <strong>URL:</strong> ${currentRecording.url || 'Unknown'} |
                 <strong>Recorded:</strong> ${date.toLocaleString()} |
                 <strong>Events:</strong> ${currentRecording.events.length}
                 ${flags.length > 0 ? `| <strong>Flags:</strong> ${flags.length}` : ''}
+                ${frameCount > 0 ? `| <strong>Frames:</strong> ${frameCount} 🎬` : ''}
             `;
         }
 

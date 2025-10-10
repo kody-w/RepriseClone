@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame Splitter - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .splitter-page {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .splitter-header {
+            background: #2d2d2d;
+            border-bottom: 2px solid #444;
+            padding: 20px 30px;
+        }
+
+        .splitter-header h1 {
+            color: white;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+
+        .splitter-header p {
+            color: #999;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .splitter-main {
+            flex: 1;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .upload-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 2px solid #444;
+        }
+
+        .upload-area {
+            background: #1a1a1a;
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #252525;
+            border-color: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.loaded {
+            border-color: #27ae60;
+            border-style: solid;
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .upload-area h2 {
+            color: white;
+            margin: 0 0 10px 0;
+            font-size: 22px;
+        }
+
+        .upload-area p {
+            color: #999;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .upload-area.loaded p {
+            color: #27ae60;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .info-card {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-card h3 {
+            color: white;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+
+        .info-card p {
+            color: #999;
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .info-card.html-card {
+            border-left-color: #e74c3c;
+        }
+
+        .info-card.css-card {
+            border-left-color: #3498db;
+        }
+
+        .info-card.js-card {
+            border-left-color: #f39c12;
+        }
+
+        .options-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid #444;
+        }
+
+        .options-section h2 {
+            color: white;
+            margin: 0 0 20px 0;
+            font-size: 20px;
+        }
+
+        .option-group {
+            margin-bottom: 20px;
+        }
+
+        .option-group label {
+            display: flex;
+            align-items: center;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .option-group label:hover {
+            background: #252525;
+        }
+
+        .option-group input[type="checkbox"] {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-description {
+            color: #999;
+            font-size: 12px;
+            margin-left: 30px;
+            margin-top: 5px;
+        }
+
+        .export-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 30px;
+            border: 2px solid #444;
+        }
+
+        .export-section h2 {
+            color: white;
+            margin: 0 0 20px 0;
+            font-size: 20px;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .export-btn {
+            padding: 15px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .export-btn.html-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .export-btn.html-btn:hover:not(:disabled) {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+
+        .export-btn.css-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .export-btn.css-btn:hover:not(:disabled) {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .export-btn.js-btn {
+            background: #f39c12;
+            color: white;
+        }
+
+        .export-btn.js-btn:hover:not(:disabled) {
+            background: #d68910;
+            transform: translateY(-2px);
+        }
+
+        .export-btn.all-btn {
+            background: #27ae60;
+            color: white;
+            grid-column: 1 / -1;
+        }
+
+        .export-btn.all-btn:hover:not(:disabled) {
+            background: #229954;
+            transform: translateY(-2px);
+        }
+
+        .preview-section {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #444;
+        }
+
+        .preview-section h2 {
+            color: white;
+            margin: 0 0 20px 0;
+            font-size: 20px;
+        }
+
+        .preview-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preview-tab {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            color: #999;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .preview-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .preview-content {
+            display: none;
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            max-height: 400px;
+            overflow: auto;
+        }
+
+        .preview-content.active {
+            display: block;
+        }
+
+        .preview-content pre {
+            margin: 0;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body class="splitter-page">
+    <div class="splitter-header">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        <h1>🔧 Frame Splitter</h1>
+        <p>Split HTML frames into separate HTML, CSS, and JavaScript files</p>
+    </div>
+
+    <div class="splitter-main">
+        <div class="upload-section">
+            <div id="uploadArea" class="upload-area">
+                <div class="upload-icon">📄</div>
+                <h2>Upload HTML Frame</h2>
+                <p>Click or drag and drop an HTML file</p>
+            </div>
+            <input type="file" id="fileInput" accept=".html" style="display: none;">
+
+            <div id="infoGrid" class="info-grid" style="display: none;">
+                <div class="info-card html-card">
+                    <h3>HTML Elements</h3>
+                    <p id="htmlCount">0</p>
+                </div>
+                <div class="info-card css-card">
+                    <h3>CSS Rules</h3>
+                    <p id="cssCount">0</p>
+                </div>
+                <div class="info-card js-card">
+                    <h3>JS Scripts</h3>
+                    <p id="jsCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="options-section" id="optionsSection" style="display: none;">
+            <h2>⚙️ Split Options</h2>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="extractInlineStyles" checked>
+                    Extract inline styles to CSS file
+                </label>
+                <p class="option-description">Removes style="" attributes and adds them to the CSS file</p>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="extractInlineScripts" checked>
+                    Extract inline scripts to JS file
+                </label>
+                <p class="option-description">Removes onclick, onload, etc. attributes and converts to JS event listeners</p>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="beautifyOutput" checked>
+                    Beautify output files
+                </label>
+                <p class="option-description">Format code with proper indentation and line breaks</p>
+            </div>
+            <div class="option-group">
+                <label>
+                    <input type="checkbox" id="includeComments">
+                    Include explanatory comments
+                </label>
+                <p class="option-description">Add comments explaining extracted code sections</p>
+            </div>
+        </div>
+
+        <div class="export-section" id="exportSection" style="display: none;">
+            <h2>💾 Export Files</h2>
+            <div class="export-buttons">
+                <button id="exportHtml" class="export-btn html-btn">
+                    📄 Export HTML
+                </button>
+                <button id="exportCss" class="export-btn css-btn">
+                    🎨 Export CSS
+                </button>
+                <button id="exportJs" class="export-btn js-btn">
+                    ⚡ Export JS
+                </button>
+                <button id="exportAll" class="export-btn all-btn">
+                    📦 Export All Files
+                </button>
+            </div>
+        </div>
+
+        <div class="preview-section" id="previewSection" style="display: none;">
+            <h2>👁️ Preview</h2>
+            <div class="preview-tabs">
+                <button class="preview-tab active" data-tab="html">HTML</button>
+                <button class="preview-tab" data-tab="css">CSS</button>
+                <button class="preview-tab" data-tab="js">JavaScript</button>
+            </div>
+            <div id="htmlPreview" class="preview-content active">
+                <pre id="htmlCode"></pre>
+            </div>
+            <div id="cssPreview" class="preview-content">
+                <pre id="cssCode"></pre>
+            </div>
+            <div id="jsPreview" class="preview-content">
+                <pre id="jsCode"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let originalHTML = '';
+        let processedData = {
+            html: '',
+            css: '',
+            js: '',
+            stats: {
+                htmlElements: 0,
+                cssRules: 0,
+                jsScripts: 0
+            }
+        };
+        let originalFilename = '';
+
+        // Upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#764ba2';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#667eea';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#667eea';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        async function handleFile(file) {
+            if (!file.name.endsWith('.html')) {
+                alert('Please upload an HTML file');
+                return;
+            }
+
+            originalFilename = file.name.replace('.html', '');
+            originalHTML = await file.text();
+
+            // Update UI
+            uploadArea.classList.add('loaded');
+            uploadArea.querySelector('h2').textContent = 'File Loaded';
+            uploadArea.querySelector('p').textContent = file.name;
+
+            // Process the file
+            processFile();
+
+            // Show sections
+            document.getElementById('infoGrid').style.display = 'grid';
+            document.getElementById('optionsSection').style.display = 'block';
+            document.getElementById('exportSection').style.display = 'block';
+            document.getElementById('previewSection').style.display = 'block';
+        }
+
+        function processFile() {
+            // Parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(originalHTML, 'text/html');
+
+            const extractInlineStyles = document.getElementById('extractInlineStyles').checked;
+            const extractInlineScripts = document.getElementById('extractInlineScripts').checked;
+            const includeComments = document.getElementById('includeComments').checked;
+
+            // Extract CSS
+            let cssContent = '';
+            let cssRuleCount = 0;
+
+            if (includeComments) {
+                cssContent += '/* Extracted CSS from ' + originalFilename + '.html */\n\n';
+            }
+
+            // Extract from <style> tags
+            const styleTags = doc.querySelectorAll('style');
+            styleTags.forEach((style, index) => {
+                if (includeComments && style.textContent.trim()) {
+                    cssContent += `/* Style block ${index + 1} */\n`;
+                }
+                cssContent += style.textContent.trim() + '\n\n';
+                cssRuleCount += (style.textContent.match(/\{/g) || []).length;
+                style.remove();
+            });
+
+            // Extract inline styles
+            if (extractInlineStyles) {
+                const elementsWithStyle = doc.querySelectorAll('[style]');
+                let inlineStylesCSS = '';
+
+                elementsWithStyle.forEach((element, index) => {
+                    const styleAttr = element.getAttribute('style');
+                    if (styleAttr) {
+                        // Generate a unique class name
+                        const className = `extracted-style-${index + 1}`;
+                        element.classList.add(className);
+
+                        inlineStylesCSS += `.${className} {\n  ${styleAttr.replace(/;/g, ';\n  ')}\n}\n\n`;
+                        element.removeAttribute('style');
+                        cssRuleCount++;
+                    }
+                });
+
+                if (inlineStylesCSS) {
+                    if (includeComments) {
+                        cssContent += '/* Extracted inline styles */\n';
+                    }
+                    cssContent += inlineStylesCSS;
+                }
+            }
+
+            // Extract JavaScript
+            let jsContent = '';
+            let jsScriptCount = 0;
+
+            if (includeComments) {
+                jsContent += '// Extracted JavaScript from ' + originalFilename + '.html\n\n';
+            }
+
+            // Extract from <script> tags
+            const scriptTags = doc.querySelectorAll('script');
+            scriptTags.forEach((script, index) => {
+                if (script.src) {
+                    // External script - keep the reference
+                    return;
+                }
+                if (script.textContent.trim()) {
+                    if (includeComments) {
+                        jsContent += `// Script block ${index + 1}\n`;
+                    }
+                    jsContent += script.textContent.trim() + '\n\n';
+                    jsScriptCount++;
+                }
+                script.remove();
+            });
+
+            // Extract inline event handlers
+            if (extractInlineScripts) {
+                const inlineEvents = ['onclick', 'onload', 'onchange', 'onsubmit', 'onmouseover', 'onmouseout', 'onfocus', 'onblur'];
+                let inlineEventJS = '';
+
+                inlineEvents.forEach(eventName => {
+                    const elementsWithEvent = doc.querySelectorAll(`[${eventName}]`);
+                    elementsWithEvent.forEach((element, index) => {
+                        const eventCode = element.getAttribute(eventName);
+                        const elementId = element.id || `element-${eventName}-${index + 1}`;
+
+                        if (!element.id) {
+                            element.id = elementId;
+                        }
+
+                        const jsEventName = eventName.substring(2); // Remove 'on' prefix
+                        inlineEventJS += `document.getElementById('${elementId}').addEventListener('${jsEventName}', function(event) {\n  ${eventCode}\n});\n\n`;
+
+                        element.removeAttribute(eventName);
+                        jsScriptCount++;
+                    });
+                });
+
+                if (inlineEventJS) {
+                    if (includeComments) {
+                        jsContent += '// Extracted inline event handlers\n';
+                        jsContent += 'document.addEventListener(\'DOMContentLoaded\', function() {\n\n';
+                    }
+                    jsContent += inlineEventJS;
+                    if (includeComments) {
+                        jsContent += '});\n';
+                    }
+                }
+            }
+
+            // Generate clean HTML
+            let htmlContent = '<!DOCTYPE html>\n<html lang="en">\n<head>\n';
+            htmlContent += '  <meta charset="UTF-8">\n';
+            htmlContent += '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n';
+            htmlContent += '  <title>' + (doc.title || 'Extracted Page') + '</title>\n';
+            htmlContent += '  <link rel="stylesheet" href="' + originalFilename + '.css">\n';
+            htmlContent += '</head>\n';
+            htmlContent += '<body>\n';
+            htmlContent += doc.body.innerHTML;
+            htmlContent += '\n  <script src="' + originalFilename + '.js"><\/script>\n';
+            htmlContent += '</body>\n</html>';
+
+            // Store processed data
+            processedData.html = htmlContent;
+            processedData.css = cssContent;
+            processedData.js = jsContent;
+            processedData.stats.htmlElements = doc.body.querySelectorAll('*').length;
+            processedData.stats.cssRules = cssRuleCount;
+            processedData.stats.jsScripts = jsScriptCount;
+
+            // Update stats
+            document.getElementById('htmlCount').textContent = processedData.stats.htmlElements;
+            document.getElementById('cssCount').textContent = processedData.stats.cssRules;
+            document.getElementById('jsCount').textContent = processedData.stats.jsScripts;
+
+            // Update previews
+            updatePreviews();
+        }
+
+        function updatePreviews() {
+            document.getElementById('htmlCode').textContent = processedData.html;
+            document.getElementById('cssCode').textContent = processedData.css || '/* No CSS found */';
+            document.getElementById('jsCode').textContent = processedData.js || '// No JavaScript found';
+        }
+
+        // Preview tabs
+        document.querySelectorAll('.preview-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+
+                document.querySelectorAll('.preview-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.preview-content').forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(tabName + 'Preview').classList.add('active');
+            });
+        });
+
+        // Option changes trigger reprocessing
+        document.querySelectorAll('.option-group input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                if (originalHTML) {
+                    processFile();
+                }
+            });
+        });
+
+        // Export functions
+        function downloadFile(filename, content, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('exportHtml').addEventListener('click', () => {
+            downloadFile(originalFilename + '.html', processedData.html, 'text/html');
+        });
+
+        document.getElementById('exportCss').addEventListener('click', () => {
+            downloadFile(originalFilename + '.css', processedData.css, 'text/css');
+        });
+
+        document.getElementById('exportJs').addEventListener('click', () => {
+            downloadFile(originalFilename + '.js', processedData.js, 'text/javascript');
+        });
+
+        document.getElementById('exportAll').addEventListener('click', () => {
+            // Export all three files in sequence
+            downloadFile(originalFilename + '.html', processedData.html, 'text/html');
+            setTimeout(() => {
+                downloadFile(originalFilename + '.css', processedData.css, 'text/css');
+            }, 100);
+            setTimeout(() => {
+                downloadFile(originalFilename + '.js', processedData.js, 'text/javascript');
+            }, 200);
+        });
+    </script>
+</body>
+</html>
