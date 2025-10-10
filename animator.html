@@ -370,7 +370,7 @@
             <label style="color: #999; font-size: 13px;">Mode:</label>
             <select id="modeSelector" style="background: #1a1a1a; color: white; border: 2px solid #444; border-radius: 6px; padding: 6px 12px; font-size: 13px;">
                 <option value="template">Template Editor</option>
-                <option value="animation">Frame Animation</option>
+                <option value="animation" selected>Frame Animation</option>
             </select>
         </div>
         <span id="statusBadge" class="status-badge waiting">Waiting for files...</span>
@@ -455,6 +455,11 @@
                     </div>
                     <input type="file" id="framesInput" accept=".html" multiple style="display: none;">
                     <p id="framesStatus" style="color: #999; font-size: 12px; margin-top: 5px;">No frames loaded</p>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button id="exportAllFrames" class="btn" style="background: #27ae60; color: white; flex: 1; display: none;">💾 Export All</button>
+                        <button id="importAllFrames" class="btn" style="background: #3498db; color: white; flex: 1;">📂 Import All</button>
+                    </div>
+                    <input type="file" id="importFramesInput" accept=".json" style="display: none;">
                     <button id="clearFrames" class="btn" style="background: #e74c3c; color: white; width: 100%; margin-top: 10px; display: none;">🗑️ Clear All Frames</button>
                 </div>
 
@@ -515,7 +520,7 @@
 
     <script>
         // Global state
-        let currentMode = 'template';
+        let currentMode = 'animation';
         let templateHTML = null;
         let mappingData = null;
         let previewIframe = null;
@@ -536,6 +541,9 @@
             currentMode = e.target.value;
             switchMode(currentMode);
         });
+
+        // Initialize with default mode
+        switchMode(currentMode);
 
         function switchMode(mode) {
             const templateSections = document.getElementById('templateModeSections');
@@ -904,9 +912,114 @@
                 document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
                 document.getElementById('framesStatus').style.color = '#27ae60';
                 document.getElementById('clearFrames').style.display = 'block';
+                document.getElementById('exportAllFrames').style.display = 'block';
 
             } catch (error) {
                 alert('Error loading frames: ' + error.message);
+            }
+        });
+
+        // Export all frames as single JSON file
+        document.getElementById('exportAllFrames').addEventListener('click', () => {
+            if (frames.length === 0) return;
+
+            const exportData = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                frameCount: frames.length,
+                frames: frames.map((frame, index) => ({
+                    index: index,
+                    name: frame.name,
+                    html: frame.html
+                }))
+            };
+
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            a.download = `animation-frames-${timestamp}.json`;
+
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert(`✓ Exported ${frames.length} frame${frames.length !== 1 ? 's' : ''} successfully!`);
+        });
+
+        // Import all frames from JSON file
+        document.getElementById('importAllFrames').addEventListener('click', () => {
+            document.getElementById('importFramesInput').click();
+        });
+
+        document.getElementById('importFramesInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const jsonText = await file.text();
+                const importData = JSON.parse(jsonText);
+
+                // Validate import data
+                if (!importData.frames || !Array.isArray(importData.frames)) {
+                    throw new Error('Invalid frames file format');
+                }
+
+                // Ask user if they want to replace or append
+                let shouldReplace = false;
+                if (frames.length > 0) {
+                    shouldReplace = confirm(
+                        `You have ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded.\n\n` +
+                        `Click OK to REPLACE them with ${importData.frameCount} imported frame${importData.frameCount !== 1 ? 's' : ''}.\n` +
+                        `Click Cancel to ADD the imported frames.`
+                    );
+                }
+
+                // Clear existing frames if replacing
+                if (shouldReplace || frames.length === 0) {
+                    frames = [];
+                }
+
+                // Import frames
+                importData.frames.forEach(frameData => {
+                    frames.push({
+                        name: frameData.name,
+                        html: frameData.html,
+                        id: Date.now() + Math.random()
+                    });
+                });
+
+                // Update UI
+                updateFrameList();
+                updateAnimationStatus();
+                updateAnimationControls();
+
+                // Show first frame
+                if (frames.length > 0) {
+                    currentFrameIndex = 0;
+                    displayFrame(0);
+                }
+
+                document.getElementById('framesUploadArea').classList.add('loaded');
+                document.getElementById('framesStatus').textContent = `✓ ${frames.length} frame${frames.length !== 1 ? 's' : ''} loaded`;
+                document.getElementById('framesStatus').style.color = '#27ae60';
+                document.getElementById('clearFrames').style.display = 'block';
+                document.getElementById('exportAllFrames').style.display = 'block';
+
+                alert(`✓ Imported ${importData.frameCount} frame${importData.frameCount !== 1 ? 's' : ''} successfully!`);
+
+                // Reset file input
+                e.target.value = '';
+
+            } catch (error) {
+                alert('Error importing frames: ' + error.message);
+                console.error(error);
+                e.target.value = '';
             }
         });
 
@@ -925,6 +1038,7 @@
             document.getElementById('framesStatus').textContent = 'No frames loaded';
             document.getElementById('framesStatus').style.color = '#999';
             document.getElementById('clearFrames').style.display = 'none';
+            document.getElementById('exportAllFrames').style.display = 'none';
             document.getElementById('pageContainer').style.display = 'none';
             document.getElementById('placeholder').style.display = 'block';
         });
@@ -1264,6 +1378,7 @@
                 document.getElementById('framesStatus').textContent = 'No frames loaded';
                 document.getElementById('framesStatus').style.color = '#999';
                 document.getElementById('clearFrames').style.display = 'none';
+                document.getElementById('exportAllFrames').style.display = 'none';
             }
         }
 
