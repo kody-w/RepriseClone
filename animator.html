@@ -124,6 +124,7 @@
             width: 100%;
             height: 800px;
             border: none;
+            background: white;
         }
 
         .sidebar-header {
@@ -606,6 +607,12 @@
                         <button id="exportAllFrames" class="btn btn-primary" style="display: none;">💾 Export JSON</button>
                     </div>
                     <input type="file" id="importFramesInput" accept=".json" style="display: none;">
+                    <div id="exportOptions" style="display: none; margin-top: 12px; padding: 12px; background: #1a1a1a; border-radius: 6px;">
+                        <label style="display: flex; align-items: center; gap: 8px; color: #fff; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" id="compressExport" style="width: 16px; height: 16px;">
+                            <span>🗜️ Compress export (store diffs only - smaller file size)</span>
+                        </label>
+                    </div>
                     <button id="clearFrames" class="btn btn-danger btn-group full" style="margin-top: 8px; display: none; width: 100%;">🗑️ Clear All</button>
                 </div>
 
@@ -715,7 +722,7 @@
         <!-- MAIN CONTENT AREA -->
         <div class="animator-content">
             <div id="pageContainer" class="page-container" style="display: none;">
-                <iframe id="previewIframe"></iframe>
+                <iframe id="previewIframe" sandbox="allow-same-origin allow-popups"></iframe>
             </div>
             <div id="placeholder" class="placeholder-view">
                 <div class="placeholder-icon">🎨</div>
@@ -842,39 +849,147 @@
                 document.getElementById('framesStatus').classList.add('loaded');
                 document.getElementById('clearFrames').style.display = 'block';
                 document.getElementById('exportAllFrames').style.display = 'block';
+                document.getElementById('exportOptions').style.display = 'block';
 
             } catch (error) {
                 alert('Error loading frames: ' + error.message);
             }
         });
 
+        // Simple diff function - creates instructions to transform source to target
+        function createDiff(sourceHTML, targetHTML) {
+            const sourceLines = sourceHTML.split('\n');
+            const targetLines = targetHTML.split('\n');
+
+            // Create a simple instruction-based diff
+            const operations = [];
+            let si = 0; // source index
+            let ti = 0; // target index
+
+            while (ti < targetLines.length) {
+                if (si < sourceLines.length && sourceLines[si] === targetLines[ti]) {
+                    // Lines match - keep it
+                    operations.push({ op: 'keep' });
+                    si++;
+                    ti++;
+                } else {
+                    // Lines don't match - check if it's an addition or replacement
+                    const nextMatchInSource = sourceLines.indexOf(targetLines[ti], si);
+
+                    if (nextMatchInSource === -1) {
+                        // This target line doesn't exist in source - it's new
+                        operations.push({ op: 'add', line: targetLines[ti] });
+                        ti++;
+                    } else {
+                        // Found later in source - delete lines until we get there
+                        const deleteCount = nextMatchInSource - si;
+                        if (deleteCount > 0) {
+                            operations.push({ op: 'delete', count: deleteCount });
+                            si += deleteCount;
+                        }
+                    }
+                }
+            }
+
+            // Delete any remaining source lines
+            if (si < sourceLines.length) {
+                operations.push({ op: 'delete', count: sourceLines.length - si });
+            }
+
+            return { operations };
+        }
+
+        // Apply diff to reconstruct HTML from source
+        function applyDiff(sourceHTML, diffData) {
+            const sourceLines = sourceHTML.split('\n');
+            const result = [];
+            let si = 0; // source index
+
+            for (const operation of diffData.operations) {
+                if (operation.op === 'keep') {
+                    if (si < sourceLines.length) {
+                        result.push(sourceLines[si]);
+                        si++;
+                    }
+                } else if (operation.op === 'add') {
+                    result.push(operation.line);
+                } else if (operation.op === 'delete') {
+                    si += operation.count;
+                }
+            }
+
+            return result.join('\n');
+        }
+
         document.getElementById('exportAllFrames').addEventListener('click', () => {
             if (frames.length === 0) return;
 
-            const exportData = {
-                version: '1.0',
-                exportDate: new Date().toISOString(),
-                frameCount: frames.length,
-                frames: frames.map((frame, index) => ({
-                    index: index,
-                    name: frame.name,
-                    html: frame.html
-                }))
-            };
+            const compress = document.getElementById('compressExport').checked;
+            let exportData;
+
+            if (compress && frames.length > 1) {
+                // Compressed export - store first frame fully, rest as diffs
+                exportData = {
+                    version: '2.0',
+                    compressed: true,
+                    exportDate: new Date().toISOString(),
+                    frameCount: frames.length,
+                    frames: frames.map((frame, index) => {
+                        if (index === 0) {
+                            // First frame - store completely
+                            return {
+                                index: index,
+                                name: frame.name,
+                                html: frame.html,
+                                compressed: false
+                            };
+                        } else {
+                            // Subsequent frames - store as diff from previous
+                            const prevHTML = frames[index - 1].html;
+                            const diff = createDiff(prevHTML, frame.html);
+                            return {
+                                index: index,
+                                name: frame.name,
+                                diff: diff,
+                                compressed: true
+                            };
+                        }
+                    })
+                };
+            } else {
+                // Standard export - store all frames fully
+                exportData = {
+                    version: '2.0',
+                    compressed: false,
+                    exportDate: new Date().toISOString(),
+                    frameCount: frames.length,
+                    frames: frames.map((frame, index) => ({
+                        index: index,
+                        name: frame.name,
+                        html: frame.html,
+                        compressed: false
+                    }))
+                };
+            }
 
             const jsonString = JSON.stringify(exportData, null, 2);
+            const originalSize = new Blob([JSON.stringify({frames: frames.map(f => ({html: f.html}))})]).size;
+            const compressedSize = new Blob([jsonString]).size;
+            const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+
             const blob = new Blob([jsonString], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-            a.download = `animation-frames-${timestamp}.json`;
+            a.download = `animation-frames-${timestamp}${compress ? '-compressed' : ''}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            alert(`✓ Exported ${frames.length} frame${frames.length !== 1 ? 's' : ''} successfully!`);
+            const sizeInfo = compress && savings > 0 ? ` (${savings}% smaller)` : '';
+            alert(`✓ Exported ${frames.length} frame${frames.length !== 1 ? 's' : ''} successfully!${sizeInfo}`);
         });
 
         document.getElementById('importAllFrames').addEventListener('click', () => {
@@ -906,13 +1021,45 @@
                     frames = [];
                 }
 
-                importData.frames.forEach(frameData => {
-                    frames.push({
-                        name: frameData.name,
-                        html: frameData.html,
-                        id: Date.now() + Math.random()
+                // Check if this is a compressed export
+                const isCompressed = importData.compressed === true || importData.version === '2.0';
+
+                if (isCompressed && importData.frames.some(f => f.compressed)) {
+                    // Decompress frames - reconstruct from diffs
+                    let previousHTML = null;
+
+                    importData.frames.forEach(frameData => {
+                        let html;
+
+                        if (frameData.compressed && frameData.diff) {
+                            // Reconstruct from diff
+                            if (!previousHTML) {
+                                throw new Error('Invalid compressed format: diff frame without previous frame');
+                            }
+                            html = applyDiff(previousHTML, frameData.diff);
+                        } else {
+                            // First frame or uncompressed frame
+                            html = frameData.html;
+                        }
+
+                        frames.push({
+                            name: frameData.name,
+                            html: html,
+                            id: Date.now() + Math.random()
+                        });
+
+                        previousHTML = html;
                     });
-                });
+                } else {
+                    // Standard uncompressed import
+                    importData.frames.forEach(frameData => {
+                        frames.push({
+                            name: frameData.name,
+                            html: frameData.html,
+                            id: Date.now() + Math.random()
+                        });
+                    });
+                }
 
                 updateFrameList();
                 updateAnimationStatus();
@@ -928,12 +1075,15 @@
                 document.getElementById('framesStatus').classList.add('loaded');
                 document.getElementById('clearFrames').style.display = 'block';
                 document.getElementById('exportAllFrames').style.display = 'block';
+                document.getElementById('exportOptions').style.display = 'block';
 
-                alert(`✓ Imported ${importData.frameCount} frame${importData.frameCount !== 1 ? 's' : ''} successfully!`);
+                const compressionInfo = isCompressed ? ' (decompressed)' : '';
+                alert(`✓ Imported ${importData.frameCount} frame${importData.frameCount !== 1 ? 's' : ''} successfully!${compressionInfo}`);
                 e.target.value = '';
 
             } catch (error) {
                 alert('Error importing frames: ' + error.message);
+                console.error('Import error:', error);
                 e.target.value = '';
             }
         });
@@ -953,6 +1103,7 @@
             document.getElementById('framesStatus').classList.remove('loaded');
             document.getElementById('clearFrames').style.display = 'none';
             document.getElementById('exportAllFrames').style.display = 'none';
+            document.getElementById('exportOptions').style.display = 'none';
             document.getElementById('pageContainer').style.display = 'none';
             document.getElementById('placeholder').style.display = 'block';
         });
@@ -1032,10 +1183,35 @@
 
             previewIframe = document.getElementById('previewIframe');
             const frame = frames[index];
-            const blob = new Blob([frame.html], {type: 'text/html'});
+
+            // Sanitize HTML to prevent CSP issues and script errors
+            let sanitizedHTML = frame.html;
+
+            // Remove or disable scripts that cause CSP violations
+            sanitizedHTML = sanitizedHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+            // Add meta tag to prevent external resource loading issues
+            if (!sanitizedHTML.includes('<head>')) {
+                sanitizedHTML = sanitizedHTML.replace('<html', '<html><head></head');
+            }
+
+            sanitizedHTML = sanitizedHTML.replace('<head>', `<head>
+                <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob: https:; script-src 'none';">
+                <style>
+                    /* Suppress error overlays and ensure smooth rendering */
+                    * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
+                    body { margin: 0; padding: 20px; overflow-x: hidden; }
+                </style>`);
+
+            const blob = new Blob([sanitizedHTML], {type: 'text/html'});
             const url = URL.createObjectURL(blob);
 
             previewIframe.onload = () => URL.revokeObjectURL(url);
+            previewIframe.onerror = () => {
+                console.warn('Frame loading error - attempting direct display');
+                URL.revokeObjectURL(url);
+            };
+
             previewIframe.src = url;
 
             document.getElementById('currentFrameNum').textContent = index + 1;
@@ -1179,6 +1355,7 @@
                 document.getElementById('framesStatus').classList.remove('loaded');
                 document.getElementById('clearFrames').style.display = 'none';
                 document.getElementById('exportAllFrames').style.display = 'none';
+                document.getElementById('exportOptions').style.display = 'none';
             }
         }
 
