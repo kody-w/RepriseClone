@@ -141,11 +141,14 @@
 
         .diff-result-panel {
             background: #2d2d2d;
-            border-top: 2px solid #9b59b6;
+            border: 3px solid #9b59b6;
+            border-radius: 8px;
             padding: 20px;
+            margin: 15px;
             max-height: 400px;
             overflow-y: auto;
             display: none;
+            box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
         }
 
         .diff-result-panel h4 {
@@ -304,6 +307,20 @@
             }
             50% {
                 outline-color: #e74c3c;
+            }
+        }
+
+        @keyframes pulse-panel {
+            0% {
+                transform: scale(0.98);
+                opacity: 0.8;
+            }
+            50% {
+                transform: scale(1.02);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
             }
         }
 
@@ -1431,7 +1448,20 @@
             const frame1 = frames[index1];
             const frame2 = frames[index2];
 
-            computeDiff(frame1, frame2);
+            // Show computing message
+            const statusBadge = document.getElementById('statusBadge');
+            const originalStatus = statusBadge.textContent;
+            statusBadge.textContent = 'Computing diff...';
+            statusBadge.className = 'status-badge waiting';
+
+            // Compute diff with slight delay for UI update
+            setTimeout(() => {
+                computeDiff(frame1, frame2);
+
+                // Restore status
+                statusBadge.textContent = originalStatus;
+                statusBadge.className = 'status-badge ready';
+            }, 100);
         });
 
         document.getElementById('clearDiffBtn').addEventListener('click', () => {
@@ -1442,6 +1472,8 @@
         });
 
         function computeDiff(frame1, frame2) {
+            console.log('Computing diff between:', frame1.name, 'and', frame2.name);
+
             const parser = new DOMParser();
             const doc1 = parser.parseFromString(frame1.html, 'text/html');
             const doc2 = parser.parseFromString(frame2.html, 'text/html');
@@ -1449,6 +1481,9 @@
             // Extract only the body content for comparison
             const body1 = doc1.body;
             const body2 = doc2.body;
+
+            console.log('Body1 HTML length:', body1.innerHTML.length);
+            console.log('Body2 HTML length:', body2.innerHTML.length);
 
             // Find new elements
             const newElements = [];
@@ -1458,14 +1493,11 @@
             const elements2 = body2.querySelectorAll('*');
             const elements1 = body1.querySelectorAll('*');
 
-            // Create a map of elements from frame1 by their text content and tag
-            const frame1Map = new Map();
+            // Create a map of elements from frame1 by their outer HTML
+            const frame1Set = new Set();
             elements1.forEach(el => {
-                const key = `${el.tagName}:${el.textContent.trim()}`;
-                if (!frame1Map.has(key)) {
-                    frame1Map.set(key, []);
-                }
-                frame1Map.get(key).push(el);
+                // Use outer HTML for more accurate comparison
+                frame1Set.add(el.outerHTML);
             });
 
             // Find new and changed elements
@@ -1474,37 +1506,51 @@
             let diffHTML = '';
 
             elements2.forEach(el => {
-                const key = `${el.tagName}:${el.textContent.trim()}`;
-                const matchingElements = frame1Map.get(key) || [];
+                // Skip script, style, and meta tags
+                if (['SCRIPT', 'STYLE', 'META', 'LINK', 'HEAD'].includes(el.tagName)) {
+                    return;
+                }
 
-                if (matchingElements.length === 0 && el.textContent.trim().length > 0) {
-                    // This is a new element
-                    addedCount++;
-                    const clone = el.cloneNode(true);
-                    diffHTML += clone.outerHTML + '\n\n';
-                    newElements.push(el);
+                const outerHTML = el.outerHTML;
+
+                // Check if this exact element exists in frame1
+                if (!frame1Set.has(outerHTML)) {
+                    // This is a new or modified element
+                    const textContent = el.textContent.trim();
+
+                    // Only include if it has meaningful content
+                    if (textContent.length > 0) {
+                        addedCount++;
+                        diffHTML += outerHTML + '\n\n';
+                        newElements.push(el);
+                    }
                 }
             });
 
-            // Also check for text content changes
-            const textNodes1 = getTextNodes(body1);
-            const textNodes2 = getTextNodes(body2);
-            const text1 = textNodes1.map(n => n.textContent.trim()).filter(t => t.length > 0);
-            const text2 = textNodes2.map(n => n.textContent.trim()).filter(t => t.length > 0);
+            // If no differences found in elements, try comparing raw HTML
+            if (diffHTML.length === 0) {
+                const html1 = body1.innerHTML;
+                const html2 = body2.innerHTML;
 
-            // Find text that exists in frame2 but not in frame1
-            const newText = text2.filter(t => !text1.includes(t));
-            newText.forEach(text => {
-                if (!diffHTML.includes(text)) {
-                    changedCount++;
-                    diffHTML += `<span>${text}</span>\n\n`;
+                if (html1 !== html2) {
+                    // There are differences but we couldn't detect them element-wise
+                    // Show the entire body2 as the diff
+                    diffHTML = body2.innerHTML;
+                    addedCount = 1;
+                    changedCount = 1;
                 }
-            });
+            }
 
             // Calculate stats
             const diffSize = diffHTML.length;
 
+            console.log('Diff results - Added:', addedCount, 'Changed:', changedCount, 'Size:', diffSize);
+
             // Display results
+            if (diffHTML.length === 0) {
+                diffHTML = '<!-- No differences detected -->\n\nFrames appear to be identical or differences are too subtle to detect.\n\nTry comparing frames with more obvious changes.';
+            }
+
             lastDiffResult = diffHTML;
             document.getElementById('diffOutput').value = diffHTML;
             document.getElementById('addedElements').textContent = addedCount;
@@ -1533,7 +1579,17 @@
         }
 
         function showDiffPanel() {
-            document.getElementById('diffResultPanel').style.display = 'block';
+            const panel = document.getElementById('diffResultPanel');
+            panel.style.display = 'block';
+
+            // Scroll to the diff panel
+            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Add a visual pulse effect
+            panel.style.animation = 'none';
+            setTimeout(() => {
+                panel.style.animation = 'pulse-panel 0.5s ease-out';
+            }, 10);
         }
 
         function hideDiffPanel() {
