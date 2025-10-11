@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Twitter / Home</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #9ae4e8;
+            color: #333;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+        }
+
+        .header {
+            grid-column: 1 / -1;
+            background: #9ae4e8;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #7ab8bc;
+        }
+
+        .logo {
+            font-size: 32px;
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .header-nav a:hover {
+            text-decoration: underline;
+        }
+
+        .search-box {
+            background: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #9ae4e8;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            font-size: 12px;
+            width: 150px;
+        }
+
+        .sidebar {
+            background: #f0f0f0;
+            padding: 15px;
+            border-right: 1px solid #ddd;
+        }
+
+        .sidebar-right {
+            background: #f0f0f0;
+            padding: 15px;
+            border-left: 1px solid #ddd;
+        }
+
+        .main-content {
+            padding: 15px 20px;
+        }
+
+        .user-profile {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .profile-pic {
+            width: 73px;
+            height: 73px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px;
+            border: 2px solid #9ae4e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0084b4;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .user-stats {
+            font-size: 11px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .stat {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .stat-number {
+            color: #0084b4;
+            font-weight: bold;
+        }
+
+        .section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .tweet-box {
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .tweet-box textarea {
+            width: calc(100% - 16px);
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #999;
+            margin: 8px 0;
+        }
+
+        .tweet-button {
+            background: #9ae4e8;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .tweet-button:hover {
+            background: #7ab8bc;
+        }
+
+        .tweet {
+            border-bottom: 1px solid #e8f4f8;
+            padding: 12px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .tweet:last-child {
+            border-bottom: none;
+        }
+
+        .tweet-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .tweet-content {
+            flex: 1;
+        }
+
+        .tweet-author {
+            font-weight: bold;
+            color: #0084b4;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .tweet-author:hover {
+            text-decoration: underline;
+        }
+
+        .tweet-text {
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 4px 0;
+        }
+
+        .tweet-time {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .tweet-actions {
+            margin-top: 6px;
+            font-size: 11px;
+        }
+
+        .tweet-action {
+            color: #0084b4;
+            text-decoration: none;
+            margin-right: 12px;
+        }
+
+        .tweet-action:hover {
+            text-decoration: underline;
+        }
+
+        .hashtag {
+            color: #0084b4;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hashtag:hover {
+            text-decoration: underline;
+        }
+
+        .mention {
+            color: #0084b4;
+            text-decoration: none;
+        }
+
+        .mention:hover {
+            text-decoration: underline;
+        }
+
+        .trending {
+            background: #fafafa;
+            padding: 8px;
+            margin-bottom: 8px;
+            border-radius: 3px;
+        }
+
+        .trending-topic {
+            font-size: 12px;
+            color: #0084b4;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .trending-topic:hover {
+            text-decoration: underline;
+        }
+
+        .suggested-user {
+            display: flex;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+        }
+
+        .suggested-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .suggested-info {
+            flex: 1;
+        }
+
+        .suggested-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0084b4;
+            text-decoration: none;
+        }
+
+        .follow-btn {
+            background: #d3edf9;
+            border: 1px solid #a3d4e7;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+            color: #0084b4;
+            font-weight: bold;
+        }
+
+        .follow-btn:hover {
+            background: #c0e0f0;
+        }
+
+        .nav-links {
+            font-size: 11px;
+        }
+
+        .nav-links a {
+            color: #0084b4;
+            text-decoration: none;
+            display: block;
+            padding: 4px 0;
+        }
+
+        .nav-links a:hover {
+            background: #e0e0e0;
+            padding-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="#" class="logo">🐦 Twitter</a>
+            <div class="header-nav">
+                <a href="#">Home</a>
+                <a href="#">Profile</a>
+                <a href="#">Find People</a>
+                <a href="#">Settings</a>
+                <a href="#">Help</a>
+                <div class="search-box">
+                    <input type="text" placeholder="Search">
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="user-profile">
+                <div class="profile-pic">👤</div>
+                <a href="#" class="username">@johndoe</a>
+                <div class="user-stats">
+                    <div class="stat">
+                        <span class="stat-number">247</span> following
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">531</span> followers
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-links">
+                <a href="#">@ Mentions</a>
+                <a href="#">Direct Messages</a>
+                <a href="#">Favorites</a>
+                <a href="#">Retweets</a>
+                <a href="#">Lists</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h2 style="font-size: 18px; margin: 0 0 15px 0;">What's happening?</h2>
+
+            <div class="tweet-box">
+                <textarea placeholder="What are you doing?"></textarea>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="char-count">140 characters remaining</div>
+                    <button class="tweet-button">Tweet</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="tweet">
+                    <div class="tweet-avatar">👩</div>
+                    <div class="tweet-content">
+                        <a href="#" class="tweet-author">@sarahj</a>
+                        <div class="tweet-text">
+                            Just finished watching the latest episode of Lost! Mind = blown 🤯 <a href="#" class="hashtag">#Lost</a>
+                        </div>
+                        <div class="tweet-time">
+                            3 minutes ago via web
+                        </div>
+                        <div class="tweet-actions">
+                            <a href="#" class="tweet-action">Reply</a>
+                            <a href="#" class="tweet-action">Retweet</a>
+                            <a href="#" class="tweet-action">Favorite</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tweet">
+                    <div class="tweet-avatar">👨</div>
+                    <div class="tweet-content">
+                        <a href="#" class="tweet-author">@mikechen</a>
+                        <div class="tweet-text">
+                            RT <a href="#" class="mention">@techcrunch</a>: Apple just announced the new iPhone 3GS! Who's getting one? <a href="#" class="hashtag">#Apple</a> <a href="#" class="hashtag">#iPhone</a>
+                        </div>
+                        <div class="tweet-time">
+                            15 minutes ago via TweetDeck
+                        </div>
+                        <div class="tweet-actions">
+                            <a href="#" class="tweet-action">Reply</a>
+                            <a href="#" class="tweet-action">Retweet</a>
+                            <a href="#" class="tweet-action">Favorite</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tweet">
+                    <div class="tweet-avatar">👦</div>
+                    <div class="tweet-content">
+                        <a href="#" class="tweet-author">@davidm</a>
+                        <div class="tweet-text">
+                            Coffee ☕ + coding 💻 = perfect morning! Working on my new Ruby on Rails app.
+                        </div>
+                        <div class="tweet-time">
+                            32 minutes ago via web
+                        </div>
+                        <div class="tweet-actions">
+                            <a href="#" class="tweet-action">Reply</a>
+                            <a href="#" class="tweet-action">Retweet</a>
+                            <a href="#" class="tweet-action">Favorite</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tweet">
+                    <div class="tweet-avatar">👧</div>
+                    <div class="tweet-content">
+                        <a href="#" class="tweet-author">@emilylee</a>
+                        <div class="tweet-text">
+                            Heading to the gym! Time to work off all those holiday cookies 😅 <a href="#" class="hashtag">#fitness</a>
+                        </div>
+                        <div class="tweet-time">
+                            1 hour ago via Twitterrific
+                        </div>
+                        <div class="tweet-actions">
+                            <a href="#" class="tweet-action">Reply</a>
+                            <a href="#" class="tweet-action">Retweet</a>
+                            <a href="#" class="tweet-action">Favorite</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tweet">
+                    <div class="tweet-avatar">🎸</div>
+                    <div class="tweet-content">
+                        <a href="#" class="tweet-author">@indieband</a>
+                        <div class="tweet-text">
+                            New album dropping next week! Pre-order now at our website 🎵 Thanks for all the support!
+                        </div>
+                        <div class="tweet-time">
+                            2 hours ago via web
+                        </div>
+                        <div class="tweet-actions">
+                            <a href="#" class="tweet-action">Reply</a>
+                            <a href="#" class="tweet-action">Retweet (23)</a>
+                            <a href="#" class="tweet-action">Favorite</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tweet">
+                    <div class="tweet-avatar">👨</div>
+                    <div class="tweet-content">
+                        <a href="#" class="tweet-author">@alexwilson</a>
+                        <div class="tweet-text">
+                            Anyone else excited for the new Star Trek movie? <a href="#" class="mention">@sarahj</a> <a href="#" class="mention">@mikechen</a> we should all go see it!
+                        </div>
+                        <div class="tweet-time">
+                            3 hours ago via mobile web
+                        </div>
+                        <div class="tweet-actions">
+                            <a href="#" class="tweet-action">Reply (2)</a>
+                            <a href="#" class="tweet-action">Retweet</a>
+                            <a href="#" class="tweet-action">Favorite</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-right">
+            <div class="section">
+                <div class="section-title">Trending Topics</div>
+                <div class="trending">
+                    <a href="#" class="trending-topic">#iranelection</a>
+                </div>
+                <div class="trending">
+                    <a href="#" class="trending-topic">#MichaelJackson</a>
+                </div>
+                <div class="trending">
+                    <a href="#" class="trending-topic">#swine flu</a>
+                </div>
+                <div class="trending">
+                    <a href="#" class="trending-topic">#Obama</a>
+                </div>
+                <div class="trending">
+                    <a href="#" class="trending-topic">#E3</a>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Who to Follow</div>
+                <div class="suggested-user">
+                    <div class="suggested-avatar">📱</div>
+                    <div class="suggested-info">
+                        <a href="#" class="suggested-name">@mashable</a>
+                        <div style="font-size: 11px; color: #666;">Tech News</div>
+                    </div>
+                    <button class="follow-btn">Follow</button>
+                </div>
+                <div class="suggested-user">
+                    <div class="suggested-avatar">🎮</div>
+                    <div class="suggested-info">
+                        <a href="#" class="suggested-name">@gamespot</a>
+                        <div style="font-size: 11px; color: #666;">Gaming News</div>
+                    </div>
+                    <button class="follow-btn">Follow</button>
+                </div>
+                <div class="suggested-user">
+                    <div class="suggested-avatar">🎬</div>
+                    <div class="suggested-info">
+                        <a href="#" class="suggested-name">@rottentomatoes</a>
+                        <div style="font-size: 11px; color: #666;">Movies</div>
+                    </div>
+                    <button class="follow-btn">Follow</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="background: #f0f0f0; text-align: center; padding: 15px; font-size: 11px; color: #999; border-top: 1px solid #ddd;">
+        © 2009 Twitter • About Us • Contact • Blog • Status • API • Business • Help • Jobs • Terms • Privacy
+    </div>
+</body>
+</html>

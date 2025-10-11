@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MySpace - Tom's Profile</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, Verdana, sans-serif;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect fill="%23001144" width="100" height="100"/><circle fill="%23002255" cx="50" cy="50" r="30"/></svg>');
+            background-attachment: fixed;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(to bottom, #6699cc 0%, #003366 100%);
+            padding: 10px 20px;
+            border-bottom: 3px solid #003366;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            font-style: italic;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .nav {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .nav a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border: 2px solid #6699cc;
+        }
+
+        .profile-header {
+            background: linear-gradient(to bottom, #e6f2ff 0%, #cce5ff 100%);
+            padding: 20px;
+            border-bottom: 2px solid #6699cc;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #003366;
+            margin-bottom: 5px;
+        }
+
+        .profile-tagline {
+            font-size: 14px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .profile-stats {
+            font-size: 11px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .profile-body {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section {
+            background: white;
+            border: 2px solid #6699cc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .section-title {
+            background: linear-gradient(to bottom, #6699cc 0%, #4477aa 100%);
+            color: white;
+            padding: 8px 12px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .section-content {
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .profile-pic {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            border: 3px solid #6699cc;
+        }
+
+        .contact-box {
+            background: #f0f8ff;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .contact-box a {
+            display: block;
+            margin: 5px 0;
+            color: #003366;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .contact-box a:hover {
+            color: #0066cc;
+            text-decoration: underline;
+        }
+
+        .top8-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .friend-box {
+            text-align: center;
+        }
+
+        .friend-pic {
+            width: 100%;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border: 2px solid #6699cc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .friend-name {
+            font-size: 10px;
+            color: #003366;
+            font-weight: bold;
+        }
+
+        .comment-box {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+        }
+
+        .comment-author {
+            font-weight: bold;
+            color: #003366;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .comment-text {
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .comment-date {
+            font-size: 10px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .interests-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .interest-tag {
+            background: #e6f2ff;
+            border: 1px solid #6699cc;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: #003366;
+        }
+
+        .glitter-text {
+            background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0, #ff0080);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glitter 2s linear infinite;
+            font-weight: bold;
+        }
+
+        @keyframes glitter {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .music-player {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            text-align: center;
+            border: 2px solid #0f0;
+        }
+
+        .blinking {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">MySpace.com</div>
+            <div class="nav">
+                <a href="#">Home</a>
+                <a href="#">Browse</a>
+                <a href="#">Search</a>
+                <a href="#">Invite</a>
+                <a href="#">Mail</a>
+                <a href="#">Blog</a>
+                <a href="#">Favorites</a>
+                <a href="#">Forum</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="profile-header">
+            <div class="profile-name">Tom Anderson</div>
+            <div class="profile-tagline">"Thanks for being my friend!"</div>
+            <div class="profile-stats">
+                Male • 29 years old • Los Angeles, CA • Last Login: 12/15/2005
+            </div>
+        </div>
+
+        <div class="profile-body">
+            <div class="sidebar">
+                <!-- Profile Picture -->
+                <div class="section">
+                    <div class="profile-pic">👨</div>
+                    <div class="contact-box">
+                        <a href="#">Send Message</a>
+                        <a href="#">Add to Friends</a>
+                        <a href="#">Add to Favorites</a>
+                        <a href="#">Instant Message</a>
+                        <a href="#">Send Mail</a>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="section">
+                    <div class="section-title">Tom's Status</div>
+                    <div class="section-content">
+                        <div style="text-align: center; font-style: italic; color: #666;">
+                            "Building the future of social networking!"
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interests -->
+                <div class="section">
+                    <div class="section-title">Interests</div>
+                    <div class="section-content">
+                        <div class="interests-list">
+                            <div class="interest-tag">Coding</div>
+                            <div class="interest-tag">Technology</div>
+                            <div class="interest-tag">Music</div>
+                            <div class="interest-tag">Photography</div>
+                            <div class="interest-tag">Web Design</div>
+                            <div class="interest-tag">HTML</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Details -->
+                <div class="section">
+                    <div class="section-title">Tom's Details</div>
+                    <div class="section-content" style="font-size: 11px;">
+                        <strong>Status:</strong> Single<br>
+                        <strong>Here for:</strong> Networking, Friends<br>
+                        <strong>Hometown:</strong> Santa Monica<br>
+                        <strong>Occupation:</strong> Entrepreneur<br>
+                        <strong>Zodiac Sign:</strong> Scorpio
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <!-- Music Player -->
+                <div class="music-player">
+                    <div class="blinking">♪♫ Now Playing: Dashboard Confessional - Hands Down ♫♪</div>
+                    <div style="margin-top: 5px;">▶ ⏸ ⏹ ⏭</div>
+                </div>
+
+                <!-- About Me -->
+                <div class="section">
+                    <div class="section-title">About Me</div>
+                    <div class="section-content">
+                        <p class="glitter-text" style="text-align: center; font-size: 16px;">
+                            ✨ Welcome to MySpace! ✨
+                        </p>
+                        <p>
+                            Hey everyone! I'm Tom, and I started MySpace to help people connect with their friends
+                            and discover new music. This is YOUR space - customize it however you want!
+                        </p>
+                        <p>
+                            Thanks for being part of this amazing community. Remember to add me as your friend!
+                        </p>
+                        <p style="text-align: center; font-size: 10px; color: #999;">
+                            ~*~*~Made with love in 2005~*~*~
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Top 8 Friends -->
+                <div class="section">
+                    <div class="section-title">Tom's Top 8 Friends</div>
+                    <div class="section-content">
+                        <div class="top8-grid">
+                            <div class="friend-box">
+                                <div class="friend-pic">🎸</div>
+                                <div class="friend-name">Music Lover</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">📷</div>
+                                <div class="friend-name">PhotoPro</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">🎨</div>
+                                <div class="friend-name">Artist</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">💻</div>
+                                <div class="friend-name">TechGuru</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">🎭</div>
+                                <div class="friend-name">DramaQueen</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">🏀</div>
+                                <div class="friend-name">Athlete</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">📚</div>
+                                <div class="friend-name">Bookworm</div>
+                            </div>
+                            <div class="friend-box">
+                                <div class="friend-pic">🎬</div>
+                                <div class="friend-name">MovieBuff</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comments -->
+                <div class="section">
+                    <div class="section-title">Tom's Friend Comments (Displaying 5 of 10,247)</div>
+                    <div class="section-content">
+                        <div class="comment-box">
+                            <div class="comment-author">⭐ Sarah ⭐</div>
+                            <div class="comment-text">
+                                OMG Tom ur profile is soooo cool!!! Thanks for the add!
+                                Check out my new photos!!! ♥♥♥
+                            </div>
+                            <div class="comment-date">Posted on 12/14/2005 at 3:42 PM</div>
+                        </div>
+
+                        <div class="comment-box">
+                            <div class="comment-author">Mike</div>
+                            <div class="comment-text">
+                                Dude, MySpace is awesome! Just got my band's profile up.
+                                You should check us out!
+                            </div>
+                            <div class="comment-date">Posted on 12/13/2005 at 11:15 AM</div>
+                        </div>
+
+                        <div class="comment-box">
+                            <div class="comment-author">~*~Jessica~*~</div>
+                            <div class="comment-text">
+                                hey tom!!! ur in my top 8!!! lol comment me back plzzzz!!
+                                xoxoxo ♥♥♥
+                            </div>
+                            <div class="comment-date">Posted on 12/12/2005 at 8:30 PM</div>
+                        </div>
+
+                        <div class="comment-box">
+                            <div class="comment-author">DJ_Spinz</div>
+                            <div class="comment-text">
+                                Yo Tom, thanks for making this site man. I'm promoting my new mix here!
+                            </div>
+                            <div class="comment-date">Posted on 12/10/2005 at 2:15 PM</div>
+                        </div>
+
+                        <div class="comment-box">
+                            <div class="comment-author">Ashley Marie</div>
+                            <div class="comment-text">
+                                Tom you're so sweet! Thanks for accepting my friend request!
+                                Love your profile! ★彡
+                            </div>
+                            <div class="comment-date">Posted on 12/08/2005 at 6:45 PM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; color: white; padding: 20px; font-size: 11px;">
+        © 2005 MySpace.com. All Rights Reserved.
+    </div>
+</body>
+</html>

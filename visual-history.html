@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual History Player - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .visual-history-page {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        .vh-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+
+        .vh-header h1 {
+            color: white;
+            margin: 0;
+            flex: 1;
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .vh-header-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .vh-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .vh-main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .vh-sidebar {
+            width: 400px;
+            background: #1a1a1a;
+            border-right: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .vh-sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .vh-player-area {
+            flex: 1;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .control-group {
+            background: #252525;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 18px;
+            border: 1px solid #333;
+        }
+
+        .control-group-title {
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 14px;
+        }
+
+        .upload-area {
+            background: #1a1a1a;
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            background: #252525;
+            border-color: #764ba2;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-area.has-files {
+            border-color: #27ae60;
+            border-style: solid;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            color: #999;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .version-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+
+        .version-card {
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-left: 5px solid #667eea;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .version-card:hover {
+            background: #252525;
+            border-left-color: #764ba2;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .version-card.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+            border-left-color: #fff;
+        }
+
+        .version-card.active * {
+            color: white !important;
+        }
+
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .version-name {
+            color: #667eea;
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .version-date {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .version-meta {
+            color: #999;
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .btn {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .player-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .player-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #replayContainer {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .version-overlay {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px 28px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            color: white;
+            z-index: 10;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.5s;
+        }
+
+        .version-overlay.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .overlay-version {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .overlay-date {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        .overlay-description {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .timeline-container {
+            background: #1a1a1a;
+            padding: 20px 30px;
+            border-top: 2px solid #333;
+        }
+
+        .timeline {
+            position: relative;
+            height: 60px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .timeline-track {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #333;
+            transform: translateY(-50%);
+        }
+
+        .timeline-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 50%;
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            border: 3px solid #0a0a0a;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 2;
+        }
+
+        .timeline-marker:hover {
+            width: 22px;
+            height: 22px;
+            background: #764ba2;
+        }
+
+        .timeline-marker.active {
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timeline-btn {
+            background: #252525;
+            border: 2px solid #333;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .timeline-btn:hover:not(:disabled) {
+            background: #667eea;
+            border-color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .timeline-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .timeline-info {
+            flex: 1;
+            color: #999;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .speed-btn {
+            background: #252525;
+            border: 2px solid #333;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .speed-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #666;
+            padding: 80px 40px;
+        }
+
+        .placeholder-icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            opacity: 0.3;
+        }
+
+        .placeholder-title {
+            color: #888;
+            font-size: 32px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .input-field {
+            width: 100%;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-family: inherit;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-field::placeholder {
+            color: #666;
+        }
+
+        textarea.input-field {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 18px;
+        }
+
+        .info-banner strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .info-banner p {
+            margin: 6px 0;
+            font-size: 13px;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+
+        .transition-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .transition-overlay.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="visual-history-page">
+    <div class="vh-header">
+        <h1>🎬 Visual History Player</h1>
+        <div class="vh-header-links">
+            <a href="index.html" class="back-link">← Home</a>
+            <a href="player.html" class="back-link">▶️ Player</a>
+            <a href="git-visualizer.html" class="back-link" style="background: #e74c3c;">📊 Git Visualizer</a>
+        </div>
+        <div class="vh-status">
+            <span id="statusText">Ready</span>
+        </div>
+    </div>
+
+    <div class="vh-main">
+        <div class="vh-sidebar">
+            <div class="vh-sidebar-content">
+                <!-- Built-in Demos -->
+                <div class="control-group">
+                    <div class="control-group-title">✨ Built-in Demos</div>
+                    <div style="margin-bottom: 12px;">
+                        <button class="btn btn-primary" id="loadMessagingDemo" style="margin-bottom: 10px;">
+                            💬 Load Messaging Evolution
+                        </button>
+                        <p style="font-size: 11px; color: #999; text-align: center; margin-bottom: 12px;">
+                            AIM '99 → MSN '01 → Discord '24
+                        </p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" id="loadSocialDemo">
+                            📱 Load Social Media Evolution
+                        </button>
+                        <p style="font-size: 11px; color: #999; text-align: center;">
+                            MySpace '05 → Facebook '07 → Twitter '09 → Instagram '12
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Upload Section -->
+                <div class="control-group">
+                    <div class="control-group-title">📂 Upload Recordings</div>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">🎥</div>
+                        <p class="upload-text"><strong>Click to upload rrweb recordings</strong></p>
+                        <p class="upload-subtext">Each recording represents a version of your app</p>
+                        <p class="upload-subtext">Select multiple .json files</p>
+                    </div>
+                    <input type="file" id="fileInput" multiple accept=".json" style="display: none;">
+                    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 10px;">
+                        <span id="fileCount">0</span> recording(s) loaded
+                    </p>
+                </div>
+
+                <!-- Version Metadata -->
+                <div class="control-group" id="metadataSection" style="display: none;">
+                    <div class="control-group-title">✏️ Edit Version Info</div>
+                    <input type="text" class="input-field" id="versionName" placeholder="Version name (e.g., v1.0.0)">
+                    <input type="date" class="input-field" id="versionDate">
+                    <input type="text" class="input-field" id="versionCommit" placeholder="Commit hash (optional)">
+                    <textarea class="input-field" id="versionDescription" placeholder="Description of changes..."></textarea>
+                    <button class="btn btn-success" id="saveMetadata">💾 Save Metadata</button>
+                </div>
+
+                <!-- Version List -->
+                <div class="control-group">
+                    <div class="control-group-title">📋 Versions (<span id="versionCount">0</span>)</div>
+                    <div class="version-list" id="versionList">
+                        <div class="info-banner">
+                            <strong>How to use:</strong>
+                            <p>1. Upload multiple rrweb recordings (.json files)</p>
+                            <p>2. Add metadata for each version (name, date, description)</p>
+                            <p>3. Click Play to watch the visual evolution!</p>
+                            <p>4. Export your visual history to share</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="control-group">
+                    <div class="control-group-title">⚙️ Playback Settings</div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="color: #999; font-size: 12px; display: block; margin-bottom: 8px;">Duration per version (seconds)</label>
+                        <input type="range" id="versionDuration" min="3" max="30" value="10" style="width: 100%;">
+                        <div style="color: #667eea; text-align: center; font-size: 14px; font-weight: 700; margin-top: 8px;">
+                            <span id="durationValue">10</span>s
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="color: #999; font-size: 12px; display: block; margin-bottom: 8px;">
+                            <input type="checkbox" id="autoAdvance" checked> Auto-advance to next version
+                        </label>
+                        <label style="color: #999; font-size: 12px; display: block; margin-bottom: 8px;">
+                            <input type="checkbox" id="loopPlayback"> Loop playback
+                        </label>
+                        <label style="color: #999; font-size: 12px; display: block;">
+                            <input type="checkbox" id="showOverlay" checked> Show version overlay
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Export/Import -->
+                <div class="control-group">
+                    <div class="control-group-title">💾 Export / Import</div>
+                    <button class="btn btn-primary" id="exportHistory" disabled>📤 Export Visual History</button>
+                    <button class="btn btn-primary" id="importHistory" style="margin-top: 10px;">📥 Import Visual History</button>
+                    <input type="file" id="importInput" accept=".json" style="display: none;">
+                    <button class="btn btn-danger" id="clearAll" style="margin-top: 10px;" disabled>🗑️ Clear All</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="vh-player-area">
+            <div class="player-container">
+                <div id="placeholder" class="placeholder">
+                    <div class="placeholder-icon">🎬</div>
+                    <h2 class="placeholder-title">Visual History Player</h2>
+                    <p class="placeholder-text">Upload rrweb recordings to see the visual evolution of your app over time</p>
+                    <p class="placeholder-text" style="margin-top: 20px; font-size: 14px;">Perfect for showcasing UI changes, feature rollouts, and design iterations</p>
+                </div>
+                <div class="player-wrapper" id="playerWrapper" style="display: none;">
+                    <div id="replayContainer"></div>
+                    <div class="version-overlay" id="versionOverlay">
+                        <div class="overlay-version" id="overlayVersion">Version 1.0.0</div>
+                        <div class="overlay-date" id="overlayDate">January 1, 2024</div>
+                        <div class="overlay-description" id="overlayDescription">Initial release</div>
+                    </div>
+                    <div class="transition-overlay" id="transitionOverlay"></div>
+                </div>
+            </div>
+
+            <div class="timeline-container" id="timelineContainer" style="display: none;">
+                <div class="timeline" id="timeline">
+                    <div class="timeline-track">
+                        <div class="timeline-progress" id="timelineProgress" style="width: 0%;"></div>
+                    </div>
+                    <!-- Timeline markers will be added dynamically -->
+                </div>
+                <div class="timeline-controls">
+                    <button class="timeline-btn" id="prevBtn" disabled>⏮</button>
+                    <button class="timeline-btn" id="playBtn" disabled>▶️</button>
+                    <button class="timeline-btn" id="pauseBtn" disabled style="display: none;">⏸</button>
+                    <button class="timeline-btn" id="stopBtn" disabled>⏹</button>
+                    <button class="timeline-btn" id="nextBtn" disabled>⏭</button>
+                    <div class="timeline-info" id="timelineInfo">No versions loaded</div>
+                    <div class="speed-control">
+                        <span class="speed-label">Speed:</span>
+                        <button class="speed-btn" data-speed="0.5">0.5x</button>
+                        <button class="speed-btn active" data-speed="1">1x</button>
+                        <button class="speed-btn" data-speed="2">2x</button>
+                        <button class="speed-btn" data-speed="4">4x</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/rrweb@latest/dist/rrweb.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/rrweb-player@latest/dist/index.js"></script>
+    <script>
+        // Global state
+        let versions = [];
+        let currentVersionIndex = -1;
+        let isPlaying = false;
+        let autoAdvanceTimer = null;
+        let currentPlayer = null;
+        let playbackSpeed = 1;
+        let isIframeMode = false;  // Track if we're showing HTML demos vs rrweb recordings
+
+        // Built-in demo data
+        const messagingEvolution = [
+            { name: 'AOL Instant Messenger', date: '1999-01-01', url: 'demos/aim-1999.html', description: 'The iconic AIM with buddy lists and away messages' },
+            { name: 'MSN Messenger', date: '2001-01-01', url: 'demos/msn-2001.html', description: 'Microsoft\'s colorful take on instant messaging' },
+            { name: 'Discord', date: '2024-01-01', url: 'demos/discord-2024.html', description: 'Modern gaming-focused chat platform' }
+        ];
+
+        const socialMediaEvolution = [
+            { name: 'MySpace', date: '2005-01-01', url: 'demos/myspace-2005.html', description: 'Customizable profiles and Top 8 friends' },
+            { name: 'Facebook', date: '2007-01-01', url: 'demos/facebook-2007.html', description: 'The Wall, pokes, and college networks' },
+            { name: 'Twitter', date: '2009-01-01', url: 'demos/twitter-2009.html', description: '140 characters and the fail whale' },
+            { name: 'Instagram', date: '2012-01-01', url: 'demos/instagram-2012.html', description: 'Photo-first social with filters' }
+        ];
+
+        // Initialize
+        updateStatus('Ready - Load a demo or upload recordings');
+
+        // Demo loading
+        document.getElementById('loadMessagingDemo').addEventListener('click', () => {
+            loadDemo(messagingEvolution, 'Messaging Evolution');
+        });
+
+        document.getElementById('loadSocialDemo').addEventListener('click', () => {
+            loadDemo(socialMediaEvolution, 'Social Media Evolution');
+        });
+
+        function loadDemo(demoData, title) {
+            versions = demoData.map((demo, index) => ({
+                id: Date.now() + index,
+                name: demo.name,
+                date: demo.date,
+                commit: '',
+                description: demo.description,
+                url: demo.url,
+                isIframe: true
+            }));
+
+            isIframeMode = true;
+            currentVersionIndex = -1;
+
+            updateVersionList();
+            updateControls();
+            document.getElementById('fileCount').textContent = versions.length;
+            updateStatus(`${title} loaded - ${versions.length} versions`);
+
+            // Auto-load first version
+            if (versions.length > 0) {
+                loadVersion(0);
+            }
+        }
+
+        // Upload handling
+        document.getElementById('uploadArea').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            isIframeMode = false;  // Switch back to rrweb mode
+
+            try {
+                for (const file of files) {
+                    const content = await file.text();
+                    const events = JSON.parse(content);
+
+                    // Validate it's an rrweb recording
+                    if (!Array.isArray(events) || events.length === 0) {
+                        alert(`${file.name} doesn't appear to be a valid rrweb recording`);
+                        continue;
+                    }
+
+                    versions.push({
+                        id: Date.now() + Math.random(),
+                        name: file.name.replace('.json', ''),
+                        date: new Date().toISOString().split('T')[0],
+                        commit: '',
+                        description: '',
+                        events: events,
+                        filename: file.name,
+                        isIframe: false
+                    });
+                }
+
+                // Sort by name (assuming versioned naming)
+                versions.sort((a, b) => a.name.localeCompare(b.name));
+
+                updateVersionList();
+                updateControls();
+                document.getElementById('uploadArea').classList.add('has-files');
+                document.getElementById('fileCount').textContent = versions.length;
+                updateStatus(`${versions.length} recording(s) loaded`);
+
+                // Auto-select first version
+                if (versions.length > 0 && currentVersionIndex === -1) {
+                    loadVersion(0);
+                }
+
+            } catch (error) {
+                alert('Error loading files: ' + error.message);
+                console.error(error);
+            }
+
+            e.target.value = '';
+        });
+
+        // Version list rendering
+        function updateVersionList() {
+            const versionList = document.getElementById('versionList');
+            versionList.innerHTML = '';
+
+            if (versions.length === 0) {
+                versionList.innerHTML = `
+                    <div class="info-banner">
+                        <strong>How to use:</strong>
+                        <p>1. Try a built-in demo above to see the evolution of messaging or social media!</p>
+                        <p>2. Or upload your own rrweb recordings (.json files)</p>
+                        <p>3. Click Play to watch the visual evolution!</p>
+                        <p>4. Export your visual history to share</p>
+                    </div>
+                `;
+                return;
+            }
+
+            versions.forEach((version, index) => {
+                const card = document.createElement('div');
+                card.className = 'version-card';
+                if (index === currentVersionIndex) card.classList.add('active');
+
+                card.innerHTML = `
+                    <div class="version-header">
+                        <div class="version-name">${version.name || `Version ${index + 1}`}</div>
+                        <div class="version-date">${new Date(version.date).toLocaleDateString()}</div>
+                    </div>
+                    ${version.commit ? `<div class="version-meta">📝 ${version.commit}</div>` : ''}
+                    ${version.description ? `<div class="version-meta">${version.description}</div>` : ''}
+                    ${version.isIframe ? `<div class="version-meta">🌐 HTML Demo</div>` : `<div class="version-meta">🎥 ${version.events.length} events</div>`}
+                `;
+
+                card.addEventListener('click', () => {
+                    stopPlayback();
+                    loadVersion(index);
+                });
+
+                versionList.appendChild(card);
+            });
+
+            document.getElementById('versionCount').textContent = versions.length;
+        }
+
+        // Load and display a specific version
+        function loadVersion(index) {
+            if (index < 0 || index >= versions.length) return;
+
+            currentVersionIndex = index;
+            const version = versions[index];
+
+            // Show metadata editor
+            document.getElementById('metadataSection').style.display = 'block';
+            document.getElementById('versionName').value = version.name;
+            document.getElementById('versionDate').value = version.date;
+            document.getElementById('versionCommit').value = version.commit;
+            document.getElementById('versionDescription').value = version.description;
+
+            // Update overlay
+            document.getElementById('overlayVersion').textContent = version.name || `Version ${index + 1}`;
+            document.getElementById('overlayDate').textContent = new Date(version.date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('overlayDescription').textContent = version.description || 'No description provided';
+
+            // Show overlay if enabled
+            const overlay = document.getElementById('versionOverlay');
+            if (document.getElementById('showOverlay').checked) {
+                overlay.classList.add('visible');
+                setTimeout(() => overlay.classList.remove('visible'), 5000);
+            }
+
+            // Hide placeholder, show player
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('playerWrapper').style.display = 'block';
+            document.getElementById('timelineContainer').style.display = 'block';
+
+            // Play the recording or load iframe
+            if (version.isIframe) {
+                playRecording(version.url);
+            } else {
+                playRecording(version.events);
+            }
+
+            // Update UI
+            updateVersionList();
+            updateTimeline();
+            updateStatus(`Playing: ${version.name || `Version ${index + 1}`}`);
+        }
+
+        // Play an rrweb recording or load iframe
+        function playRecording(eventsOrUrl) {
+            const container = document.getElementById('replayContainer');
+            container.innerHTML = '';
+
+            // Check if we're in iframe mode
+            if (versions[currentVersionIndex] && versions[currentVersionIndex].isIframe) {
+                // Create iframe for HTML demo
+                const iframe = document.createElement('iframe');
+                iframe.src = eventsOrUrl;
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.style.background = 'white';
+                container.appendChild(iframe);
+            } else {
+                // Create rrweb player
+                currentPlayer = new rrwebPlayer({
+                    target: container,
+                    props: {
+                        events: eventsOrUrl,
+                        autoPlay: true,
+                        speed: playbackSpeed,
+                        showController: false,
+                        width: container.offsetWidth,
+                        height: container.offsetHeight
+                    }
+                });
+            }
+
+            // Set up auto-advance if enabled
+            if (document.getElementById('autoAdvance').checked && !isPlaying) {
+                const duration = parseInt(document.getElementById('versionDuration').value) * 1000;
+                autoAdvanceTimer = setTimeout(() => {
+                    if (isPlaying) {
+                        nextVersion();
+                    }
+                }, duration);
+            }
+        }
+
+        // Metadata saving
+        document.getElementById('saveMetadata').addEventListener('click', () => {
+            if (currentVersionIndex < 0) return;
+
+            versions[currentVersionIndex].name = document.getElementById('versionName').value;
+            versions[currentVersionIndex].date = document.getElementById('versionDate').value;
+            versions[currentVersionIndex].commit = document.getElementById('versionCommit').value;
+            versions[currentVersionIndex].description = document.getElementById('versionDescription').value;
+
+            updateVersionList();
+
+            // Update overlay
+            document.getElementById('overlayVersion').textContent = versions[currentVersionIndex].name;
+            document.getElementById('overlayDate').textContent = new Date(versions[currentVersionIndex].date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('overlayDescription').textContent = versions[currentVersionIndex].description || 'No description provided';
+
+            alert('✓ Metadata saved!');
+        });
+
+        // Playback controls
+        document.getElementById('playBtn').addEventListener('click', startPlayback);
+        document.getElementById('pauseBtn').addEventListener('click', pausePlayback);
+        document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+        document.getElementById('prevBtn').addEventListener('click', prevVersion);
+        document.getElementById('nextBtn').addEventListener('click', nextVersion);
+
+        function startPlayback() {
+            if (versions.length === 0) return;
+
+            isPlaying = true;
+            document.getElementById('playBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+
+            // If no version loaded, start from first
+            if (currentVersionIndex === -1) {
+                loadVersion(0);
+            } else if (document.getElementById('autoAdvance').checked) {
+                // Set up auto-advance
+                const duration = parseInt(document.getElementById('versionDuration').value) * 1000;
+                autoAdvanceTimer = setTimeout(() => {
+                    nextVersion();
+                }, duration);
+            }
+
+            updateStatus('Playing...');
+        }
+
+        function pausePlayback() {
+            isPlaying = false;
+            document.getElementById('playBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'none';
+
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            updateStatus('Paused');
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            document.getElementById('playBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'none';
+
+            if (autoAdvanceTimer) {
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = null;
+            }
+
+            updateStatus(`${versions.length} recording(s) loaded`);
+        }
+
+        function prevVersion() {
+            stopPlayback();
+            if (currentVersionIndex > 0) {
+                showTransition();
+                setTimeout(() => loadVersion(currentVersionIndex - 1), 250);
+            }
+        }
+
+        function nextVersion() {
+            const wasPlaying = isPlaying;
+
+            if (currentVersionIndex < versions.length - 1) {
+                showTransition();
+                setTimeout(() => {
+                    loadVersion(currentVersionIndex + 1);
+                    if (wasPlaying && document.getElementById('autoAdvance').checked) {
+                        const duration = parseInt(document.getElementById('versionDuration').value) * 1000;
+                        autoAdvanceTimer = setTimeout(() => {
+                            nextVersion();
+                        }, duration);
+                    }
+                }, 250);
+            } else if (wasPlaying && document.getElementById('loopPlayback').checked) {
+                // Loop back to start
+                showTransition();
+                setTimeout(() => {
+                    loadVersion(0);
+                    if (document.getElementById('autoAdvance').checked) {
+                        const duration = parseInt(document.getElementById('versionDuration').value) * 1000;
+                        autoAdvanceTimer = setTimeout(() => {
+                            nextVersion();
+                        }, duration);
+                    }
+                }, 250);
+            } else {
+                stopPlayback();
+            }
+        }
+
+        function showTransition() {
+            const overlay = document.getElementById('transitionOverlay');
+            overlay.classList.add('active');
+            setTimeout(() => overlay.classList.remove('active'), 500);
+        }
+
+        // Timeline
+        function updateTimeline() {
+            const timeline = document.getElementById('timeline');
+            const track = timeline.querySelector('.timeline-track');
+
+            // Clear existing markers
+            timeline.querySelectorAll('.timeline-marker').forEach(m => m.remove());
+
+            if (versions.length === 0) return;
+
+            // Add markers
+            versions.forEach((version, index) => {
+                const marker = document.createElement('div');
+                marker.className = 'timeline-marker';
+                if (index === currentVersionIndex) marker.classList.add('active');
+
+                const position = (index / (versions.length - 1)) * 100;
+                marker.style.left = `${position}%`;
+
+                marker.addEventListener('click', () => {
+                    stopPlayback();
+                    showTransition();
+                    setTimeout(() => loadVersion(index), 250);
+                });
+
+                timeline.appendChild(marker);
+            });
+
+            // Update progress
+            if (currentVersionIndex >= 0) {
+                const progress = (currentVersionIndex / (versions.length - 1)) * 100;
+                document.getElementById('timelineProgress').style.width = `${progress}%`;
+            }
+
+            // Update info
+            if (currentVersionIndex >= 0) {
+                document.getElementById('timelineInfo').textContent =
+                    `Version ${currentVersionIndex + 1} of ${versions.length}`;
+            }
+        }
+
+        // Speed control
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                playbackSpeed = parseFloat(btn.dataset.speed);
+
+                // Update current player if exists
+                if (currentPlayer && currentPlayer.$set) {
+                    currentPlayer.$set({ speed: playbackSpeed });
+                }
+            });
+        });
+
+        // Duration slider
+        document.getElementById('versionDuration').addEventListener('input', (e) => {
+            document.getElementById('durationValue').textContent = e.target.value;
+        });
+
+        // Controls update
+        function updateControls() {
+            const hasVersions = versions.length > 0;
+            document.getElementById('playBtn').disabled = !hasVersions;
+            document.getElementById('pauseBtn').disabled = !hasVersions;
+            document.getElementById('stopBtn').disabled = !hasVersions;
+            document.getElementById('prevBtn').disabled = !hasVersions || currentVersionIndex <= 0;
+            document.getElementById('nextBtn').disabled = !hasVersions || currentVersionIndex >= versions.length - 1;
+            document.getElementById('exportHistory').disabled = !hasVersions;
+            document.getElementById('clearAll').disabled = !hasVersions;
+        }
+
+        // Export/Import
+        document.getElementById('exportHistory').addEventListener('click', () => {
+            if (versions.length === 0) return;
+
+            const exportData = {
+                type: 'visual-history',
+                version: '1.0',
+                created: new Date().toISOString(),
+                versionCount: versions.length,
+                versions: versions
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `visual-history-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            alert('✓ Visual history exported successfully!');
+        });
+
+        document.getElementById('importHistory').addEventListener('click', () => {
+            document.getElementById('importInput').click();
+        });
+
+        document.getElementById('importInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const content = await file.text();
+                const data = JSON.parse(content);
+
+                if (data.type !== 'visual-history' || !data.versions) {
+                    throw new Error('Invalid visual history file');
+                }
+
+                const shouldReplace = versions.length > 0 ? confirm(
+                    `Replace ${versions.length} existing version(s) with ${data.versionCount} imported version(s)?`
+                ) : true;
+
+                if (shouldReplace) {
+                    versions = [];
+                    currentVersionIndex = -1;
+                }
+
+                versions.push(...data.versions);
+                versions.sort((a, b) => a.name.localeCompare(b.name));
+
+                updateVersionList();
+                updateControls();
+                document.getElementById('uploadArea').classList.add('has-files');
+                document.getElementById('fileCount').textContent = versions.length;
+
+                if (versions.length > 0) {
+                    loadVersion(0);
+                }
+
+                alert('✓ Visual history imported successfully!');
+
+            } catch (error) {
+                alert('Error importing: ' + error.message);
+            }
+
+            e.target.value = '';
+        });
+
+        document.getElementById('clearAll').addEventListener('click', () => {
+            if (!confirm('Clear all versions? This cannot be undone.')) return;
+
+            versions = [];
+            currentVersionIndex = -1;
+            stopPlayback();
+
+            document.getElementById('replayContainer').innerHTML = '';
+            document.getElementById('placeholder').style.display = 'flex';
+            document.getElementById('playerWrapper').style.display = 'none';
+            document.getElementById('timelineContainer').style.display = 'none';
+            document.getElementById('metadataSection').style.display = 'none';
+            document.getElementById('uploadArea').classList.remove('has-files');
+            document.getElementById('fileCount').textContent = '0';
+
+            updateVersionList();
+            updateControls();
+            updateStatus('Ready - Upload recordings to begin');
+        });
+
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (versions.length === 0) return;
+
+            // Don't trigger if typing in input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevVersion();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextVersion();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                if (isPlaying) {
+                    pausePlayback();
+                } else {
+                    startPlayback();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

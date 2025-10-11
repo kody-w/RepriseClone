@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MSN Messenger</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #5b9bd5;
+            font-family: 'Tahoma', 'Segoe UI', 'Arial', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .msn-window {
+            width: 240px;
+            background: #ffffff;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .title-bar {
+            background: linear-gradient(to bottom, #7db9e8 0%, #1e5799 100%);
+            color: white;
+            padding: 6px 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .title-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .msn-butterfly {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 50%, #45b7d1 100%);
+            border-radius: 50% 50% 0 50%;
+            transform: rotate(-45deg);
+        }
+
+        .title-bar-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .title-bar-button {
+            width: 18px;
+            height: 18px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .title-bar-button:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        .user-header {
+            background: linear-gradient(to bottom, #e8f4ff 0%, #d0e8ff 100%);
+            padding: 12px;
+            border-bottom: 1px solid #b8d4ea;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border: 2px solid #fff;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0066cc;
+            margin-bottom: 3px;
+        }
+
+        .user-status {
+            font-size: 10px;
+            color: #666;
+        }
+
+        .personal-message {
+            margin-top: 6px;
+            padding: 6px;
+            background: white;
+            border-radius: 4px;
+            font-size: 10px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+            border-bottom: 2px solid #1e5799;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f0f0f0;
+            color: #333;
+            border-right: 1px solid #ddd;
+        }
+
+        .tab.active {
+            background: white;
+            color: #1e5799;
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+        }
+
+        .tab:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
+        .contact-list {
+            background: white;
+            height: 350px;
+            overflow-y: auto;
+        }
+
+        .contact-group {
+            background: #e8f4ff;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #1e5799;
+            border-bottom: 1px solid #d0e8ff;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .contact-group:hover {
+            background: #d0e8ff;
+        }
+
+        .contact-item {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+
+        .contact-item:hover {
+            background: #fff8dc;
+        }
+
+        .contact-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .status-indicator {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .status-online {
+            background: #7fba00;
+        }
+
+        .status-busy {
+            background: #ff0000;
+        }
+
+        .status-away {
+            background: #ffb900;
+        }
+
+        .contact-details {
+            flex: 1;
+        }
+
+        .contact-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .contact-message {
+            font-size: 9px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .chat-window {
+            width: 450px;
+            margin-left: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .chat-header {
+            background: linear-gradient(to bottom, #e8f4ff 0%, #d0e8ff 100%);
+            padding: 10px;
+            border-bottom: 1px solid #b8d4ea;
+        }
+
+        .chat-with {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-messages {
+            background: white;
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .message {
+            margin-bottom: 12px;
+        }
+
+        .message-sender {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .message-bubble {
+            background: #e8f4ff;
+            padding: 8px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            max-width: 80%;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .message.sent .message-bubble {
+            background: #d0e8ff;
+            float: right;
+        }
+
+        .message.received .message-bubble {
+            background: #f0f0f0;
+        }
+
+        .emoticon {
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        .chat-input-area {
+            background: #f8f8f8;
+            padding: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-toolbar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+            padding: 4px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .toolbar-btn {
+            padding: 4px 8px;
+            background: #f0f0f0;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .chat-input {
+            width: calc(100% - 16px);
+            height: 60px;
+            background: white;
+            border: 1px solid #d0d0d0;
+            border-radius: 4px;
+            padding: 6px 8px;
+            font-size: 11px;
+            font-family: 'Tahoma', sans-serif;
+            resize: none;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #1e5799;
+        }
+
+        .send-button {
+            margin-top: 6px;
+            padding: 6px 16px;
+            background: linear-gradient(to bottom, #7db9e8 0%, #1e5799 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            float: right;
+        }
+
+        .send-button:hover {
+            background: linear-gradient(to bottom, #8dc9f8 0%, #2e6799 100%);
+        }
+
+        .send-button:active {
+            background: linear-gradient(to bottom, #1e5799 0%, #7db9e8 100%);
+        }
+
+        .container {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Contacts Window -->
+        <div class="msn-window">
+            <div class="title-bar">
+                <div class="title-bar-left">
+                    <div class="msn-butterfly"></div>
+                    <span>MSN Messenger</span>
+                </div>
+                <div class="title-bar-controls">
+                    <div class="title-bar-button">_</div>
+                    <div class="title-bar-button">□</div>
+                    <div class="title-bar-button">×</div>
+                </div>
+            </div>
+
+            <div class="user-header">
+                <div class="user-profile">
+                    <div class="user-avatar">😊</div>
+                    <div class="user-info">
+                        <div class="user-name">john.doe@hotmail.com</div>
+                        <div class="user-status">🟢 Online</div>
+                    </div>
+                </div>
+                <div class="personal-message">
+                    "Chatting on MSN Messenger! 💬"
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active">Contacts</div>
+                <div class="tab">Groups</div>
+            </div>
+
+            <div class="contact-list">
+                <div class="contact-group">▼ Online (7)</div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);">
+                        👧
+                        <div class="status-indicator status-online"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">Sarah</div>
+                        <div class="contact-message">BRB - Getting pizza! 🍕</div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);">
+                        👨
+                        <div class="status-indicator status-online"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">Mike Johnson</div>
+                        <div class="contact-message">Working on homework...</div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #a8e6cf 0%, #3d84a8 100%);">
+                        👩
+                        <div class="status-indicator status-busy"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">Emily Chen</div>
+                        <div class="contact-message">🎮 Playing The Sims</div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #ffd93d 0%, #f6a623 100%);">
+                        👦
+                        <div class="status-indicator status-online"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">David Martinez</div>
+                        <div class="contact-message">Listening to Linkin Park 🎵</div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #ff9ff3 0%, #f368e0 100%);">
+                        👧
+                        <div class="status-indicator status-away"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">Jessica Lee</div>
+                        <div class="contact-message">Away - At practice</div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #54a0ff 0%, #2e86de 100%);">
+                        👨
+                        <div class="status-indicator status-online"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">Chris Brown</div>
+                        <div class="contact-message">Online</div>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #ff6348 0%, #ff4757 100%);">
+                        👩
+                        <div class="status-indicator status-online"></div>
+                    </div>
+                    <div class="contact-details">
+                        <div class="contact-name">Amanda Wilson</div>
+                        <div class="contact-message">Watching Friends! 📺</div>
+                    </div>
+                </div>
+
+                <div class="contact-group">▶ Offline (12)</div>
+            </div>
+        </div>
+
+        <!-- Chat Window -->
+        <div class="msn-window chat-window">
+            <div class="title-bar">
+                <div class="title-bar-left">
+                    <div class="msn-butterfly"></div>
+                    <span>Conversation</span>
+                </div>
+                <div class="title-bar-controls">
+                    <div class="title-bar-button">_</div>
+                    <div class="title-bar-button">□</div>
+                    <div class="title-bar-button">×</div>
+                </div>
+            </div>
+
+            <div class="chat-header">
+                <div class="chat-with">
+                    <div class="contact-avatar" style="background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%); width: 40px; height: 40px; font-size: 20px;">
+                        👧
+                        <div class="status-indicator status-online"></div>
+                    </div>
+                    <div>
+                        <div class="contact-name" style="font-size: 13px;">Sarah</div>
+                        <div class="contact-message">BRB - Getting pizza! 🍕</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-messages">
+                <div class="message received">
+                    <div class="message-sender">Sarah says:</div>
+                    <div class="message-bubble">
+                        hey!! <span class="emoticon">😊</span>
+                    </div>
+                </div>
+
+                <div class="message sent">
+                    <div class="message-sender" style="text-align: right;">You say:</div>
+                    <div class="message-bubble">
+                        hi! what's up?
+                    </div>
+                </div>
+
+                <div class="message received">
+                    <div class="message-sender">Sarah says:</div>
+                    <div class="message-bubble">
+                        not much, just got home from school. did u see the new episode of Lost last night?? <span class="emoticon">📺</span>
+                    </div>
+                </div>
+
+                <div class="message sent">
+                    <div class="message-sender" style="text-align: right;">You say:</div>
+                    <div class="message-bubble">
+                        YES!! it was crazy! i can't believe what happened <span class="emoticon">😱</span>
+                    </div>
+                </div>
+
+                <div class="message received">
+                    <div class="message-sender">Sarah says:</div>
+                    <div class="message-bubble">
+                        i know right?! we should totally talk about it tomorrow at lunch
+                    </div>
+                </div>
+
+                <div class="message sent">
+                    <div class="message-sender" style="text-align: right;">You say:</div>
+                    <div class="message-bubble">
+                        for sure! btw did you finish the english homework?
+                    </div>
+                </div>
+
+                <div class="message received">
+                    <div class="message-sender">Sarah says:</div>
+                    <div class="message-bubble">
+                        omg no... i totally forgot about it <span class="emoticon">😅</span> was there homework??
+                    </div>
+                </div>
+
+                <div class="message sent">
+                    <div class="message-sender" style="text-align: right;">You say:</div>
+                    <div class="message-bubble">
+                        yeah we have to read chapter 5. it's not too long tho
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="input-toolbar">
+                    <div class="toolbar-btn">😊</div>
+                    <div class="toolbar-btn"><b>B</b></div>
+                    <div class="toolbar-btn"><i>I</i></div>
+                    <div class="toolbar-btn"><u>U</u></div>
+                    <div class="toolbar-btn">🎨</div>
+                    <div class="toolbar-btn">📎</div>
+                    <div class="toolbar-btn">🖼️</div>
+                </div>
+                <textarea class="chat-input" placeholder="Type a message..."></textarea>
+                <button class="send-button">Send</button>
+                <div style="clear: both;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

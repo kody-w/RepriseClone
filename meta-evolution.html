@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computing History Evolution - The Complete Stack</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .controls {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .demo-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .demo-btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #764ba2;
+        }
+
+        .control-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .timeline-info {
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        /* Hardware Frames */
+        .hardware-container {
+            perspective: 1500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 700px;
+        }
+
+        .hardware-frame {
+            transform-style: preserve-3d;
+            transition: all 0.8s ease;
+        }
+
+        /* 1999 - Beige PC with CRT */
+        .hw-crt-desktop {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .crt-monitor {
+            width: 600px;
+            height: 500px;
+            background: linear-gradient(to bottom, #e0d5c7 0%, #c9baa8 100%);
+            border-radius: 20px;
+            padding: 40px 30px 60px 30px;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.4),
+                inset 0 2px 10px rgba(255,255,255,0.3);
+            position: relative;
+        }
+
+        .crt-screen {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+        }
+
+        .crt-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.15),
+                rgba(0,0,0,0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .crt-glare {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 40%;
+            height: 30%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 11;
+        }
+
+        .desktop-tower {
+            width: 200px;
+            height: 400px;
+            background: linear-gradient(to right, #c9baa8 0%, #b5a896 50%, #9e9284 100%);
+            border-radius: 8px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .tower-cd-drive {
+            width: 80%;
+            height: 30px;
+            background: #000;
+            margin: 80px auto 10px;
+            border: 2px solid #666;
+        }
+
+        .tower-button {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin: 10px auto;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        /* 2001 - iMac G3 */
+        .hw-imac-g3 {
+            width: 650px;
+            height: 600px;
+            background: linear-gradient(135deg, rgba(102, 204, 255, 0.3) 0%, rgba(51, 153, 255, 0.4) 100%);
+            border-radius: 50% 50% 45% 45% / 40% 40% 60% 60%;
+            padding: 60px 50px 120px 50px;
+            box-shadow:
+                0 30px 80px rgba(51, 153, 255, 0.3),
+                inset 0 0 100px rgba(255,255,255,0.1);
+            position: relative;
+            border: 8px solid rgba(255,255,255,0.2);
+        }
+
+        .imac-screen {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        .imac-base {
+            position: absolute;
+            bottom: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 80px;
+            background: linear-gradient(135deg, rgba(102, 204, 255, 0.4) 0%, rgba(51, 153, 255, 0.5) 100%);
+            border-radius: 50%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* 2007 - MacBook */
+        .hw-macbook {
+            width: 700px;
+            perspective: 1000px;
+        }
+
+        .macbook-screen {
+            width: 100%;
+            height: 450px;
+            background: linear-gradient(to bottom, #c0c0c0 0%, #a0a0a0 100%);
+            border-radius: 12px 12px 0 0;
+            padding: 20px 20px 40px 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            position: relative;
+        }
+
+        .macbook-display {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .macbook-camera {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+            z-index: 20;
+        }
+
+        .macbook-keyboard {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to bottom, #b0b0b0 0%, #909090 100%);
+            border-radius: 0 0 12px 12px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .macbook-trackpad {
+            width: 120px;
+            height: 80px;
+            background: #808080;
+            border-radius: 8px;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* 2024 - Gaming PC */
+        .hw-gaming-rig {
+            display: flex;
+            gap: 30px;
+            align-items: flex-end;
+        }
+
+        .gaming-monitor {
+            width: 700px;
+            height: 500px;
+            background: linear-gradient(to bottom, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow:
+                0 20px 60px rgba(0,0,0,0.6),
+                0 0 20px rgba(138, 43, 226, 0.3);
+            position: relative;
+        }
+
+        .gaming-screen {
+            width: 100%;
+            height: 100%;
+            background: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gaming-tower {
+            width: 220px;
+            height: 450px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rgb-strip {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                0deg,
+                rgba(255,0,0,0.2) 0%,
+                rgba(255,127,0,0.2) 16%,
+                rgba(255,255,0,0.2) 32%,
+                rgba(0,255,0,0.2) 48%,
+                rgba(0,0,255,0.2) 64%,
+                rgba(75,0,130,0.2) 80%,
+                rgba(148,0,211,0.2) 100%
+            );
+            animation: rgb-flow 3s linear infinite;
+            opacity: 0.6;
+        }
+
+        @keyframes rgb-flow {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        .glass-panel {
+            position: absolute;
+            left: 20px;
+            right: 20px;
+            top: 50px;
+            bottom: 50px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        /* Content iframe */
+        .content-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Version indicator */
+        .version-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            color: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .version-year {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .version-name {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        .version-tech {
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖥️ Computing History Evolution 🚀</h1>
+            <p>The Complete Stack: Hardware → OS → Browser → Application</p>
+        </div>
+
+        <div class="controls">
+            <div class="demo-buttons">
+                <button class="demo-btn" onclick="loadFullEvolution()">
+                    🌟 Full Evolution (1999 → 2024)
+                </button>
+                <button class="demo-btn" onclick="loadMessaging()">
+                    💬 Messaging Evolution
+                </button>
+                <button class="demo-btn" onclick="loadSocialMedia()">
+                    📱 Social Media Evolution
+                </button>
+            </div>
+
+            <div class="playback-controls">
+                <button class="control-btn" onclick="prevVersion()" id="prevBtn">⏮ Previous</button>
+                <button class="control-btn" onclick="playPause()" id="playBtn">▶️ Play</button>
+                <button class="control-btn" onclick="nextVersion()" id="nextBtn">Next ⏭</button>
+                <span class="timeline-info" id="timeline">Ready to start</span>
+            </div>
+        </div>
+
+        <div class="hardware-container" id="hardwareContainer">
+            <!-- Hardware will be dynamically inserted here -->
+        </div>
+
+        <div class="version-indicator" id="versionIndicator" style="display: none;">
+            <div class="version-year" id="versionYear">1999</div>
+            <div class="version-name" id="versionName">AOL Instant Messenger</div>
+            <div class="version-tech" id="versionTech">Beige PC • Windows 95 • Netscape Navigator</div>
+        </div>
+    </div>
+
+    <script>
+        const evolutionData = [
+            {
+                year: 1999,
+                name: 'AOL Instant Messenger',
+                hardware: 'crt-desktop',
+                os: 'Windows 95',
+                browser: 'Netscape Navigator',
+                app: 'demos/aim-1999.html'
+            },
+            {
+                year: 2001,
+                name: 'MSN Messenger',
+                hardware: 'imac-g3',
+                os: 'Mac OS 9',
+                browser: 'Internet Explorer',
+                app: 'demos/msn-2001.html'
+            },
+            {
+                year: 2005,
+                name: 'MySpace',
+                hardware: 'crt-desktop',
+                os: 'Windows XP',
+                browser: 'Firefox',
+                app: 'demos/myspace-2005.html'
+            },
+            {
+                year: 2007,
+                name: 'Facebook',
+                hardware: 'macbook',
+                os: 'Mac OS X Leopard',
+                browser: 'Safari',
+                app: 'demos/facebook-2007.html'
+            },
+            {
+                year: 2009,
+                name: 'Twitter',
+                hardware: 'macbook',
+                os: 'Windows 7',
+                browser: 'Chrome',
+                app: 'demos/twitter-2009.html'
+            },
+            {
+                year: 2012,
+                name: 'Instagram',
+                hardware: 'macbook',
+                os: 'Mac OS X Mountain Lion',
+                browser: 'Chrome',
+                app: 'demos/instagram-2012.html'
+            },
+            {
+                year: 2024,
+                name: 'Discord',
+                hardware: 'gaming-rig',
+                os: 'Windows 11',
+                browser: 'Chrome',
+                app: 'demos/discord-2024.html'
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        function renderHardware(data) {
+            const container = document.getElementById('hardwareContainer');
+            let html = '';
+
+            if (data.hardware === 'crt-desktop') {
+                html = `
+                    <div class="hardware-frame hw-crt-desktop">
+                        <div class="crt-monitor">
+                            <div class="crt-screen">
+                                <div class="crt-glare"></div>
+                                <iframe class="content-iframe" src="${data.app}"></iframe>
+                            </div>
+                        </div>
+                        <div class="desktop-tower">
+                            <div class="tower-cd-drive"></div>
+                            <div class="tower-button"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (data.hardware === 'imac-g3') {
+                html = `
+                    <div class="hardware-frame hw-imac-g3">
+                        <div class="imac-screen">
+                            <iframe class="content-iframe" src="${data.app}"></iframe>
+                        </div>
+                        <div class="imac-base"></div>
+                    </div>
+                `;
+            } else if (data.hardware === 'macbook') {
+                html = `
+                    <div class="hardware-frame hw-macbook">
+                        <div class="macbook-screen">
+                            <div class="macbook-camera"></div>
+                            <div class="macbook-display">
+                                <iframe class="content-iframe" src="${data.app}"></iframe>
+                            </div>
+                        </div>
+                        <div class="macbook-keyboard">
+                            <div class="macbook-trackpad"></div>
+                        </div>
+                    </div>
+                `;
+            } else if (data.hardware === 'gaming-rig') {
+                html = `
+                    <div class="hardware-frame hw-gaming-rig">
+                        <div class="gaming-monitor">
+                            <div class="gaming-screen">
+                                <iframe class="content-iframe" src="${data.app}"></iframe>
+                            </div>
+                        </div>
+                        <div class="gaming-tower">
+                            <div class="rgb-strip"></div>
+                            <div class="glass-panel"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            // Update version indicator
+            document.getElementById('versionIndicator').style.display = 'block';
+            document.getElementById('versionYear').textContent = data.year;
+            document.getElementById('versionName').textContent = data.name;
+            document.getElementById('versionTech').textContent = `${data.hardware.replace('-', ' ')} • ${data.os} • ${data.browser}`;
+            document.getElementById('timeline').textContent = `${currentIndex + 1} / ${evolutionData.length} - ${data.year}`;
+        }
+
+        function loadFullEvolution() {
+            currentIndex = 0;
+            renderHardware(evolutionData[currentIndex]);
+        }
+
+        function loadMessaging() {
+            currentIndex = 0;
+            const messaging = evolutionData.filter(d =>
+                d.name.includes('Messenger') || d.name.includes('Discord') || d.name.includes('AIM')
+            );
+            renderHardware(evolutionData[0]); // Start with AIM
+        }
+
+        function loadSocialMedia() {
+            currentIndex = 2;
+            renderHardware(evolutionData[2]); // Start with MySpace
+        }
+
+        function nextVersion() {
+            if (currentIndex < evolutionData.length - 1) {
+                currentIndex++;
+                renderHardware(evolutionData[currentIndex]);
+            } else if (isPlaying) {
+                currentIndex = 0;
+                renderHardware(evolutionData[currentIndex]);
+            }
+        }
+
+        function prevVersion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderHardware(evolutionData[currentIndex]);
+            }
+        }
+
+        function playPause() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+
+            if (isPlaying) {
+                btn.textContent = '⏸ Pause';
+                playInterval = setInterval(() => {
+                    nextVersion();
+                }, 5000); // 5 seconds per version
+            } else {
+                btn.textContent = '▶️ Play';
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                }
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevVersion();
+            if (e.key === 'ArrowRight') nextVersion();
+            if (e.key === ' ') {
+                e.preventDefault();
+                playPause();
+            }
+        });
+
+        // Start with first version
+        loadFullEvolution();
+    </script>
+</body>
+</html>

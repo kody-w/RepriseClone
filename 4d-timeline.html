@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4D Temporal Timeline - Computing Evolution</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .main-area {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: #1a1a1a;
+            border-right: 2px solid #333;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .view-modes {
+            margin-bottom: 30px;
+        }
+
+        .mode-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #252525;
+            border: 2px solid #333;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .mode-btn:hover {
+            background: #333;
+            border-color: #667eea;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+        }
+
+        .branch-list {
+            margin-top: 20px;
+        }
+
+        .branch-item {
+            padding: 12px;
+            background: #252525;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .branch-item:hover {
+            background: #2d2d2d;
+            transform: translateX(5px);
+        }
+
+        .branch-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border-left-color: #fff;
+        }
+
+        .branch-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .branch-desc {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .content-area {
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Timeline View */
+        .timeline-view {
+            padding: 40px;
+            overflow: auto;
+            height: 100%;
+        }
+
+        .timeline-graph {
+            position: relative;
+            min-height: 800px;
+        }
+
+        .timeline-node {
+            position: absolute;
+            width: 180px;
+            background: #1a1a1a;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .timeline-node:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
+            border-color: #764ba2;
+        }
+
+        .timeline-node.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #fff;
+        }
+
+        .node-year {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #667eea;
+        }
+
+        .timeline-node.active .node-year {
+            color: #fff;
+        }
+
+        .node-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .node-tech {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .timeline-node.active .node-tech {
+            color: #e0e0e0;
+        }
+
+        .decision-point {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #ff6b6b;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 15;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            50% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(255, 107, 107, 0); }
+        }
+
+        .timeline-connection {
+            position: absolute;
+            stroke: #667eea;
+            stroke-width: 3;
+            fill: none;
+            z-index: 1;
+        }
+
+        .timeline-connection.branch {
+            stroke: #ff6b6b;
+            stroke-dasharray: 5, 5;
+        }
+
+        /* Parallel View */
+        .parallel-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            height: 100%;
+            overflow: auto;
+        }
+
+        .parallel-column {
+            background: #1a1a1a;
+            border-radius: 12px;
+            border: 2px solid #333;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px;
+            font-weight: 600;
+        }
+
+        .column-content {
+            flex: 1;
+            position: relative;
+        }
+
+        .column-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Scrubber */
+        .scrubber {
+            background: #1a1a1a;
+            border-top: 2px solid #333;
+            padding: 20px 30px;
+        }
+
+        .scrubber-track {
+            position: relative;
+            height: 60px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .scrubber-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #333;
+            transform: translateY(-50%);
+        }
+
+        .scrubber-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .scrubber-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border: 3px solid #0a0a0a;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scrubber-marker:hover {
+            width: 28px;
+            height: 28px;
+            background: #764ba2;
+        }
+
+        .scrubber-marker.active {
+            width: 32px;
+            height: 32px;
+            background: #fff;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+
+        .scrubber-marker.decision {
+            background: #ff6b6b;
+            animation: pulse-marker 2s infinite;
+        }
+
+        @keyframes pulse-marker {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+        }
+
+        .playback-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .timeline-info {
+            font-size: 14px;
+            color: #999;
+            font-weight: 600;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        /* Decision Modal */
+        .decision-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border-radius: 16px;
+            border: 2px solid #667eea;
+            padding: 40px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-desc {
+            font-size: 14px;
+            color: #999;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .branch-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .branch-option {
+            padding: 20px;
+            background: #252525;
+            border: 2px solid #333;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .branch-option:hover {
+            background: #2d2d2d;
+            border-color: #667eea;
+            transform: translateY(-4px);
+        }
+
+        .option-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .option-desc {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Full screen iframe view */
+        .fullscreen-view {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .fullscreen-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .version-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            z-index: 100;
+        }
+
+        .overlay-year {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .overlay-name {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .overlay-tech {
+            font-size: 11px;
+            color: #999;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>🌌 4D Temporal Timeline Explorer</h1>
+            <p>Navigate through parallel universes of computing history • Branch at decision points • Compare timelines</p>
+        </div>
+
+        <div class="main-area">
+            <div class="sidebar">
+                <div class="view-modes">
+                    <h3 style="margin-bottom: 15px; font-size: 14px; color: #999; text-transform: uppercase;">View Mode</h3>
+                    <button class="mode-btn active" onclick="switchMode('fullscreen')">🖥️ Fullscreen View</button>
+                    <button class="mode-btn" onclick="switchMode('timeline')">🌳 Timeline Graph</button>
+                    <button class="mode-btn" onclick="switchMode('parallel')">↔️ Parallel Compare</button>
+                </div>
+
+                <div class="branch-list">
+                    <h3 style="margin-bottom: 15px; font-size: 14px; color: #999; text-transform: uppercase;">Active Branches</h3>
+                    <div id="branchList"></div>
+                </div>
+            </div>
+
+            <div class="content-area" id="contentArea">
+                <!-- Content will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <div class="scrubber">
+            <div class="scrubber-track" id="scrubberTrack">
+                <div class="scrubber-line"></div>
+                <div class="scrubber-progress" id="scrubberProgress"></div>
+                <!-- Markers will be dynamically added -->
+            </div>
+            <div class="playback-controls">
+                <button class="control-btn" onclick="prevNode()">⏮ Previous</button>
+                <button class="control-btn" id="playBtn" onclick="togglePlay()">▶️ Play</button>
+                <button class="control-btn" onclick="nextNode()">Next ⏭</button>
+                <div class="timeline-info" id="timelineInfo">Select a timeline to begin</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Timeline data structure with branches
+        const timelineData = {
+            main: {
+                name: "Main Timeline",
+                description: "The actual history as it happened",
+                nodes: [
+                    { id: 'aim1999', year: 1999, name: 'AOL Instant Messenger', app: 'demos/aim-1999.html', hw: 'Beige PC', os: 'Windows 95', browser: 'Netscape' },
+                    { id: 'msn2001', year: 2001, name: 'MSN Messenger', app: 'demos/msn-2001.html', hw: 'iMac G3', os: 'Mac OS 9', browser: 'IE', isDecision: true, decisions: ['msTeams', 'googleHangouts'] },
+                    { id: 'myspace2005', year: 2005, name: 'MySpace', app: 'demos/myspace-2005.html', hw: 'HP Laptop', os: 'Windows XP', browser: 'Firefox' },
+                    { id: 'facebook2007', year: 2007, name: 'Facebook', app: 'demos/facebook-2007.html', hw: 'MacBook', os: 'OS X Leopard', browser: 'Safari', isDecision: true, decisions: ['fbProfessional', 'fbDecentralized'] },
+                    { id: 'twitter2009', year: 2009, name: 'Twitter', app: 'demos/twitter-2009.html', hw: 'MacBook', os: 'Windows 7', browser: 'Chrome' },
+                    { id: 'instagram2012', year: 2012, name: 'Instagram', app: 'demos/instagram-2012.html', hw: 'MacBook', os: 'OS X Mountain Lion', browser: 'Chrome' },
+                    { id: 'discord2024', year: 2024, name: 'Discord', app: 'demos/discord-2024.html', hw: 'Gaming PC', os: 'Windows 11', browser: 'Chrome' }
+                ]
+            },
+            msTeams: {
+                name: "Microsoft Teams Timeline",
+                description: "What if Microsoft kept investing in messaging",
+                parentNode: 'msn2001',
+                nodes: [
+                    { id: 'skype2011', year: 2011, name: 'Skype (Microsoft)', app: 'demos/msn-2001.html', hw: 'MacBook', os: 'Windows 7', browser: 'Chrome' },
+                    { id: 'teams2017', year: 2017, name: 'Microsoft Teams', app: 'demos/discord-2024.html', hw: 'Surface', os: 'Windows 10', browser: 'Edge' },
+                    { id: 'teams2024', year: 2024, name: 'Teams (Modern)', app: 'demos/discord-2024.html', hw: 'Surface', os: 'Windows 11', browser: 'Edge' }
+                ]
+            },
+            googleHangouts: {
+                name: "Google Hangouts Timeline",
+                description: "What if Google dominated social messaging",
+                parentNode: 'msn2001',
+                nodes: [
+                    { id: 'gtalk2008', year: 2008, name: 'Google Talk', app: 'demos/aim-1999.html', hw: 'MacBook', os: 'Mac OS X', browser: 'Chrome' },
+                    { id: 'hangouts2013', year: 2013, name: 'Google Hangouts', app: 'demos/discord-2024.html', hw: 'Chromebook', os: 'Chrome OS', browser: 'Chrome' },
+                    { id: 'meet2020', year: 2020, name: 'Google Meet', app: 'demos/discord-2024.html', hw: 'Pixel', os: 'Android', browser: 'Chrome' }
+                ]
+            },
+            fbProfessional: {
+                name: "Facebook Professional",
+                description: "What if Facebook pivoted to professional networking",
+                parentNode: 'facebook2007',
+                nodes: [
+                    { id: 'fbwork2016', year: 2016, name: 'Facebook at Work', app: 'demos/facebook-2007.html', hw: 'MacBook Pro', os: 'macOS Sierra', browser: 'Safari' },
+                    { id: 'workplace2020', year: 2020, name: 'Workplace by Meta', app: 'demos/discord-2024.html', hw: 'MacBook Pro', os: 'macOS Big Sur', browser: 'Chrome' }
+                ]
+            },
+            fbDecentralized: {
+                name: "Decentralized Social",
+                description: "What if social media went decentralized",
+                parentNode: 'facebook2007',
+                nodes: [
+                    { id: 'mastodon2016', year: 2016, name: 'Mastodon', app: 'demos/twitter-2009.html', hw: 'ThinkPad', os: 'Linux', browser: 'Firefox' },
+                    { id: 'fediverse2022', year: 2022, name: 'Fediverse', app: 'demos/instagram-2012.html', hw: 'Custom PC', os: 'Linux', browser: 'Firefox' }
+                ]
+            }
+        };
+
+        // State
+        let currentMode = 'fullscreen';
+        let activeBranches = ['main'];
+        let currentNodeIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        // Initialize
+        function init() {
+            renderBranchList();
+            renderScrubber();
+            renderContent();
+        }
+
+        function renderBranchList() {
+            const container = document.getElementById('branchList');
+            container.innerHTML = '';
+
+            Object.keys(timelineData).forEach(branchKey => {
+                const branch = timelineData[branchKey];
+                const isActive = activeBranches.includes(branchKey);
+
+                const div = document.createElement('div');
+                div.className = 'branch-item' + (isActive ? ' active' : '');
+                div.innerHTML = `
+                    <div class="branch-name">${branch.name}</div>
+                    <div class="branch-desc">${branch.description}</div>
+                `;
+                div.onclick = () => toggleBranch(branchKey);
+                container.appendChild(div);
+            });
+        }
+
+        function toggleBranch(branchKey) {
+            if (activeBranches.includes(branchKey)) {
+                if (activeBranches.length > 1) {
+                    activeBranches = activeBranches.filter(b => b !== branchKey);
+                }
+            } else {
+                activeBranches.push(branchKey);
+            }
+            renderBranchList();
+            renderScrubber();
+            renderContent();
+        }
+
+        function renderScrubber() {
+            const track = document.getElementById('scrubberTrack');
+            // Clear existing markers
+            track.querySelectorAll('.scrubber-marker').forEach(m => m.remove());
+
+            const mainBranch = timelineData[activeBranches[0]];
+            if (!mainBranch) return;
+
+            mainBranch.nodes.forEach((node, index) => {
+                const marker = document.createElement('div');
+                marker.className = 'scrubber-marker' +
+                    (index === currentNodeIndex ? ' active' : '') +
+                    (node.isDecision ? ' decision' : '');
+                const position = (index / (mainBranch.nodes.length - 1)) * 100;
+                marker.style.left = position + '%';
+                marker.onclick = () => jumpToNode(index);
+                track.appendChild(marker);
+            });
+
+            // Update progress
+            const progress = (currentNodeIndex / (mainBranch.nodes.length - 1)) * 100;
+            document.getElementById('scrubberProgress').style.width = progress + '%';
+        }
+
+        function renderContent() {
+            const container = document.getElementById('contentArea');
+            const mainBranch = timelineData[activeBranches[0]];
+            if (!mainBranch) return;
+
+            const currentNode = mainBranch.nodes[currentNodeIndex];
+
+            if (currentMode === 'fullscreen') {
+                container.innerHTML = `
+                    <div class="fullscreen-view">
+                        <iframe class="fullscreen-iframe" src="${currentNode.app}"></iframe>
+                        <div class="version-overlay">
+                            <div class="overlay-year">${currentNode.year}</div>
+                            <div class="overlay-name">${currentNode.name}</div>
+                            <div class="overlay-tech">${currentNode.hw} • ${currentNode.os} • ${currentNode.browser}</div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentMode === 'parallel') {
+                let html = '<div class="parallel-view">';
+                activeBranches.forEach(branchKey => {
+                    const branch = timelineData[branchKey];
+                    const node = branch.nodes[Math.min(currentNodeIndex, branch.nodes.length - 1)];
+                    html += `
+                        <div class="parallel-column">
+                            <div class="column-header">${branch.name} - ${node.year}</div>
+                            <div class="column-content">
+                                <iframe class="column-iframe" src="${node.app}"></iframe>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else if (currentMode === 'timeline') {
+                renderTimelineGraph();
+            }
+
+            // Update info
+            document.getElementById('timelineInfo').textContent =
+                `${currentNode.year} - ${currentNode.name} (${currentNodeIndex + 1}/${mainBranch.nodes.length})`;
+        }
+
+        function renderTimelineGraph() {
+            const container = document.getElementById('contentArea');
+            container.innerHTML = '<div class="timeline-view"><div class="timeline-graph" id="timelineGraph"></div></div>';
+
+            const graph = document.getElementById('timelineGraph');
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.classList.add('timeline-connection');
+            svg.style.position = 'absolute';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            graph.appendChild(svg);
+
+            // Layout nodes
+            const mainBranch = timelineData.main;
+            const nodeSpacing = 250;
+            let yOffset = 50;
+
+            mainBranch.nodes.forEach((node, index) => {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = 'timeline-node' + (index === currentNodeIndex ? ' active' : '');
+                nodeEl.style.left = '50px';
+                nodeEl.style.top = (yOffset + index * nodeSpacing) + 'px';
+                nodeEl.innerHTML = `
+                    <div class="node-year">${node.year}</div>
+                    <div class="node-name">${node.name}</div>
+                    <div class="node-tech">${node.hw} • ${node.os}</div>
+                `;
+                nodeEl.onclick = () => jumpToNode(index);
+                graph.appendChild(nodeEl);
+
+                // Draw connections
+                if (index > 0) {
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const startY = yOffset + (index - 1) * nodeSpacing + 90;
+                    const endY = yOffset + index * nodeSpacing;
+                    line.setAttribute('d', `M 140 ${startY} L 140 ${endY}`);
+                    line.style.stroke = '#667eea';
+                    line.style.strokeWidth = '3';
+                    svg.appendChild(line);
+                }
+
+                // Decision points
+                if (node.isDecision) {
+                    const decision = document.createElement('div');
+                    decision.className = 'decision-point';
+                    decision.style.left = '280px';
+                    decision.style.top = (yOffset + index * nodeSpacing + 30) + 'px';
+                    decision.innerHTML = '⚡';
+                    decision.onclick = () => showDecisionModal(node);
+                    graph.appendChild(decision);
+
+                    // Draw branches
+                    node.decisions.forEach((branchKey, bIndex) => {
+                        const branch = timelineData[branchKey];
+                        if (branch) {
+                            const branchX = 400 + bIndex * 250;
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            const startY = yOffset + index * nodeSpacing + 45;
+                            line.setAttribute('d', `M 280 ${startY} L ${branchX} ${startY + 100}`);
+                            line.classList.add('branch');
+                            svg.appendChild(line);
+
+                            // Branch nodes
+                            branch.nodes.forEach((branchNode, bNodeIndex) => {
+                                const branchNodeEl = document.createElement('div');
+                                branchNodeEl.className = 'timeline-node';
+                                branchNodeEl.style.left = branchX + 'px';
+                                branchNodeEl.style.top = (startY + 100 + bNodeIndex * 200) + 'px';
+                                branchNodeEl.innerHTML = `
+                                    <div class="node-year">${branchNode.year}</div>
+                                    <div class="node-name">${branchNode.name}</div>
+                                    <div class="node-tech">${branchNode.hw}</div>
+                                `;
+                                graph.appendChild(branchNodeEl);
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function showDecisionModal(node) {
+            const modal = document.createElement('div');
+            modal.className = 'decision-modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-title">⚡ Decision Point: ${node.year}</div>
+                    <div class="modal-desc">
+                        At this point in history, the timeline splits. Choose which path to explore:
+                    </div>
+                    <div class="branch-options">
+                        ${node.decisions.map(branchKey => {
+                            const branch = timelineData[branchKey];
+                            return `
+                                <div class="branch-option" onclick="switchToBranch('${branchKey}')">
+                                    <div class="option-title">${branch.name}</div>
+                                    <div class="option-desc">${branch.description}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                        <div class="branch-option" onclick="closeModal()">
+                            <div class="option-title">Stay on Main Timeline</div>
+                            <div class="option-desc">Continue with actual history</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.onclick = (e) => {
+                if (e.target === modal) closeModal();
+            };
+        }
+
+        function closeModal() {
+            const modal = document.querySelector('.decision-modal');
+            if (modal) modal.remove();
+        }
+
+        function switchToBranch(branchKey) {
+            closeModal();
+            activeBranches = [branchKey];
+            currentNodeIndex = 0;
+            renderBranchList();
+            renderScrubber();
+            renderContent();
+        }
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderContent();
+        }
+
+        function jumpToNode(index) {
+            currentNodeIndex = index;
+            renderScrubber();
+            renderContent();
+        }
+
+        function nextNode() {
+            const mainBranch = timelineData[activeBranches[0]];
+            if (currentNodeIndex < mainBranch.nodes.length - 1) {
+                currentNodeIndex++;
+                renderScrubber();
+                renderContent();
+            }
+        }
+
+        function prevNode() {
+            if (currentNodeIndex > 0) {
+                currentNodeIndex--;
+                renderScrubber();
+                renderContent();
+            }
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const btn = document.getElementById('playBtn');
+
+            if (isPlaying) {
+                btn.textContent = '⏸ Pause';
+                playInterval = setInterval(() => {
+                    const mainBranch = timelineData[activeBranches[0]];
+                    if (currentNodeIndex < mainBranch.nodes.length - 1) {
+                        nextNode();
+                    } else {
+                        togglePlay();
+                    }
+                }, 5000);
+            } else {
+                btn.textContent = '▶️ Play';
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                }
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevNode();
+            if (e.key === 'ArrowRight') nextNode();
+            if (e.key === ' ') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

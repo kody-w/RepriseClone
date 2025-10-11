@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>facebook</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'lucida grande', tahoma, verdana, arial, sans-serif;
+            background: #fff;
+            color: #333;
+        }
+
+        .header {
+            background: #3b5998;
+            border-bottom: 1px solid #133783;
+            padding: 0;
+        }
+
+        .header-content {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            gap: 20px;
+        }
+
+        .logo {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1px solid #13171a;
+            font-size: 11px;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .header-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .header-links a:hover {
+            text-decoration: underline;
+        }
+
+        .nav-bar {
+            background: #6d84b4;
+            border-bottom: 1px solid #3b5998;
+        }
+
+        .nav-content {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            padding: 0;
+        }
+
+        .nav-item {
+            padding: 8px 15px;
+            color: white;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            border-left: 1px solid #8b9dc3;
+            display: block;
+        }
+
+        .nav-item:first-child {
+            border-left: none;
+        }
+
+        .nav-item:hover {
+            background: #8b9dc3;
+        }
+
+        .nav-item.active {
+            background: #3b5998;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 200px 1fr 200px;
+            gap: 10px;
+        }
+
+        .sidebar {
+            font-size: 11px;
+        }
+
+        .sidebar-section {
+            background: white;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-title {
+            background: #6d84b4;
+            color: white;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        .sidebar-content {
+            padding: 8px;
+            line-height: 1.6;
+        }
+
+        .sidebar-link {
+            color: #3b5998;
+            text-decoration: none;
+            display: block;
+            padding: 2px 0;
+        }
+
+        .sidebar-link:hover {
+            text-decoration: underline;
+        }
+
+        .main-content {
+            background: white;
+        }
+
+        .profile-header {
+            background: #f7f7f7;
+            border: 1px solid #d8dfea;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 2px solid #3b5998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+
+        .profile-info h1 {
+            font-size: 22px;
+            color: #3b5998;
+            margin: 0 0 10px 0;
+        }
+
+        .profile-stats {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .profile-actions {
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #5b74a8;
+            color: white;
+            text-decoration: none;
+            font-size: 11px;
+            border: 1px solid #29447e;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #6d84b4;
+        }
+
+        .tabs {
+            background: #f7f7f7;
+            border: 1px solid #d8dfea;
+            border-bottom: 2px solid #3b5998;
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: bold;
+            color: #3b5998;
+            cursor: pointer;
+            border-right: 1px solid #d8dfea;
+        }
+
+        .tab:hover {
+            background: #e9ebee;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom: 2px solid white;
+            margin-bottom: -2px;
+        }
+
+        .post-box {
+            background: #f7f7f7;
+            border: 1px solid #d8dfea;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .post-box textarea {
+            width: calc(100% - 16px);
+            padding: 6px 8px;
+            border: 1px solid #bdc7d8;
+            font-size: 11px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .post-box .btn {
+            margin-top: 8px;
+        }
+
+        .feed-item {
+            border: 1px solid #d8dfea;
+            background: white;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .feed-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .feed-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+            border: 1px solid #d8dfea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .feed-info {
+            flex: 1;
+        }
+
+        .feed-name {
+            font-weight: bold;
+            color: #3b5998;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .feed-name:hover {
+            text-decoration: underline;
+        }
+
+        .feed-time {
+            font-size: 10px;
+            color: #999;
+        }
+
+        .feed-content {
+            font-size: 12px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .feed-actions {
+            font-size: 10px;
+            color: #3b5998;
+            border-top: 1px solid #e9ebee;
+            padding-top: 6px;
+        }
+
+        .feed-action {
+            color: #3b5998;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+
+        .feed-action:hover {
+            text-decoration: underline;
+        }
+
+        .sidebar-ad {
+            background: #f7f7f7;
+            border: 1px solid #d8dfea;
+            padding: 10px;
+            margin-bottom: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .friend-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .friend-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .friend-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            border: 1px solid #d8dfea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        .friend-name {
+            font-size: 10px;
+            color: #3b5998;
+            text-decoration: none;
+        }
+
+        .friend-name:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <a href="#" class="logo">facebook</a>
+            <div class="search-box">
+                <input type="text" placeholder="Search">
+            </div>
+            <div class="header-links">
+                <a href="#">home</a>
+                <a href="#">profile</a>
+                <a href="#">friends</a>
+                <a href="#">inbox (3)</a>
+                <a href="#">logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-content">
+            <a href="#" class="nav-item active">Profile</a>
+            <a href="#" class="nav-item">Friends</a>
+            <a href="#" class="nav-item">Networks</a>
+            <a href="#" class="nav-item">Inbox</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Information</div>
+                <div class="sidebar-content">
+                    <strong>Networks:</strong><br>
+                    Stanford University<br><br>
+                    <strong>Birthday:</strong><br>
+                    March 14, 1988<br><br>
+                    <strong>Relationship:</strong><br>
+                    Single<br><br>
+                    <strong>Interests:</strong><br>
+                    Music, Photography, Travel
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Friends (247)</div>
+                <div class="friend-list">
+                    <div class="friend-item">
+                        <div class="friend-avatar">👨</div>
+                        <a href="#" class="friend-name">Mike</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="friend-avatar">👩</div>
+                        <a href="#" class="friend-name">Sarah</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="friend-avatar">👦</div>
+                        <a href="#" class="friend-name">David</a>
+                    </div>
+                    <div class="friend-item">
+                        <div class="friend-avatar">👧</div>
+                        <a href="#" class="friend-name">Emma</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="profile-header">
+                <div class="profile-pic">👤</div>
+                <div class="profile-info">
+                    <h1>John Doe</h1>
+                    <div class="profile-stats">
+                        247 friends • 15 photos • 8 wall posts
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn">Send Message</button>
+                        <button class="btn">Poke</button>
+                        <button class="btn">Write on Wall</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active">Wall</div>
+                <div class="tab">Info</div>
+                <div class="tab">Photos</div>
+                <div class="tab">Friends</div>
+            </div>
+
+            <div class="post-box">
+                <textarea placeholder="What's on your mind?"></textarea>
+                <button class="btn">Share</button>
+            </div>
+
+            <div class="feed-item">
+                <div class="feed-header">
+                    <div class="feed-avatar">👩</div>
+                    <div class="feed-info">
+                        <a href="#" class="feed-name">Sarah Johnson</a> wrote on your wall
+                        <div class="feed-time">2 hours ago</div>
+                    </div>
+                </div>
+                <div class="feed-content">
+                    Hey! Great seeing you at the party last night! We should hang out soon :)
+                </div>
+                <div class="feed-actions">
+                    <a href="#" class="feed-action">Comment</a>
+                    <a href="#" class="feed-action">Like</a>
+                    <a href="#" class="feed-action">Share</a>
+                </div>
+            </div>
+
+            <div class="feed-item">
+                <div class="feed-header">
+                    <div class="feed-avatar">👨</div>
+                    <div class="feed-info">
+                        <a href="#" class="feed-name">Mike Chen</a> tagged you in a photo
+                        <div class="feed-time">Yesterday at 8:42pm</div>
+                    </div>
+                </div>
+                <div class="feed-content">
+                    Check out this awesome pic from the concert! 🎸
+                </div>
+                <div class="feed-actions">
+                    <a href="#" class="feed-action">Comment (3)</a>
+                    <a href="#" class="feed-action">Like</a>
+                    <a href="#" class="feed-action">Share</a>
+                </div>
+            </div>
+
+            <div class="feed-item">
+                <div class="feed-header">
+                    <div class="feed-avatar">👦</div>
+                    <div class="feed-info">
+                        <a href="#" class="feed-name">You</a> updated your status
+                        <div class="feed-time">Monday at 3:15pm</div>
+                    </div>
+                </div>
+                <div class="feed-content">
+                    Just got back from spring break in Miami! Had an amazing time!
+                </div>
+                <div class="feed-actions">
+                    <a href="#" class="feed-action">Comment (5)</a>
+                    <a href="#" class="feed-action">Like (12)</a>
+                    <a href="#" class="feed-action">Share</a>
+                </div>
+            </div>
+
+            <div class="feed-item">
+                <div class="feed-header">
+                    <div class="feed-avatar">👧</div>
+                    <div class="feed-info">
+                        <a href="#" class="feed-name">Emily Davis</a> wrote on your wall
+                        <div class="feed-time">Last Friday at 11:20am</div>
+                    </div>
+                </div>
+                <div class="feed-content">
+                    Don't forget about the study group tomorrow! Library at 2pm.
+                </div>
+                <div class="feed-actions">
+                    <a href="#" class="feed-action">Comment (1)</a>
+                    <a href="#" class="feed-action">Like</a>
+                    <a href="#" class="feed-action">Share</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Notifications</div>
+                <div class="sidebar-content">
+                    <a href="#" class="sidebar-link">Mike Chen commented on your status</a>
+                    <a href="#" class="sidebar-link">Sarah Johnson poked you</a>
+                    <a href="#" class="sidebar-link">3 friend requests</a>
+                </div>
+            </div>
+
+            <div class="sidebar-ad">
+                <strong>Sponsored</strong><br><br>
+                Get the new iPod nano!<br>
+                Now available in 8GB & 16GB
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Upcoming Events</div>
+                <div class="sidebar-content">
+                    <a href="#" class="sidebar-link">Spring Formal - Saturday</a>
+                    <a href="#" class="sidebar-link">Finals Study Group - Monday</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; padding: 20px; font-size: 10px; color: #999;">
+        © 2007 Facebook • About • Advertising • Developers • Careers • Privacy • Terms
+    </div>
+</body>
+</html>

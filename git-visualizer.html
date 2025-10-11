@@ -557,13 +557,54 @@
                 <p>Track changes across file versions</p>
             </div>
             <div class="sidebar-content">
+                <!-- GitHub Repo Section -->
+                <div class="control-group">
+                    <div class="control-group-title">🌐 GitHub Repository</div>
+
+                    <!-- Example Repos -->
+                    <div style="margin-bottom: 12px; padding: 10px; background: #1a1a1a; border-radius: 6px; border: 1px solid #444;">
+                        <div style="color: #999; font-size: 11px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Try These Examples:</div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <button class="example-repo-btn" data-repo="facebook/react" data-file="packages/react/src/React.js" style="background: #61dafb; color: #000; padding: 8px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                ⚛️ React - React.js
+                            </button>
+                            <button class="example-repo-btn" data-repo="microsoft/vscode" data-file="src/vs/base/common/arrays.ts" style="background: #007acc; color: white; padding: 8px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                🔷 VS Code - arrays.ts
+                            </button>
+                            <button class="example-repo-btn" data-repo="nodejs/node" data-file="lib/fs.js" style="background: #68a063; color: white; padding: 8px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                📦 Node.js - fs.js
+                            </button>
+                            <button class="example-repo-btn" data-repo="vuejs/vue" data-file="src/core/instance/state.js" style="background: #42b883; color: white; padding: 8px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                💚 Vue.js - state.js
+                            </button>
+                            <button class="example-repo-btn" data-repo="angular/angular" data-file="packages/core/src/render3/component.ts" style="background: #dd0031; color: white; padding: 8px 10px; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.2s;">
+                                🅰️ Angular - component.ts
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="commit-field" style="margin-bottom: 8px;">
+                        <label>Repo URL or Owner/Repo</label>
+                        <input type="text" id="githubRepoInput" placeholder="e.g., octocat/Hello-World or https://github.com/...">
+                    </div>
+                    <div class="commit-field" style="margin-bottom: 8px;">
+                        <label>File Path</label>
+                        <input type="text" id="githubFilePathInput" placeholder="e.g., src/index.js">
+                    </div>
+                    <div class="commit-field" style="margin-bottom: 8px;">
+                        <label>Branch (optional)</label>
+                        <input type="text" id="githubBranchInput" placeholder="main" value="main">
+                    </div>
+                    <button id="fetchGithubBtn" class="btn btn-orange">🚀 Fetch from GitHub</button>
+                    <p class="file-status" id="githubStatus"></p>
+                </div>
+
                 <!-- Upload Section -->
                 <div class="control-group">
-                    <div class="control-group-title">📁 Upload Versions</div>
+                    <div class="control-group-title">📁 Or Upload Versions</div>
                     <div class="file-upload-area" id="versionsUploadArea">
                         <p style="font-size: 16px; margin-bottom: 8px;">📂 Upload File Versions</p>
                         <p>Select multiple versions of the same file</p>
-                        <p style="font-size: 11px; color: #666;">Or paste git diff output below</p>
                     </div>
                     <input type="file" id="versionsInput" multiple style="display: none;">
                     <p class="file-status" id="versionsStatus">No versions loaded</p>
@@ -571,7 +612,7 @@
 
                 <!-- Git Input -->
                 <div class="control-group">
-                    <div class="control-group-title">🔧 Git Diff Input</div>
+                    <div class="control-group-title">🔧 Or Paste Git Output</div>
                     <textarea id="gitDiffInput" placeholder="Paste 'git log -p' or 'git diff' output here..."
                         style="width: 100%; min-height: 100px; background: #1a1a1a; border: 2px solid #444; border-radius: 6px; color: #fff; padding: 12px; font-size: 12px; font-family: 'Courier New', monospace;"></textarea>
                     <button id="parseGitBtn" class="btn btn-orange" style="margin-top: 8px;">Parse Git Output</button>
@@ -643,10 +684,11 @@
                     <div class="version-list" id="versionList">
                         <div class="info-box">
                             <strong>Quick Start:</strong>
-                            <p>1. Upload multiple versions of a file</p>
-                            <p>2. Or paste git diff/log output</p>
-                            <p>3. Click versions to view changes</p>
-                            <p>4. Use Play to animate through history</p>
+                            <p>1. Click an example repo button above (React, VS Code, etc.)</p>
+                            <p>2. Or enter your own GitHub repo & file path</p>
+                            <p>3. Click "Fetch from GitHub"</p>
+                            <p>4. Or upload files / paste git output</p>
+                            <p>5. Use Play to animate through history!</p>
                         </div>
                     </div>
                 </div>
@@ -668,7 +710,7 @@
             <div id="placeholder" class="placeholder-view">
                 <div class="placeholder-icon">📊</div>
                 <h2 class="placeholder-title">Git File History Visualizer</h2>
-                <p class="placeholder-text">Upload file versions or paste git output to visualize changes</p>
+                <p class="placeholder-text">Enter a GitHub repo to fetch file history and visualize changes</p>
             </div>
         </div>
     </div>
@@ -683,6 +725,161 @@
 
         // Initialize
         updateStatus('waiting', 'No versions loaded');
+
+        // Example repo buttons
+        document.querySelectorAll('.example-repo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const repo = btn.dataset.repo;
+                const file = btn.dataset.file;
+                document.getElementById('githubRepoInput').value = repo;
+                document.getElementById('githubFilePathInput').value = file;
+                document.getElementById('githubBranchInput').value = 'main';
+
+                // Add hover effect
+                btn.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    btn.style.transform = 'scale(1)';
+                }, 100);
+            });
+
+            // Add hover effects
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'translateX(4px)';
+                btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'translateX(0)';
+                btn.style.boxShadow = 'none';
+            });
+        });
+
+        // GitHub API Integration
+        document.getElementById('fetchGithubBtn').addEventListener('click', fetchFromGitHub);
+
+        async function fetchFromGitHub() {
+            const repoInput = document.getElementById('githubRepoInput').value.trim();
+            const filePath = document.getElementById('githubFilePathInput').value.trim();
+            const branch = document.getElementById('githubBranchInput').value.trim() || 'main';
+
+            if (!repoInput || !filePath) {
+                alert('Please provide both repository and file path!');
+                return;
+            }
+
+            // Parse repo input - supports both URL and owner/repo format
+            let owner, repo;
+            if (repoInput.includes('github.com')) {
+                const match = repoInput.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+                if (match) {
+                    owner = match[1];
+                    repo = match[2].replace(/\.git$/, '');
+                }
+            } else if (repoInput.includes('/')) {
+                [owner, repo] = repoInput.split('/');
+            } else {
+                alert('Invalid repository format. Use "owner/repo" or full GitHub URL.');
+                return;
+            }
+
+            const statusEl = document.getElementById('githubStatus');
+            statusEl.textContent = '⏳ Fetching commit history...';
+            statusEl.style.color = '#f39c12';
+
+            try {
+                // Fetch commits for the file
+                const commitsUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${filePath}&sha=${branch}`;
+                const commitsResponse = await fetch(commitsUrl);
+
+                if (!commitsResponse.ok) {
+                    if (commitsResponse.status === 404) {
+                        throw new Error('Repository or file not found. Make sure the repo is public.');
+                    } else if (commitsResponse.status === 403) {
+                        throw new Error('GitHub API rate limit exceeded. Try again later or use a personal access token.');
+                    }
+                    throw new Error(`GitHub API error: ${commitsResponse.status}`);
+                }
+
+                const commits = await commitsResponse.json();
+
+                if (commits.length === 0) {
+                    throw new Error('No commits found for this file.');
+                }
+
+                statusEl.textContent = `✓ Found ${commits.length} commits. Fetching file contents...`;
+
+                // Fetch file content for each commit
+                const newVersions = [];
+                for (let i = 0; i < Math.min(commits.length, 50); i++) { // Limit to 50 versions
+                    const commit = commits[i];
+
+                    try {
+                        // Fetch file content at this commit
+                        const fileUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${commit.sha}`;
+                        const fileResponse = await fetch(fileUrl);
+
+                        if (fileResponse.ok) {
+                            const fileData = await fileResponse.json();
+
+                            // Decode base64 content
+                            const content = atob(fileData.content);
+
+                            newVersions.push({
+                                filename: filePath.split('/').pop(),
+                                content: content,
+                                timestamp: new Date(commit.commit.author.date).getTime(),
+                                date: commit.commit.author.date,
+                                commitHash: commit.sha.substring(0, 7),
+                                author: commit.commit.author.name,
+                                message: commit.commit.message.split('\n')[0],
+                                id: Date.now() + Math.random()
+                            });
+
+                            statusEl.textContent = `⏳ Loading ${i + 1}/${Math.min(commits.length, 50)} versions...`;
+                        }
+                    } catch (err) {
+                        console.warn(`Failed to fetch commit ${commit.sha}:`, err);
+                    }
+                }
+
+                if (newVersions.length === 0) {
+                    throw new Error('Could not fetch any file versions.');
+                }
+
+                // Ask user about merging
+                const shouldReplace = versions.length > 0 ? confirm(
+                    `You have ${versions.length} version${versions.length !== 1 ? 's' : ''} loaded.\n\n` +
+                    `Click OK to REPLACE them with ${newVersions.length} versions from GitHub.\n` +
+                    `Click Cancel to ADD the GitHub versions.`
+                ) : true;
+
+                if (shouldReplace) {
+                    versions = [];
+                }
+
+                // Add versions in chronological order (oldest first)
+                versions.push(...newVersions.reverse());
+
+                updateVersionList();
+                updateControls();
+
+                if (versions.length > 0) {
+                    currentVersionIndex = 0;
+                    displayVersion(0);
+                }
+
+                document.getElementById('versionsUploadArea').classList.add('loaded');
+                statusEl.textContent = `✓ Loaded ${newVersions.length} versions from GitHub!`;
+                statusEl.style.color = '#27ae60';
+                statusEl.classList.add('loaded');
+                updateStatus('ready', `${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`);
+
+            } catch (error) {
+                statusEl.textContent = `✗ Error: ${error.message}`;
+                statusEl.style.color = '#e74c3c';
+                console.error('GitHub fetch error:', error);
+                alert(`Failed to fetch from GitHub:\n${error.message}`);
+            }
+        }
 
         function updateStatus(type, text) {
             const statusDot = document.getElementById('statusDot');
@@ -821,10 +1018,11 @@
                 versionList.innerHTML = `
                     <div class="info-box">
                         <strong>Quick Start:</strong>
-                        <p>1. Upload multiple versions of a file</p>
-                        <p>2. Or paste git diff/log output</p>
-                        <p>3. Click versions to view changes</p>
-                        <p>4. Use Play to animate through history</p>
+                        <p>1. Click an example repo button above (React, VS Code, etc.)</p>
+                        <p>2. Or enter your own GitHub repo & file path</p>
+                        <p>3. Click "Fetch from GitHub"</p>
+                        <p>4. Or upload files / paste git output</p>
+                        <p>5. Use Play to animate through history!</p>
                     </div>
                 `;
                 return;
