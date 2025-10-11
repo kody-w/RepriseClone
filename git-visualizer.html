@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git File History Visualizer - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .visualizer-page {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .visualizer-header {
+            background: linear-gradient(135deg, #e67e22 0%, #e74c3c 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .visualizer-header h2 {
+            color: white;
+            margin: 0;
+            flex: 1;
+            font-size: 24px;
+        }
+
+        .header-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #f39c12;
+        }
+
+        .status-dot.ready {
+            background: #27ae60;
+        }
+
+        .visualizer-main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .visualizer-sidebar {
+            width: 380px;
+            background: #2d2d2d;
+            border-right: 2px solid #444;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .visualizer-content {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 20px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .code-container {
+            width: 100%;
+            background: #1e1e1e;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+
+        .code-header {
+            background: #2d2d2d;
+            padding: 12px 20px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-filename {
+            color: #e67e22;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .code-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+
+        .code-stat {
+            color: #999;
+        }
+
+        .code-stat.added {
+            color: #27ae60;
+        }
+
+        .code-stat.removed {
+            color: #e74c3c;
+        }
+
+        .code-display {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow: auto;
+            max-height: 600px;
+            white-space: pre;
+        }
+
+        .code-line {
+            display: flex;
+            min-height: 20px;
+        }
+
+        .line-number {
+            color: #858585;
+            width: 50px;
+            text-align: right;
+            padding-right: 16px;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .line-content {
+            flex: 1;
+        }
+
+        .line-added {
+            background: rgba(39, 174, 96, 0.2);
+            border-left: 3px solid #27ae60;
+            padding-left: 8px;
+        }
+
+        .line-removed {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 3px solid #e74c3c;
+            padding-left: 8px;
+        }
+
+        .line-modified {
+            background: rgba(230, 126, 34, 0.2);
+            border-left: 3px solid #e67e22;
+            padding-left: 8px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #252525;
+            border-bottom: 2px solid #444;
+        }
+
+        .sidebar-header h3 {
+            color: #fff;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .sidebar-header p {
+            color: #999;
+            margin: 0;
+            font-size: 12px;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .control-group {
+            background: #252525;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .control-group-title {
+            color: #e67e22;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .file-upload-area {
+            background: #1a1a1a;
+            border: 2px dashed #e67e22;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload-area:hover {
+            background: #222;
+            border-color: #e74c3c;
+            transform: translateY(-2px);
+        }
+
+        .file-upload-area.loaded {
+            border-color: #27ae60;
+            border-style: solid;
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .file-upload-area p {
+            color: #999;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .file-status {
+            color: #999;
+            font-size: 12px;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .file-status.loaded {
+            color: #27ae60;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-orange {
+            background: #e67e22;
+            color: white;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .version-counter {
+            background: #1a1a1a;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .version-counter-label {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .version-counter-value {
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .version-list {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .version-item {
+            background: #252525;
+            border-left: 4px solid #e67e22;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .version-item:hover {
+            background: #2d2d2d;
+            border-left-color: #e74c3c;
+            transform: translateX(4px);
+        }
+
+        .version-item.selected {
+            background: #e67e22;
+            border-left-color: #fff;
+        }
+
+        .version-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .version-item-title {
+            color: #e67e22;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .version-item.selected .version-item-title {
+            color: #fff;
+        }
+
+        .version-item-date {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .version-item.selected .version-item-date {
+            color: #fff;
+        }
+
+        .version-item-commit {
+            color: #3498db;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 4px;
+        }
+
+        .version-item-message {
+            color: #999;
+            font-size: 11px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .version-item.selected .version-item-message {
+            color: #e0e0e0;
+        }
+
+        .commit-info {
+            background: #252525;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .commit-field {
+            margin-bottom: 12px;
+        }
+
+        .commit-field label {
+            color: #999;
+            font-size: 11px;
+            display: block;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .commit-field input,
+        .commit-field textarea {
+            width: 100%;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            padding: 8px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .commit-field textarea {
+            min-height: 60px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .commit-field input:focus,
+        .commit-field textarea:focus {
+            outline: none;
+            border-color: #e67e22;
+        }
+
+        .placeholder-view {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
+        }
+
+        .placeholder-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+            opacity: 0.3;
+        }
+
+        .placeholder-title {
+            color: #888;
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .placeholder-text {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .diff-mode-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .diff-tab {
+            flex: 1;
+            background: #252525;
+            border: 2px solid #444;
+            color: #999;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .diff-tab.active {
+            background: #e67e22;
+            border-color: #e67e22;
+            color: white;
+        }
+
+        .diff-tab:hover:not(.active) {
+            background: #2d2d2d;
+            border-color: #e67e22;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #e67e22 0%, #e74c3c 100%);
+            border-radius: 8px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-box p {
+            margin: 8px 0;
+            font-size: 13px;
+            line-height: 1.6;
+            opacity: 0.95;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="visualizer-page">
+    <div class="visualizer-header">
+        <h2>📊 Git File History Visualizer</h2>
+        <div class="header-links">
+            <a href="index.html" class="back-link">← Home</a>
+            <a href="animator.html" class="back-link" style="background: #9b59b6;">🎨 Animator</a>
+            <a href="player.html" class="back-link">▶️ Player</a>
+        </div>
+        <div class="status-indicator">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Ready</span>
+        </div>
+    </div>
+
+    <div class="visualizer-main">
+        <div class="visualizer-sidebar">
+            <div class="sidebar-header">
+                <h3>File History</h3>
+                <p>Track changes across file versions</p>
+            </div>
+            <div class="sidebar-content">
+                <!-- Upload Section -->
+                <div class="control-group">
+                    <div class="control-group-title">📁 Upload Versions</div>
+                    <div class="file-upload-area" id="versionsUploadArea">
+                        <p style="font-size: 16px; margin-bottom: 8px;">📂 Upload File Versions</p>
+                        <p>Select multiple versions of the same file</p>
+                        <p style="font-size: 11px; color: #666;">Or paste git diff output below</p>
+                    </div>
+                    <input type="file" id="versionsInput" multiple style="display: none;">
+                    <p class="file-status" id="versionsStatus">No versions loaded</p>
+                </div>
+
+                <!-- Git Input -->
+                <div class="control-group">
+                    <div class="control-group-title">🔧 Git Diff Input</div>
+                    <textarea id="gitDiffInput" placeholder="Paste 'git log -p' or 'git diff' output here..."
+                        style="width: 100%; min-height: 100px; background: #1a1a1a; border: 2px solid #444; border-radius: 6px; color: #fff; padding: 12px; font-size: 12px; font-family: 'Courier New', monospace;"></textarea>
+                    <button id="parseGitBtn" class="btn btn-orange" style="margin-top: 8px;">Parse Git Output</button>
+                </div>
+
+                <!-- Version Info -->
+                <div class="control-group">
+                    <div class="control-group-title">📝 Version Metadata</div>
+                    <div class="commit-info">
+                        <div class="commit-field">
+                            <label>Commit Hash</label>
+                            <input type="text" id="commitHash" placeholder="e.g., abc123f">
+                        </div>
+                        <div class="commit-field">
+                            <label>Author</label>
+                            <input type="text" id="commitAuthor" placeholder="e.g., John Doe">
+                        </div>
+                        <div class="commit-field">
+                            <label>Commit Message</label>
+                            <textarea id="commitMessage" placeholder="Describe the changes..."></textarea>
+                        </div>
+                        <button id="saveVersionMetadata" class="btn btn-primary" disabled>Save Metadata</button>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="control-group">
+                    <div class="control-group-title">▶️ Playback</div>
+                    <div class="version-counter">
+                        <div class="version-counter-label">Current Version</div>
+                        <div class="version-counter-value">
+                            <span id="currentVersionNum">-</span> / <span id="totalVersionNum">-</span>
+                        </div>
+                    </div>
+                    <div class="btn-group" style="margin-bottom: 8px;">
+                        <button id="playBtn" class="btn btn-primary" disabled>▶️ Play</button>
+                        <button id="stopBtn" class="btn btn-danger" disabled>⏹ Stop</button>
+                    </div>
+                    <div class="btn-group">
+                        <button id="prevBtn" class="btn btn-secondary" disabled>← Prev</button>
+                        <button id="nextBtn" class="btn btn-secondary" disabled>Next →</button>
+                    </div>
+                </div>
+
+                <!-- Diff Mode -->
+                <div class="control-group">
+                    <div class="control-group-title">🔍 View Mode</div>
+                    <div class="diff-mode-tabs">
+                        <div class="diff-tab active" data-mode="unified" id="unifiedTab">Unified</div>
+                        <div class="diff-tab" data-mode="split" id="splitTab">Split</div>
+                        <div class="diff-tab" data-mode="changes" id="changesTab">Changes Only</div>
+                    </div>
+                </div>
+
+                <!-- Export/Import -->
+                <div class="control-group">
+                    <div class="control-group-title">💾 Export / Import</div>
+                    <div class="btn-group">
+                        <button id="exportHistory" class="btn btn-primary" disabled>💾 Export</button>
+                        <button id="importHistory" class="btn btn-secondary">📂 Import</button>
+                    </div>
+                    <input type="file" id="importHistoryInput" accept=".json" style="display: none;">
+                    <button id="clearAll" class="btn btn-danger" style="margin-top: 8px; width: 100%;" disabled>🗑️ Clear All</button>
+                </div>
+
+                <!-- Version List -->
+                <div class="control-group">
+                    <div class="control-group-title">📋 Versions (<span id="versionCount">0</span>)</div>
+                    <div class="version-list" id="versionList">
+                        <div class="info-box">
+                            <strong>Quick Start:</strong>
+                            <p>1. Upload multiple versions of a file</p>
+                            <p>2. Or paste git diff/log output</p>
+                            <p>3. Click versions to view changes</p>
+                            <p>4. Use Play to animate through history</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visualizer-content">
+            <div id="codeContainer" class="code-container" style="display: none;">
+                <div class="code-header">
+                    <div class="code-filename" id="codeFilename">filename.js</div>
+                    <div class="code-stats">
+                        <span class="code-stat" id="totalLines">0 lines</span>
+                        <span class="code-stat added" id="addedLines">+0</span>
+                        <span class="code-stat removed" id="removedLines">-0</span>
+                    </div>
+                </div>
+                <div class="code-display" id="codeDisplay"></div>
+            </div>
+            <div id="placeholder" class="placeholder-view">
+                <div class="placeholder-icon">📊</div>
+                <h2 class="placeholder-title">Git File History Visualizer</h2>
+                <p class="placeholder-text">Upload file versions or paste git output to visualize changes</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let versions = [];
+        let currentVersionIndex = 0;
+        let playInterval = null;
+        let playSpeed = 2000; // ms
+        let currentDiffMode = 'unified';
+
+        // Initialize
+        updateStatus('waiting', 'No versions loaded');
+
+        function updateStatus(type, text) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            statusDot.className = 'status-dot';
+            if (type === 'ready') statusDot.classList.add('ready');
+            statusText.textContent = text;
+        }
+
+        // Upload handling
+        document.getElementById('versionsUploadArea').addEventListener('click', () => {
+            document.getElementById('versionsInput').click();
+        });
+
+        document.getElementById('versionsInput').addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files).sort((a, b) => a.name.localeCompare(b.name));
+            if (files.length === 0) return;
+
+            try {
+                for (const file of files) {
+                    const content = await file.text();
+                    versions.push({
+                        filename: file.name,
+                        content: content,
+                        timestamp: file.lastModified,
+                        date: new Date(file.lastModified).toISOString(),
+                        commitHash: '',
+                        author: '',
+                        message: '',
+                        id: Date.now() + Math.random()
+                    });
+                }
+
+                updateVersionList();
+                updateControls();
+
+                if (versions.length > 0) {
+                    currentVersionIndex = 0;
+                    displayVersion(0);
+                }
+
+                document.getElementById('versionsUploadArea').classList.add('loaded');
+                document.getElementById('versionsStatus').textContent = `✓ ${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`;
+                document.getElementById('versionsStatus').classList.add('loaded');
+                updateStatus('ready', `${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`);
+
+            } catch (error) {
+                alert('Error loading files: ' + error.message);
+            }
+        });
+
+        // Git diff parsing
+        document.getElementById('parseGitBtn').addEventListener('click', () => {
+            const gitOutput = document.getElementById('gitDiffInput').value.trim();
+            if (!gitOutput) {
+                alert('Please paste git output first!');
+                return;
+            }
+
+            try {
+                parseGitOutput(gitOutput);
+            } catch (error) {
+                alert('Error parsing git output: ' + error.message);
+                console.error(error);
+            }
+        });
+
+        function parseGitOutput(gitOutput) {
+            // Simple parser for git log -p or git diff output
+            const commits = gitOutput.split(/^commit /m).filter(c => c.trim());
+
+            if (commits.length === 0) {
+                // Try parsing as simple diff
+                versions.push({
+                    filename: 'changes.diff',
+                    content: gitOutput,
+                    timestamp: Date.now(),
+                    date: new Date().toISOString(),
+                    commitHash: 'manual',
+                    author: 'Manual Input',
+                    message: 'Pasted diff',
+                    id: Date.now()
+                });
+            } else {
+                commits.forEach((commit, index) => {
+                    const lines = commit.split('\n');
+                    const hashMatch = lines[0].match(/^([a-f0-9]+)/);
+                    const authorMatch = commit.match(/^Author:\s*(.+)$/m);
+                    const dateMatch = commit.match(/^Date:\s*(.+)$/m);
+                    const messageMatch = commit.match(/^\s{4}(.+)$/m);
+
+                    const hash = hashMatch ? hashMatch[1].substring(0, 7) : `v${index + 1}`;
+                    const author = authorMatch ? authorMatch[1].trim() : 'Unknown';
+                    const date = dateMatch ? dateMatch[1].trim() : new Date().toISOString();
+                    const message = messageMatch ? messageMatch[1].trim() : 'No message';
+
+                    // Extract diff content
+                    const diffStart = commit.indexOf('diff --git');
+                    const content = diffStart !== -1 ? commit.substring(diffStart) : commit;
+
+                    versions.push({
+                        filename: `commit-${hash}`,
+                        content: content,
+                        timestamp: Date.parse(date) || Date.now(),
+                        date: date,
+                        commitHash: hash,
+                        author: author,
+                        message: message,
+                        id: Date.now() + Math.random()
+                    });
+                });
+            }
+
+            versions.sort((a, b) => a.timestamp - b.timestamp);
+
+            updateVersionList();
+            updateControls();
+
+            if (versions.length > 0) {
+                currentVersionIndex = 0;
+                displayVersion(0);
+            }
+
+            document.getElementById('versionsUploadArea').classList.add('loaded');
+            document.getElementById('versionsStatus').textContent = `✓ ${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`;
+            document.getElementById('versionsStatus').classList.add('loaded');
+            updateStatus('ready', `${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`);
+            document.getElementById('gitDiffInput').value = '';
+        }
+
+        function updateVersionList() {
+            const versionList = document.getElementById('versionList');
+            versionList.innerHTML = '';
+
+            if (versions.length === 0) {
+                versionList.innerHTML = `
+                    <div class="info-box">
+                        <strong>Quick Start:</strong>
+                        <p>1. Upload multiple versions of a file</p>
+                        <p>2. Or paste git diff/log output</p>
+                        <p>3. Click versions to view changes</p>
+                        <p>4. Use Play to animate through history</p>
+                    </div>
+                `;
+                return;
+            }
+
+            versions.forEach((version, index) => {
+                const item = document.createElement('div');
+                item.className = 'version-item';
+                if (index === currentVersionIndex) item.classList.add('selected');
+
+                const date = new Date(version.timestamp);
+                const dateStr = date.toLocaleString();
+
+                item.innerHTML = `
+                    <div class="version-item-header">
+                        <div class="version-item-title">Version ${index + 1}</div>
+                        <div class="version-item-date">${dateStr}</div>
+                    </div>
+                    ${version.commitHash ? `<div class="version-item-commit">commit ${version.commitHash}</div>` : ''}
+                    ${version.author ? `<div class="version-item-message">by ${version.author}</div>` : ''}
+                    ${version.message ? `<div class="version-item-message">${version.message}</div>` : ''}
+                `;
+
+                item.addEventListener('click', () => {
+                    stopPlayback();
+                    currentVersionIndex = index;
+                    displayVersion(index);
+                    updateVersionList();
+                });
+
+                versionList.appendChild(item);
+            });
+
+            document.getElementById('versionCount').textContent = versions.length;
+        }
+
+        function displayVersion(index) {
+            if (index < 0 || index >= versions.length) return;
+
+            currentVersionIndex = index;
+            const version = versions[index];
+
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('codeContainer').style.display = 'block';
+            document.getElementById('codeFilename').textContent = version.filename;
+
+            // Calculate diff if not first version
+            let displayContent = version.content;
+            let addedCount = 0;
+            let removedCount = 0;
+
+            if (currentDiffMode === 'unified' || currentDiffMode === 'changes') {
+                if (index > 0) {
+                    const prevVersion = versions[index - 1];
+                    const diff = computeLineDiff(prevVersion.content, version.content);
+                    displayContent = renderDiff(diff, currentDiffMode);
+                    addedCount = diff.added;
+                    removedCount = diff.removed;
+                } else {
+                    displayContent = renderCode(version.content);
+                }
+            } else {
+                displayContent = renderCode(version.content);
+            }
+
+            document.getElementById('codeDisplay').innerHTML = displayContent;
+            document.getElementById('totalLines').textContent = version.content.split('\n').length + ' lines';
+            document.getElementById('addedLines').textContent = '+' + addedCount;
+            document.getElementById('removedLines').textContent = '-' + removedCount;
+
+            document.getElementById('currentVersionNum').textContent = index + 1;
+            document.getElementById('totalVersionNum').textContent = versions.length;
+
+            // Update metadata fields
+            document.getElementById('commitHash').value = version.commitHash || '';
+            document.getElementById('commitAuthor').value = version.author || '';
+            document.getElementById('commitMessage').value = version.message || '';
+        }
+
+        function renderCode(content) {
+            const lines = content.split('\n');
+            return lines.map((line, i) => {
+                const escapedLine = escapeHtml(line);
+                return `<div class="code-line"><span class="line-number">${i + 1}</span><span class="line-content">${escapedLine || ' '}</span></div>`;
+            }).join('');
+        }
+
+        function computeLineDiff(oldContent, newContent) {
+            const oldLines = oldContent.split('\n');
+            const newLines = newContent.split('\n');
+
+            const diff = [];
+            let added = 0;
+            let removed = 0;
+
+            let i = 0, j = 0;
+
+            while (i < oldLines.length || j < newLines.length) {
+                if (i >= oldLines.length) {
+                    // Only new lines left
+                    diff.push({ type: 'added', line: newLines[j], newLineNum: j + 1 });
+                    added++;
+                    j++;
+                } else if (j >= newLines.length) {
+                    // Only old lines left
+                    diff.push({ type: 'removed', line: oldLines[i], oldLineNum: i + 1 });
+                    removed++;
+                    i++;
+                } else if (oldLines[i] === newLines[j]) {
+                    // Lines match
+                    diff.push({ type: 'unchanged', line: oldLines[i], oldLineNum: i + 1, newLineNum: j + 1 });
+                    i++;
+                    j++;
+                } else {
+                    // Lines differ - look ahead to see what happened
+                    const nextInNew = newLines.indexOf(oldLines[i], j);
+                    const nextInOld = oldLines.indexOf(newLines[j], i);
+
+                    if (nextInNew !== -1 && (nextInOld === -1 || nextInNew - j < nextInOld - i)) {
+                        // Line was added
+                        diff.push({ type: 'added', line: newLines[j], newLineNum: j + 1 });
+                        added++;
+                        j++;
+                    } else if (nextInOld !== -1) {
+                        // Line was removed
+                        diff.push({ type: 'removed', line: oldLines[i], oldLineNum: i + 1 });
+                        removed++;
+                        i++;
+                    } else {
+                        // Lines modified
+                        diff.push({ type: 'removed', line: oldLines[i], oldLineNum: i + 1 });
+                        diff.push({ type: 'added', line: newLines[j], newLineNum: j + 1 });
+                        added++;
+                        removed++;
+                        i++;
+                        j++;
+                    }
+                }
+            }
+
+            return { diff, added, removed };
+        }
+
+        function renderDiff(diffResult, mode) {
+            const { diff } = diffResult;
+
+            if (mode === 'changes') {
+                // Only show changed lines
+                return diff.filter(d => d.type !== 'unchanged').map(d => {
+                    const lineNum = d.type === 'removed' ? d.oldLineNum : d.newLineNum;
+                    const escapedLine = escapeHtml(d.line);
+                    const className = d.type === 'added' ? 'line-added' : d.type === 'removed' ? 'line-removed' : '';
+                    return `<div class="code-line ${className}"><span class="line-number">${lineNum}</span><span class="line-content">${escapedLine || ' '}</span></div>`;
+                }).join('');
+            } else {
+                // Unified view - show all lines
+                return diff.map(d => {
+                    const lineNum = d.type === 'removed' ? d.oldLineNum : d.newLineNum;
+                    const escapedLine = escapeHtml(d.line);
+                    const className = d.type === 'added' ? 'line-added' : d.type === 'removed' ? 'line-removed' : '';
+                    return `<div class="code-line ${className}"><span class="line-number">${lineNum}</span><span class="line-content">${escapedLine || ' '}</span></div>`;
+                }).join('');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Playback controls
+        document.getElementById('playBtn').addEventListener('click', startPlayback);
+        document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            stopPlayback();
+            const newIndex = currentVersionIndex > 0 ? currentVersionIndex - 1 : versions.length - 1;
+            displayVersion(newIndex);
+            updateVersionList();
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            stopPlayback();
+            const newIndex = currentVersionIndex < versions.length - 1 ? currentVersionIndex + 1 : 0;
+            displayVersion(newIndex);
+            updateVersionList();
+        });
+
+        function startPlayback() {
+            if (versions.length === 0) return;
+            stopPlayback();
+
+            let index = currentVersionIndex;
+            playInterval = setInterval(() => {
+                displayVersion(index);
+                updateVersionList();
+                index = (index + 1) % versions.length;
+            }, playSpeed);
+        }
+
+        function stopPlayback() {
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
+        // Diff mode tabs
+        document.querySelectorAll('.diff-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.diff-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentDiffMode = tab.dataset.mode;
+                if (versions.length > 0) {
+                    displayVersion(currentVersionIndex);
+                }
+            });
+        });
+
+        // Export/Import
+        document.getElementById('exportHistory').addEventListener('click', () => {
+            if (versions.length === 0) return;
+
+            const exportData = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                versionCount: versions.length,
+                versions: versions
+            };
+
+            const jsonString = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            a.download = `git-history-${timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            alert(`✓ Exported ${versions.length} version${versions.length !== 1 ? 's' : ''} successfully!`);
+        });
+
+        document.getElementById('importHistory').addEventListener('click', () => {
+            document.getElementById('importHistoryInput').click();
+        });
+
+        document.getElementById('importHistoryInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const jsonText = await file.text();
+                const importData = JSON.parse(jsonText);
+
+                if (!importData.versions || !Array.isArray(importData.versions)) {
+                    throw new Error('Invalid history file format');
+                }
+
+                const shouldReplace = versions.length > 0 ? confirm(
+                    `You have ${versions.length} version${versions.length !== 1 ? 's' : ''} loaded.\n\n` +
+                    `Click OK to REPLACE them with ${importData.versionCount} imported version${importData.versionCount !== 1 ? 's' : ''}.\n` +
+                    `Click Cancel to ADD the imported versions.`
+                ) : true;
+
+                if (shouldReplace) {
+                    versions = [];
+                }
+
+                versions.push(...importData.versions);
+                versions.sort((a, b) => a.timestamp - b.timestamp);
+
+                updateVersionList();
+                updateControls();
+
+                if (versions.length > 0) {
+                    currentVersionIndex = 0;
+                    displayVersion(0);
+                }
+
+                document.getElementById('versionsUploadArea').classList.add('loaded');
+                document.getElementById('versionsStatus').textContent = `✓ ${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`;
+                document.getElementById('versionsStatus').classList.add('loaded');
+                updateStatus('ready', `${versions.length} version${versions.length !== 1 ? 's' : ''} loaded`);
+
+                alert(`✓ Imported ${importData.versionCount} version${importData.versionCount !== 1 ? 's' : ''} successfully!`);
+                e.target.value = '';
+
+            } catch (error) {
+                alert('Error importing history: ' + error.message);
+                e.target.value = '';
+            }
+        });
+
+        document.getElementById('clearAll').addEventListener('click', () => {
+            if (!confirm('Clear all versions?')) return;
+
+            versions = [];
+            currentVersionIndex = 0;
+            stopPlayback();
+            updateVersionList();
+            updateControls();
+
+            document.getElementById('versionsUploadArea').classList.remove('loaded');
+            document.getElementById('versionsStatus').textContent = 'No versions loaded';
+            document.getElementById('versionsStatus').classList.remove('loaded');
+            document.getElementById('codeContainer').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'block';
+            updateStatus('waiting', 'No versions loaded');
+        });
+
+        // Metadata saving
+        document.getElementById('saveVersionMetadata').addEventListener('click', () => {
+            if (currentVersionIndex < 0 || currentVersionIndex >= versions.length) return;
+
+            versions[currentVersionIndex].commitHash = document.getElementById('commitHash').value;
+            versions[currentVersionIndex].author = document.getElementById('commitAuthor').value;
+            versions[currentVersionIndex].message = document.getElementById('commitMessage').value;
+
+            updateVersionList();
+            alert('✓ Metadata saved!');
+        });
+
+        function updateControls() {
+            const hasVersions = versions.length > 0;
+            document.getElementById('playBtn').disabled = !hasVersions;
+            document.getElementById('stopBtn').disabled = !hasVersions;
+            document.getElementById('prevBtn').disabled = !hasVersions;
+            document.getElementById('nextBtn').disabled = !hasVersions;
+            document.getElementById('exportHistory').disabled = !hasVersions;
+            document.getElementById('clearAll').disabled = !hasVersions;
+            document.getElementById('saveVersionMetadata').disabled = !hasVersions;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (versions.length === 0) return;
+
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                document.getElementById('prevBtn').click();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                document.getElementById('nextBtn').click();
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                if (playInterval) {
+                    stopPlayback();
+                } else {
+                    startPlayback();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
