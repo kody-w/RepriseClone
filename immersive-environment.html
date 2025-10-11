@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Immersive Computing Environment - Physical Reality Layer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            perspective: 1000px;
+        }
+
+        /* Room Container */
+        .room-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            transition: transform 2s ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        .room-container.zoomed-in {
+            transform: translateZ(500px) scale(1.5);
+        }
+
+        /* Room environments for different eras */
+        .room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 1s;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .room.active {
+            opacity: 1;
+        }
+
+        /* 1999 - Teenage bedroom with CRT */
+        .room-1999 {
+            background: linear-gradient(to bottom, #2a1a3d 0%, #1a0f28 100%);
+        }
+
+        /* 2001 - College dorm */
+        .room-2001 {
+            background: linear-gradient(to bottom, #3d2a1a 0%, #281a0f 100%);
+        }
+
+        /* 2005 - Home office */
+        .room-2005 {
+            background: linear-gradient(to bottom, #1a2a3d 0%, #0f1a28 100%);
+        }
+
+        /* 2007 - Coffee shop / Cafe */
+        .room-2007 {
+            background: linear-gradient(to bottom, #3d3d2a 0%, #28280f 100%);
+        }
+
+        /* 2024 - Gaming setup / Streamer room */
+        .room-2024 {
+            background: linear-gradient(to bottom, #1a1a1a 0%, #0a0a0a 100%);
+        }
+
+        /* Desk and computer setup */
+        .desk-setup {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* Desk surface */
+        .desk {
+            width: 100%;
+            height: 20px;
+            background: linear-gradient(to bottom, #8B4513 0%, #654321 100%);
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            position: relative;
+        }
+
+        .desk::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: #9B5523;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* Computer on desk */
+        .computer-unit {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.5s;
+        }
+
+        /* Monitor glow effect */
+        .monitor-glow {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+            filter: blur(40px);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .monitor-glow.active {
+            opacity: 1;
+        }
+
+        /* Room decorations */
+        .decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Posters on wall */
+        .poster {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            border: 3px solid rgba(255,255,255,0.2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        .poster-1 {
+            top: 10%;
+            left: 10%;
+            width: 150px;
+            height: 200px;
+        }
+
+        .poster-2 {
+            top: 15%;
+            right: 15%;
+            width: 180px;
+            height: 180px;
+        }
+
+        /* Lava lamp */
+        .lava-lamp {
+            position: absolute;
+            bottom: 15%;
+            left: 15%;
+            width: 60px;
+            height: 120px;
+            background: linear-gradient(to bottom, #ff6b6b 0%, #ff8e53 100%);
+            border-radius: 30px;
+            opacity: 0.7;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+            animation: lavaGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes lavaGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(255, 107, 107, 0.8); }
+        }
+
+        .lava-lamp::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 20px;
+            background: #333;
+            border-radius: 20px 20px 0 0;
+        }
+
+        /* Plant */
+        .plant {
+            position: absolute;
+            bottom: 15%;
+            right: 15%;
+            font-size: 60px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+        }
+
+        /* Window with time-of-day lighting */
+        .window {
+            position: absolute;
+            top: 5%;
+            right: 5%;
+            width: 200px;
+            height: 250px;
+            background: linear-gradient(to bottom, #1a4d8f 0%, #87ceeb 100%);
+            border: 10px solid #654321;
+            border-radius: 8px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.3);
+            transition: background 2s;
+        }
+
+        .window.night {
+            background: linear-gradient(to bottom, #0a0a2e 0%, #1a1a4d 100%);
+        }
+
+        .window::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 2px;
+            height: 100%;
+            background: #654321;
+        }
+
+        .window::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #654321;
+        }
+
+        /* Stars in night window */
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* Computer screen iframe container */
+        .screen-container {
+            position: absolute;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 450px;
+            background: #000;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .screen-container.active {
+            opacity: 1;
+        }
+
+        .screen-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 4px;
+        }
+
+        /* First-person perspective overlay */
+        .perspective-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 1000;
+            opacity: 1;
+            transition: opacity 2s;
+            pointer-events: none;
+        }
+
+        .perspective-overlay.hidden {
+            opacity: 0;
+        }
+
+        /* Door opening animation */
+        .door {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #2a1a0f;
+            z-index: 999;
+            transform-origin: left center;
+            transition: transform 2s ease-in-out;
+        }
+
+        .door.open {
+            transform: perspective(1200px) rotateY(-90deg);
+        }
+
+        /* Walking animation effect */
+        @keyframes walk {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .walking .room-container {
+            animation: walk 0.6s ease-in-out infinite;
+        }
+
+        /* Control panel */
+        .control-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            z-index: 1000;
+        }
+
+        .control-panel h3 {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .era-select {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #252525;
+            border: 2px solid #333;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .era-select:hover {
+            background: #333;
+            border-color: #667eea;
+        }
+
+        .era-select.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+        }
+
+        .time-controls {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .time-btn {
+            padding: 8px 12px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            background: #252525;
+            border: 2px solid #333;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .time-btn:hover {
+            background: #333;
+            border-color: #667eea;
+        }
+
+        .time-btn.active {
+            background: #667eea;
+            border-color: #764ba2;
+        }
+
+        /* Start experience button */
+        .start-experience {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.5);
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+
+        .start-experience:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.7);
+        }
+
+        .start-experience.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Status display */
+        .status-display {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            font-size: 14px;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .status-label {
+            color: #999;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Ambient lighting effects */
+        .ambient-light {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+            transition: opacity 2s;
+        }
+
+        .rgb-lights {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 30%;
+            background: linear-gradient(to top,
+                rgba(255, 0, 255, 0.2) 0%,
+                rgba(0, 255, 255, 0.2) 50%,
+                transparent 100%);
+            animation: rgbShift 5s ease-in-out infinite;
+        }
+
+        @keyframes rgbShift {
+            0%, 100% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(60deg); }
+        }
+
+        /* Chair silhouette */
+        .chair {
+            position: absolute;
+            bottom: 8%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 150px;
+            opacity: 0.3;
+        }
+
+        .chair-back {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 100px;
+            background: #1a1a1a;
+            border-radius: 60px 60px 0 0;
+        }
+
+        .chair-seat {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px;
+            height: 40px;
+            background: #1a1a1a;
+            border-radius: 20px;
+        }
+
+        .chair-leg {
+            position: absolute;
+            bottom: 0;
+            width: 10px;
+            height: 30px;
+            background: #1a1a1a;
+        }
+
+        .chair-leg:nth-child(3) { left: 20px; }
+        .chair-leg:nth-child(4) { left: 60px; }
+        .chair-leg:nth-child(5) { right: 60px; }
+        .chair-leg:nth-child(6) { right: 20px; }
+    </style>
+</head>
+<body>
+    <button class="start-experience" id="startBtn" onclick="startExperience()">
+        🚪 Enter Room
+    </button>
+
+    <div class="control-panel">
+        <h3>Era & Environment</h3>
+        <button class="era-select active" onclick="selectEnvironment('1999')">
+            🖥️ 1999 - Teenage Bedroom
+        </button>
+        <button class="era-select" onclick="selectEnvironment('2001')">
+            🎓 2001 - College Dorm
+        </button>
+        <button class="era-select" onclick="selectEnvironment('2005')">
+            🏢 2005 - Home Office
+        </button>
+        <button class="era-select" onclick="selectEnvironment('2007')">
+            ☕ 2007 - Coffee Shop
+        </button>
+        <button class="era-select" onclick="selectEnvironment('2024')">
+            🎮 2024 - Gaming Setup
+        </button>
+
+        <div class="time-controls">
+            <div class="status-label">Time of Day</div>
+            <button class="time-btn" onclick="setTimeOfDay('morning')">🌅 Morning</button>
+            <button class="time-btn" onclick="setTimeOfDay('afternoon')">☀️ Afternoon</button>
+            <button class="time-btn" onclick="setTimeOfDay('evening')">🌆 Evening</button>
+            <button class="time-btn active" onclick="setTimeOfDay('night')">🌙 Night</button>
+        </div>
+    </div>
+
+    <div class="status-display">
+        <div class="status-label">Current State</div>
+        <div class="status-value" id="statusText">Ready to enter</div>
+    </div>
+
+    <div class="door" id="door"></div>
+    <div class="perspective-overlay" id="overlay"></div>
+
+    <div class="ambient-light">
+        <div class="rgb-lights" id="rgbLights" style="opacity: 0;"></div>
+    </div>
+
+    <div class="room-container" id="roomContainer">
+        <!-- Room environments -->
+        <div class="room room-1999 active" id="room1999">
+            <div class="decorations">
+                <div class="poster poster-1">🎸</div>
+                <div class="poster poster-2">🎮</div>
+                <div class="lava-lamp"></div>
+                <div class="window night" id="window">
+                    <div class="star" style="top: 20%; left: 30%; animation-delay: 0s;"></div>
+                    <div class="star" style="top: 40%; left: 70%; animation-delay: 0.5s;"></div>
+                    <div class="star" style="top: 60%; left: 20%; animation-delay: 1s;"></div>
+                    <div class="star" style="top: 80%; left: 80%; animation-delay: 1.5s;"></div>
+                    <div class="star" style="top: 30%; left: 50%; animation-delay: 0.8s;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="room room-2001" id="room2001">
+            <div class="decorations">
+                <div class="poster poster-1">📚</div>
+                <div class="poster poster-2">🎬</div>
+                <div class="plant">🌿</div>
+                <div class="window night" id="window2001">
+                    <div class="star" style="top: 25%; left: 35%; animation-delay: 0.2s;"></div>
+                    <div class="star" style="top: 45%; left: 65%; animation-delay: 0.7s;"></div>
+                    <div class="star" style="top: 65%; left: 25%; animation-delay: 1.2s;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="room room-2005" id="room2005">
+            <div class="decorations">
+                <div class="poster poster-1">📊</div>
+                <div class="poster poster-2">🗂️</div>
+                <div class="plant">🪴</div>
+                <div class="window night" id="window2005"></div>
+            </div>
+        </div>
+
+        <div class="room room-2007" id="room2007">
+            <div class="decorations">
+                <div class="poster poster-1">☕</div>
+                <div class="poster poster-2">🎨</div>
+                <div class="plant">🌱</div>
+                <div class="window night" id="window2007"></div>
+            </div>
+        </div>
+
+        <div class="room room-2024" id="room2024">
+            <div class="decorations">
+                <div class="poster poster-1">🎯</div>
+                <div class="poster poster-2">🚀</div>
+                <div class="plant">🎋</div>
+                <div class="window night" id="window2024"></div>
+            </div>
+        </div>
+
+        <!-- Desk setup (same across all rooms) -->
+        <div class="desk-setup">
+            <div class="monitor-glow" id="monitorGlow"></div>
+            <div class="screen-container" id="screenContainer">
+                <iframe id="bootFrame" src="" style="display: none;"></iframe>
+            </div>
+            <div class="computer-unit" id="computerUnit">
+                <!-- Will be populated based on era -->
+            </div>
+            <div class="desk"></div>
+        </div>
+
+        <div class="chair">
+            <div class="chair-back"></div>
+            <div class="chair-seat"></div>
+            <div class="chair-leg"></div>
+            <div class="chair-leg"></div>
+            <div class="chair-leg"></div>
+            <div class="chair-leg"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentEra = '1999';
+        let currentTime = 'night';
+        let isSeated = false;
+        let audioContext = null;
+
+        // Audio functions
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playAmbientSound(type) {
+            initAudio();
+            // Create ambient room tone
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 100;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function playFootsteps() {
+            initAudio();
+            // Low frequency thump for footsteps
+            for (let i = 0; i < 4; i++) {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 80;
+                oscillator.type = 'sine';
+
+                const time = audioContext.currentTime + (i * 0.4);
+                gainNode.gain.setValueAtTime(0.1, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+
+                oscillator.start(time);
+                oscillator.stop(time + 0.2);
+            }
+        }
+
+        function playCreakSound() {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 200;
+            oscillator.type = 'sawtooth';
+
+            gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        async function startExperience() {
+            updateStatus('Opening door...');
+            document.getElementById('startBtn').classList.add('hidden');
+
+            // Door opens
+            playCreakSound();
+            await sleep(500);
+            document.getElementById('door').classList.add('open');
+            await sleep(2000);
+
+            // Fade out overlay as we "enter"
+            updateStatus('Walking to desk...');
+            playFootsteps();
+            document.getElementById('overlay').classList.add('hidden');
+            document.body.classList.add('walking');
+            await sleep(2000);
+            document.body.classList.remove('walking');
+
+            // Sit down at desk
+            updateStatus('Sitting down...');
+            playAmbientSound('room');
+            document.getElementById('roomContainer').classList.add('zoomed-in');
+            await sleep(2000);
+
+            // Turn on computer
+            updateStatus('Ready to power on...');
+            isSeated = true;
+            document.getElementById('monitorGlow').classList.add('active');
+            document.getElementById('screenContainer').classList.add('active');
+
+            // Load boot simulation
+            await sleep(500);
+            loadBootSimulation();
+        }
+
+        function loadBootSimulation() {
+            updateStatus('Click screen to boot computer...');
+            const frame = document.getElementById('bootFrame');
+            frame.src = 'boot-simulation.html';
+            frame.style.display = 'block';
+
+            // Add click handler to start boot
+            frame.addEventListener('load', () => {
+                updateStatus('Boot simulation loaded - interact with screen');
+            });
+        }
+
+        function selectEnvironment(era) {
+            if (isSeated) {
+                updateStatus('Please refresh to change environment');
+                return;
+            }
+
+            currentEra = era;
+
+            // Update active button
+            document.querySelectorAll('.era-select').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Switch rooms
+            document.querySelectorAll('.room').forEach(room => room.classList.remove('active'));
+            document.getElementById(`room${era}`).classList.add('active');
+
+            // Update RGB lights for modern setup
+            if (era === '2024') {
+                document.getElementById('rgbLights').style.opacity = '1';
+            } else {
+                document.getElementById('rgbLights').style.opacity = '0';
+            }
+
+            updateStatus(`Environment: ${era}`);
+        }
+
+        function setTimeOfDay(time) {
+            currentTime = time;
+
+            // Update active button
+            document.querySelectorAll('.time-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update all windows
+            const windows = document.querySelectorAll('.window');
+            windows.forEach(window => {
+                window.classList.remove('night', 'day');
+                if (time === 'night' || time === 'evening') {
+                    window.classList.add('night');
+                } else {
+                    window.style.background = 'linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 100%)';
+                }
+            });
+
+            updateStatus(`Time: ${time}`);
+        }
+
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize
+        updateStatus('Select environment and press "Enter Room"');
+    </script>
+</body>
+</html>
