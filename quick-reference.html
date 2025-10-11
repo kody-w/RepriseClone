@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Reference - Reprise Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 36px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #2d2d30;
+            border: 2px solid #3e3e42;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .card h2 {
+            color: #4ec9b0;
+            font-size: 18px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 5px;
+        }
+
+        .card h3 {
+            color: #dcdcaa;
+            font-size: 14px;
+            margin: 10px 0 5px 0;
+        }
+
+        .card p {
+            font-size: 13px;
+            margin: 5px 0;
+        }
+
+        .card ul {
+            margin-left: 15px;
+            font-size: 13px;
+        }
+
+        .card li {
+            margin: 3px 0;
+        }
+
+        .code {
+            background: #1e1e1e;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ce9178;
+            font-family: 'Courier New', monospace;
+        }
+
+        .key {
+            background: #3e3e42;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #569cd6;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #4ec9b0;
+        }
+
+        .file {
+            color: #ce9178;
+        }
+
+        .freq {
+            color: #b5cea8;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #3e3e42;
+        }
+
+        th {
+            background: #3e3e42;
+            color: #4ec9b0;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background: #252526;
+        }
+
+        .layer-tree {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #4ec9b0;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+
+        .layer-tree .layer {
+            color: #dcdcaa;
+        }
+
+        .layer-tree .file {
+            color: #ce9178;
+        }
+
+        .print-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .print-btn:hover {
+            background: #764ba2;
+        }
+
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .card {
+                background: white;
+                border: 1px solid black;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Quick Reference Guide</h1>
+
+        <div class="grid">
+            <!-- 15 LAYERS -->
+            <div class="card">
+                <h2>🌌 15 Nested Layers</h2>
+                <div class="layer-tree">
+<span class="layer">∞</span> The Void/Multiverse
+<span class="layer">01</span> Observable Universe → <span class="file">universal-consciousness.html</span>
+<span class="layer">02</span> Milky Way Galaxy → <span class="file">universal-consciousness.html</span>
+<span class="layer">03</span> Solar System → <span class="file">universal-consciousness.html</span>
+<span class="layer">04</span> Earth → <span class="file">universal-consciousness.html</span>
+<span class="layer">05</span> 2050 Neural Interface → <span class="file">memory-dive.html</span>
+<span class="layer">06</span> Memory Browser → <span class="file">memory-dive.html</span>
+<span class="layer">07</span> Spatial Zoom → <span class="file">memory-dive.html</span>
+<span class="layer">08</span> Physical Room → <span class="file">immersive-environment.html</span>
+<span class="layer">09</span> Computer Hardware → <span class="file">boot-simulation.html</span>
+<span class="layer">10</span> Boot Sequence → <span class="file">boot-simulation.html</span>
+<span class="layer">11</span> Operating System → <span class="file">boot-simulation.html</span>
+<span class="layer">12</span> Desktop Environment → <span class="file">boot-simulation.html</span>
+<span class="layer">13</span> Browser Window → <span class="file">boot-simulation.html</span>
+<span class="layer">14</span> Web Application → <span class="file">demos/*.html</span>
+<span class="layer">15</span> User Experience → <span class="layer">(the actual interaction)</span>
+                </div>
+            </div>
+
+            <!-- KEYBOARD SHORTCUTS -->
+            <div class="card">
+                <h2>⌨️ Keyboard Shortcuts</h2>
+                <h3>Universal</h3>
+                <p><span class="key">ESC</span> Exit/dismiss modals</p>
+                <p><span class="key">Space</span> Play/pause animations</p>
+
+                <h3>Player</h3>
+                <p><span class="key">[</span> or <span class="key">←</span> Previous flag/frame</p>
+                <p><span class="key">]</span> or <span class="key">→</span> Next flag/frame</p>
+
+                <h3>Animator</h3>
+                <p><span class="key">←</span> Previous frame</p>
+                <p><span class="key">→</span> Next frame</p>
+                <p><span class="key">Space</span> Play/pause</p>
+
+                <h3>Editor</h3>
+                <p><span class="key">Ctrl/Cmd+B</span> Bold</p>
+                <p><span class="key">Ctrl/Cmd+I</span> Italic</p>
+                <p><span class="key">Ctrl/Cmd+U</span> Underline</p>
+                <p><span class="key">Ctrl/Cmd+Z</span> Undo</p>
+            </div>
+
+            <!-- AUDIO FREQUENCIES -->
+            <div class="card">
+                <h2>🔊 Audio Frequencies</h2>
+                <table>
+                    <tr>
+                        <th>Sound</th>
+                        <th>Frequency</th>
+                        <th>Type</th>
+                    </tr>
+                    <tr>
+                        <td>BIOS Beep</td>
+                        <td><span class="freq">800 Hz</span></td>
+                        <td>sine</td>
+                    </tr>
+                    <tr>
+                        <td>Mac Chord</td>
+                        <td><span class="freq">523, 659, 784 Hz</span></td>
+                        <td>C5,E5,G5</td>
+                    </tr>
+                    <tr>
+                        <td>Windows Melody</td>
+                        <td><span class="freq">523→659→784→1047</span></td>
+                        <td>ascending</td>
+                    </tr>
+                    <tr>
+                        <td>Click Sound</td>
+                        <td><span class="freq">600 Hz</span></td>
+                        <td>sine</td>
+                    </tr>
+                    <tr>
+                        <td>Cosmic Tone</td>
+                        <td><span class="freq">50-800 Hz</span></td>
+                        <td>variable</td>
+                    </tr>
+                    <tr>
+                        <td>Neural Hum</td>
+                        <td><span class="freq">120 Hz</span></td>
+                        <td>ambient</td>
+                    </tr>
+                    <tr>
+                        <td>Footsteps</td>
+                        <td><span class="freq">80 Hz</span></td>
+                        <td>low freq</td>
+                    </tr>
+                    <tr>
+                        <td>Door Creak</td>
+                        <td><span class="freq">200 Hz</span></td>
+                        <td>sawtooth</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- QUICK COMMANDS -->
+            <div class="card">
+                <h2>⚡ Quick Commands</h2>
+                <h3>Start Local Server</h3>
+                <p><span class="code">python -m http.server 8000</span></p>
+                <p><span class="code">npx http-server -p 8000</span></p>
+                <p><span class="code">php -S localhost:8000</span></p>
+
+                <h3>Open Pages</h3>
+                <p><span class="code">http://localhost:8000/</span> Main hub</p>
+                <p><span class="code">http://localhost:8000/docs.html</span> Docs</p>
+                <p><span class="code">http://localhost:8000/universal-consciousness.html</span> Start ultimate journey</p>
+            </div>
+
+            <!-- META-LAYER FILES -->
+            <div class="card">
+                <h2>📁 Meta-Layer Files</h2>
+                <p><span class="file">universal-consciousness.html</span><br>4D spacetime, multiverse, 13.8B years</p>
+                <p><span class="file">memory-dive.html</span><br>Neural interface 2050, memory browser</p>
+                <p><span class="file">immersive-environment.html</span><br>Physical rooms 1999-2024, entry sequence</p>
+                <p><span class="file">boot-simulation.html</span><br>Complete boot: BIOS→OS→Desktop→App</p>
+                <p><span class="file">visual-history.html</span><br>Flipbook player with demo buttons</p>
+                <p><span class="file">meta-evolution.html</span><br>Hardware evolution viewer</p>
+                <p><span class="file">4d-timeline.html</span><br>Branching timeline multiverse</p>
+                <p><span class="file">git-visualizer.html</span><br>Git history animator</p>
+            </div>
+
+            <!-- RECORDING FILES -->
+            <div class="card">
+                <h2>📹 Recording Files</h2>
+                <p><span class="file">bookmarklet.html</span><br>Bookmarklet installer (RECOMMENDED)</p>
+                <p><span class="file">recorder.html</span><br>Iframe recorder (local only)</p>
+                <p><span class="file">player.html</span><br>Playback + editing suite</p>
+                <p><span class="file">animator.html</span><br>Template/frame animator (2 modes)</p>
+                <p><span class="file">wysiwyg-editor.html</span><br>WYSIWYG visual editor</p>
+                <p><span class="file">frame-splitter.html</span><br>HTML → CSS/JS splitter</p>
+            </div>
+
+            <!-- HISTORICAL APPS -->
+            <div class="card">
+                <h2>🎬 Historical Apps</h2>
+                <p><span class="file">demos/aim-1999.html</span> AOL Instant Messenger</p>
+                <p><span class="file">demos/msn-2001.html</span> MSN Messenger</p>
+                <p><span class="file">demos/myspace-2005.html</span> MySpace profile</p>
+                <p><span class="file">demos/facebook-2007.html</span> Facebook with Wall</p>
+                <p><span class="file">demos/twitter-2009.html</span> Twitter (140 chars)</p>
+                <p><span class="file">demos/instagram-2012.html</span> Instagram photos</p>
+                <p><span class="file">demos/discord-2024.html</span> Modern Discord</p>
+            </div>
+
+            <!-- EXPORT FORMATS -->
+            <div class="card">
+                <h2>💾 Export Formats</h2>
+                <table>
+                    <tr>
+                        <th>Format</th>
+                        <th>Size</th>
+                        <th>Use Case</th>
+                    </tr>
+                    <tr>
+                        <td>Standard Export</td>
+                        <td>10-50 MB</td>
+                        <td>Basic replay</td>
+                    </tr>
+                    <tr>
+                        <td>With Flags</td>
+                        <td>10-50 MB</td>
+                        <td>Presentations</td>
+                    </tr>
+                    <tr>
+                        <td>Edited Recording</td>
+                        <td>10-50 MB</td>
+                        <td>Polished demos</td>
+                    </tr>
+                    <tr>
+                        <td>Framed Animation</td>
+                        <td>5-10 MB</td>
+                        <td>Lightweight (50-90% smaller!)</td>
+                    </tr>
+                    <tr>
+                        <td>Template + Mapping</td>
+                        <td>1-5 MB</td>
+                        <td>Reusable templates</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- COMPUTING ERAS -->
+            <div class="card">
+                <h2>🖥️ Computing Eras</h2>
+                <table>
+                    <tr>
+                        <th>Year</th>
+                        <th>OS</th>
+                        <th>Browser</th>
+                        <th>App</th>
+                    </tr>
+                    <tr>
+                        <td>1999</td>
+                        <td>Win 95</td>
+                        <td>Netscape</td>
+                        <td>AIM</td>
+                    </tr>
+                    <tr>
+                        <td>2001</td>
+                        <td>Mac OS 9</td>
+                        <td>IE</td>
+                        <td>MSN</td>
+                    </tr>
+                    <tr>
+                        <td>2005</td>
+                        <td>Win XP</td>
+                        <td>Firefox</td>
+                        <td>MySpace</td>
+                    </tr>
+                    <tr>
+                        <td>2007</td>
+                        <td>Mac OS X</td>
+                        <td>Safari</td>
+                        <td>Facebook</td>
+                    </tr>
+                    <tr>
+                        <td>2024</td>
+                        <td>Win 11</td>
+                        <td>Chrome</td>
+                        <td>Discord</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- ROOM ENVIRONMENTS -->
+            <div class="card">
+                <h2>🚪 Room Environments</h2>
+                <table>
+                    <tr>
+                        <th>Era</th>
+                        <th>Room Type</th>
+                        <th>Decorations</th>
+                    </tr>
+                    <tr>
+                        <td>1999</td>
+                        <td>Teenage Bedroom</td>
+                        <td>🎸🎮 Lava lamp</td>
+                    </tr>
+                    <tr>
+                        <td>2001</td>
+                        <td>College Dorm</td>
+                        <td>📚🎬 Plants</td>
+                    </tr>
+                    <tr>
+                        <td>2005</td>
+                        <td>Home Office</td>
+                        <td>📊🗂️ Professional</td>
+                    </tr>
+                    <tr>
+                        <td>2007</td>
+                        <td>Coffee Shop</td>
+                        <td>☕🎨 Creative</td>
+                    </tr>
+                    <tr>
+                        <td>2024</td>
+                        <td>Gaming Setup</td>
+                        <td>🎯🚀 RGB lights</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- BROWSER COMPATIBILITY -->
+            <div class="card">
+                <h2>🌐 Browser Compatibility</h2>
+                <table>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Chrome</th>
+                        <th>Firefox</th>
+                        <th>Safari</th>
+                    </tr>
+                    <tr>
+                        <td>Recording</td>
+                        <td>✅ Full</td>
+                        <td>✅ Full</td>
+                        <td>✅ Full</td>
+                    </tr>
+                    <tr>
+                        <td>Web Audio</td>
+                        <td>✅ Full</td>
+                        <td>✅ Full</td>
+                        <td>⚠️ Click req</td>
+                    </tr>
+                    <tr>
+                        <td>3D Transforms</td>
+                        <td>✅ Excellent</td>
+                        <td>⚠️ Good</td>
+                        <td>⚠️ Good</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- QUICK WORKFLOWS -->
+            <div class="card">
+                <h2>⚡ Quick Workflows</h2>
+                <h3>Record & Share (5 min)</h3>
+                <p>1. Get bookmarklet → 2. Visit site → 3. Click bookmarklet → 4. Record → 5. Export → 6. Share JSON</p>
+
+                <h3>Edit Recording (10 min)</h3>
+                <p>1. Load in player → 2. Add flags → 3. Edit text → 4. Hide elements → 5. Export edited</p>
+
+                <h3>Create Animation (15 min)</h3>
+                <p>1. Add flags → 2. Capture frames → 3. Edit each frame → 4. Play animation → 5. Export framed</p>
+
+                <h3>Ultimate Journey (45 min)</h3>
+                <p>1. Start at universal-consciousness → 2. Navigate cosmic scales → 3. Dive into memory → 4. Enter room → 5. Boot computer → 6. Experience app</p>
+            </div>
+
+            <!-- STATISTICS -->
+            <div class="card">
+                <h2>📊 System Statistics</h2>
+                <ul>
+                    <li><strong>Total Files:</strong> 20+ HTML pages</li>
+                    <li><strong>Lines of Code:</strong> ~15,000</li>
+                    <li><strong>Meta-Layers:</strong> 15 nested levels</li>
+                    <li><strong>Time Span:</strong> 13.8 billion years</li>
+                    <li><strong>Computing Eras:</strong> 5 (1999-2024)</li>
+                    <li><strong>Historical Apps:</strong> 7 replicas</li>
+                    <li><strong>Audio Cues:</strong> 8 synthesized</li>
+                    <li><strong>Galaxies:</strong> 200 rendered</li>
+                    <li><strong>Stars:</strong> 500 rendered</li>
+                    <li><strong>Timeline Branches:</strong> 5 realities</li>
+                </ul>
+            </div>
+
+            <!-- TROUBLESHOOTING -->
+            <div class="card">
+                <h2>🔧 Quick Troubleshooting</h2>
+                <h3>Bookmarklet doesn't work</h3>
+                <p>✓ Run local server (not file://)<br>✓ Check port is 8000</p>
+
+                <h3>No audio on Safari</h3>
+                <p>✓ Click page first (browser security)</p>
+
+                <h3>Playback choppy</h3>
+                <p>✓ Close other tabs<br>✓ Use Chrome<br>✓ Convert to framed animation</p>
+
+                <h3>Meta-layers won't load</h3>
+                <p>✓ Refresh page<br>✓ Use Chrome<br>✓ Check local server running</p>
+            </div>
+
+            <!-- USEFUL LINKS -->
+            <div class="card">
+                <h2>🔗 Useful Links</h2>
+                <p><strong>Documentation:</strong><br>
+                <span class="code">docs.html</span> Complete docs<br>
+                <span class="code">tutorial.html</span> Step-by-step tutorial<br>
+                <span class="code">README.md</span> Project overview</p>
+
+                <p><strong>External:</strong><br>
+                <span class="code">github.com/kody-w/RepriseClone</span><br>
+                <span class="code">rrweb.io</span> Recording library<br>
+                <span class="code">kody-w.github.io/RepriseClone</span> Live demo</p>
+            </div>
+
+            <!-- BOOT SEQUENCE STATES -->
+            <div class="card">
+                <h2>🔌 Boot Sequence States</h2>
+                <p><strong>OFF</strong> → Power button press</p>
+                <p><strong>POST/BIOS</strong> → Memory test, device detection, beep</p>
+                <p><strong>BOOTING OS</strong> → Loading animation, melody</p>
+                <p><strong>LOADING DESKTOP</strong> → Icons appear, taskbar/dock loads</p>
+                <p><strong>READY</strong> → Click browser icon</p>
+                <p><strong>LAUNCHING BROWSER</strong> → Window animates in</p>
+                <p><strong>BROWSER OPEN</strong> → Page loads, app appears</p>
+            </div>
+
+            <!-- 4D TIMELINE MARKERS -->
+            <div class="card">
+                <h2>⏱️ 4D Timeline Markers</h2>
+                <table>
+                    <tr>
+                        <th>Position</th>
+                        <th>Event</th>
+                    </tr>
+                    <tr>
+                        <td>0.00</td>
+                        <td>Big Bang (13.8 BYA)</td>
+                    </tr>
+                    <tr>
+                        <td>0.01</td>
+                        <td>First Stars (13.6 BYA)</td>
+                    </tr>
+                    <tr>
+                        <td>0.03</td>
+                        <td>Milky Way (13.5 BYA)</td>
+                    </tr>
+                    <tr>
+                        <td>0.66</td>
+                        <td>Solar System (4.6 BYA)</td>
+                    </tr>
+                    <tr>
+                        <td>0.72</td>
+                        <td>Life on Earth (3.8 BYA)</td>
+                    </tr>
+                    <tr>
+                        <td>0.98</td>
+                        <td>Humans (300 KYA)</td>
+                    </tr>
+                    <tr>
+                        <td>0.9999</td>
+                        <td>Computing (1950s)</td>
+                    </tr>
+                    <tr>
+                        <td>1.0</td>
+                        <td>Now (2050)</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; color: #666;">
+            <p>Quick Reference Guide v1.0 | Press Ctrl+P to print</p>
+            <p style="margin-top: 10px;">
+                <a href="index.html" style="color: #667eea;">← Back to Main Hub</a> |
+                <a href="docs.html" style="color: #667eea;">Complete Documentation →</a>
+            </p>
+        </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+</body>
+</html>

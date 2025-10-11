@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Documentation - Reprise Clone Meta-Layer System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 4px solid #667eea;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header p {
+            font-size: 20px;
+            color: #aaa;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .section h3 {
+            font-size: 24px;
+            margin: 25px 0 15px;
+            color: #764ba2;
+        }
+
+        .section h4 {
+            font-size: 18px;
+            margin: 20px 0 10px;
+            color: #555;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .feature-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .feature-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .demo-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .demo-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .code-block .keyword { color: #569cd6; }
+        .code-block .string { color: #ce9178; }
+        .code-block .comment { color: #6a9955; }
+        .code-block .function { color: #dcdcaa; }
+
+        .layer-diagram {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            margin: 30px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .layer-diagram pre {
+            margin: 0;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-card .number {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 30px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -32px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .timeline-item h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            color: #0d47a1;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #1b5e20;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #e65100;
+        }
+
+        .quickstart-box {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+
+        .quickstart-box h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .quickstart-box ol {
+            margin-left: 20px;
+        }
+
+        .quickstart-box li {
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .video-placeholder {
+            background: #1e1e1e;
+            border-radius: 12px;
+            padding: 60px;
+            text-align: center;
+            color: #999;
+            margin: 30px 0;
+            border: 3px dashed #444;
+        }
+
+        .video-placeholder h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌌 Complete Documentation</h1>
+        <p>The Ultimate Guide to the Reprise Clone Meta-Layer System</p>
+    </div>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('overview')">📖 Overview</button>
+            <button class="tab-btn" onclick="switchTab('quickstart')">🚀 Quick Start</button>
+            <button class="tab-btn" onclick="switchTab('meta-layers')">🌌 Meta-Layers</button>
+            <button class="tab-btn" onclick="switchTab('recording')">📹 Recording</button>
+            <button class="tab-btn" onclick="switchTab('examples')">💡 Examples</button>
+            <button class="tab-btn" onclick="switchTab('api')">🔧 API Reference</button>
+            <button class="tab-btn" onclick="switchTab('architecture')">🏗️ Architecture</button>
+            <button class="tab-btn" onclick="switchTab('faq')">❓ FAQ</button>
+        </div>
+
+        <!-- OVERVIEW TAB -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="section">
+                <h2>🌌 The Complete Meta-Layer Visualization System</h2>
+                <p style="font-size: 18px; color: #555; margin: 20px 0;">
+                    This project has evolved beyond simple screen recording into <strong>the most comprehensive computing history visualization system</strong> ever built. Navigate through 15 nested layers of reality, from the Big Bang to individual pixels on your screen.
+                </p>
+
+                <div class="layer-diagram">
+                    <pre>
+∞ THE VOID / MULTIVERSE
+  └─ Observable Universe (13.8 billion years, 200 galaxies, 500 stars)
+     └─ Milky Way Galaxy (rotating spiral arms, glowing core)
+        └─ Solar System (Sun + orbiting Earth)
+           └─ Earth (from space)
+              └─ 2050 Neural Memory Interface (consciousness chamber)
+                 └─ Memory Browser (lifetime of digital experiences)
+                    └─ Spatial Zoom (space → city → building → room)
+                       └─ Physical Room (1999-2024 environments)
+                          └─ Computer Hardware (CRT, iMac, MacBook, Gaming PC)
+                             └─ Boot Sequence (BIOS, POST, audio cues)
+                                └─ Operating System (Win95, Mac OS 9, XP, OSX, Win11)
+                                   └─ Desktop Environment (icons, taskbar, dock)
+                                      └─ Browser Window (Netscape, IE, Firefox, Safari, Chrome)
+                                         └─ Web Application (AIM, MSN, Facebook, Discord)
+                                            └─ User Experience (the actual interaction)
+                                               └─ ??? (infinite recursion...)
+                    </pre>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="number">15</div>
+                        <div class="label">Nested Layers</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">13.8B</div>
+                        <div class="label">Years of History</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">20+</div>
+                        <div class="label">HTML Pages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">7</div>
+                        <div class="label">Historical Apps</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">5</div>
+                        <div class="label">Computing Eras</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number">8</div>
+                        <div class="label">Audio Cues</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🎯 What Makes This Unique?</h2>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>∞ Infinite Nesting</h4>
+                        <p>First system to visualize computing from cosmic to quantum scale with 15 interactive layers.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>⏱️ 4D Timeline</h4>
+                        <p>Scrub through 13.8 billion years of existence with real-time visual updates.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🌍 Physical Context</h4>
+                        <p>Walk through the door, sit at the desk, experience the actual space where computing happens.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔊 Authentic Audio</h4>
+                        <p>Every layer has period-accurate sounds - BIOS beeps, startup chimes, cosmic tones.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🔀 Multiverse Branching</h4>
+                        <p>Explore parallel computing histories - alternate realities where different companies won.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🧠 Neural Memory</h4>
+                        <p>Browse your lifetime of computing memories as if in 2050 looking back at digital archaeology.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📊 System Architecture at a Glance</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Layer</th>
+                            <th>File</th>
+                            <th>Key Features</th>
+                            <th>Audio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Cosmic Scale</strong></td>
+                            <td>universal-consciousness.html</td>
+                            <td>4D navigation, multiverse, 13.8B years</td>
+                            <td>Cosmic tones (50-800 Hz)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Consciousness</strong></td>
+                            <td>memory-dive.html</td>
+                            <td>Neural interface, memory browser, spatial zoom</td>
+                            <td>Neural hums (120 Hz)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Physical Space</strong></td>
+                            <td>immersive-environment.html</td>
+                            <td>5 era rooms, entry sequence, time of day</td>
+                            <td>Footsteps (80 Hz), door creak (200 Hz)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hardware</strong></td>
+                            <td>boot-simulation.html</td>
+                            <td>Complete boot sequence, 5 eras, BIOS to app</td>
+                            <td>BIOS beep (800 Hz), startup melodies</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Applications</strong></td>
+                            <td>demos/*.html</td>
+                            <td>7 historical app replicas (1999-2024)</td>
+                            <td>N/A</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- QUICK START TAB -->
+        <div id="tab-quickstart" class="tab-content">
+            <div class="section">
+                <h2>🚀 Quick Start Guide</h2>
+
+                <div class="quickstart-box">
+                    <h3>🌌 Journey 1: The Ultimate Meta Experience (45 minutes)</h3>
+                    <p><strong>For those who want to experience EVERYTHING</strong></p>
+                    <ol>
+                        <li><strong>Start:</strong> <a href="universal-consciousness.html" target="_blank">Open Universal Consciousness</a></li>
+                        <li>Click the singularity → Watch the Big Bang</li>
+                        <li>Navigate through: Hypercube → Multiverse → Universe → Galaxy → Solar System → Earth</li>
+                        <li>Scrub the 4D timeline (all 13.8 billion years)</li>
+                        <li>Click "Dive into Consciousness" → Loads Memory Dive</li>
+                        <li>Browse memories, select "1999 - First Online Conversation"</li>
+                        <li>Watch spatial zoom: Earth → City → Building → Room</li>
+                        <li>Loads Immersive Environment automatically</li>
+                        <li>Click "Enter Room" → Door opens, walk to desk, sit down</li>
+                        <li>Monitor activates → Boot simulation loads</li>
+                        <li>Click Maximize button for fullscreen</li>
+                        <li>Power on computer → Watch BIOS → OS boot → Desktop</li>
+                        <li>Click browser icon → Opens period-appropriate browser</li>
+                        <li>Watch page load → AIM appears</li>
+                        <li>Experience authentic 1999 interface with SkaterBoy2000</li>
+                    </ol>
+                    <button class="demo-btn" onclick="window.open('universal-consciousness.html', '_blank')">🚀 Start Ultimate Journey</button>
+                </div>
+
+                <div class="quickstart-box">
+                    <h3>🎬 Journey 2: History Explorer (20 minutes)</h3>
+                    <p><strong>For those interested in computing evolution</strong></p>
+                    <ol>
+                        <li><a href="visual-history.html" target="_blank">Open Visual History Player</a></li>
+                        <li>Click "Messaging Evolution" demo button</li>
+                        <li>Step through: AIM (1999) → MSN (2001) → Discord (2024)</li>
+                        <li>Click "Social Media Evolution" button</li>
+                        <li>Navigate: MySpace → Facebook → Twitter → Instagram</li>
+                        <li><a href="meta-evolution.html" target="_blank">Open Hardware Evolution</a></li>
+                        <li>See each app on period hardware</li>
+                        <li><a href="4d-timeline.html" target="_blank">Open 4D Timeline</a></li>
+                        <li>Explore branching realities and decision points</li>
+                    </ol>
+                    <button class="demo-btn" onclick="window.open('visual-history.html', '_blank')">📚 Explore History</button>
+                </div>
+
+                <div class="quickstart-box">
+                    <h3>📹 Journey 3: Recording & Editing (30 minutes)</h3>
+                    <p><strong>For content creators</strong></p>
+                    <ol>
+                        <li><a href="bookmarklet.html" target="_blank">Get the Bookmarklet</a></li>
+                        <li>Drag to bookmarks bar (one-time setup)</li>
+                        <li>Navigate to any website you want to record</li>
+                        <li>Click bookmarklet → Start recording</li>
+                        <li>Interact with the page normally</li>
+                        <li>Stop recording → Export JSON file</li>
+                        <li><a href="player.html" target="_blank">Open Player</a> → Load your recording</li>
+                        <li>Add flags at key moments</li>
+                        <li>Use text editor to make edits</li>
+                        <li>Hide unwanted elements</li>
+                        <li>Export edited recording → Share!</li>
+                    </ol>
+                    <button class="demo-btn" onclick="window.open('bookmarklet.html', '_blank')">📹 Get Started Recording</button>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>💡 First Time Here?</strong><br>
+                    We recommend starting with Journey 1 (Ultimate Meta Experience) to see the full scope of what this system can do. It's a 45-minute journey through all 15 layers of reality!
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🛠️ Local Setup (5 minutes)</h2>
+                <div class="code-block">
+<span class="comment"># Option 1: Python (most common)</span>
+python -m http.server 8000
+
+<span class="comment"># Option 2: Node.js</span>
+npx http-server -p 8000
+
+<span class="comment"># Option 3: PHP</span>
+php -S localhost:8000
+                </div>
+                <p>Then open: <code style="background: #eee; padding: 4px 8px; border-radius: 4px;">http://localhost:8000</code></p>
+
+                <div class="alert alert-success">
+                    <strong>✅ No Build Step Required!</strong><br>
+                    All code is vanilla HTML/CSS/JS - just serve the files and you're ready to go.
+                </div>
+            </div>
+        </div>
+
+        <!-- META-LAYERS TAB -->
+        <div id="tab-meta-layers" class="tab-content">
+            <div class="section">
+                <h2>🌌 Meta-Layer System Deep Dive</h2>
+                <p>Each layer provides a different perspective on the same computing moment. Together, they form a complete picture of context, scale, and meaning.</p>
+            </div>
+
+            <div class="section">
+                <h3>Layer 1-5: Cosmic Scale</h3>
+                <h4>🌌 Universal Consciousness (universal-consciousness.html)</h4>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>The Void</h4>
+                        <p>Experience the moment before existence. A singularity pulsing in infinite darkness.</p>
+                        <strong>Interaction:</strong> Click singularity to trigger Big Bang
+                    </div>
+                    <div class="feature-card">
+                        <h4>4D Hypercube</h4>
+                        <p>Time rendered as a spatial dimension. Rotating tesseract showing all of spacetime.</p>
+                        <strong>Visual:</strong> 6-faced cube rotating in 3D space
+                    </div>
+                    <div class="feature-card">
+                        <h4>Multiverse</h4>
+                        <p>Infinite branching realities with decision points where timelines diverge.</p>
+                        <strong>Interaction:</strong> Click nodes to explore branches
+                    </div>
+                </div>
+
+                <div class="code-block">
+<span class="comment">// Example: Timeline Scrubber Usage</span>
+<span class="keyword">const</span> timelineData = {
+  start: <span class="string">'Big Bang'</span>,
+  position: 0.0, <span class="comment">// 0.0 to 1.0 (0% to 100%)</span>
+  timeSpan: <span class="string">'13.8 billion years'</span>,
+
+  <span class="comment">// Key moments</span>
+  markers: [
+    { pos: 0.00, label: <span class="string">'Big Bang'</span> },
+    { pos: 0.01, label: <span class="string">'First Stars'</span> },
+    { pos: 0.03, label: <span class="string">'Milky Way Forms'</span> },
+    { pos: 0.66, label: <span class="string">'Solar System Forms'</span> },
+    { pos: 0.72, label: <span class="string">'Life on Earth'</span> },
+    { pos: 0.98, label: <span class="string">'Humans'</span> },
+    { pos: 0.9999, label: <span class="string">'Computing'</span> },
+    { pos: 1.0, label: <span class="string">'Now'</span> }
+  ]
+};
+                </div>
+
+                <button class="demo-btn" onclick="window.open('universal-consciousness.html', '_blank')">🌌 Experience Cosmic Scale</button>
+            </div>
+
+            <div class="section">
+                <h3>Layer 6-8: Consciousness & Memory</h3>
+                <h4>🔮 Memory Dive (memory-dive.html)</h4>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4>1999 - First Online Conversation</h4>
+                        <p><strong>Location:</strong> Suburban bedroom, Cincinnati<br>
+                        <strong>Time:</strong> 11:47 PM, July 14th<br>
+                        <strong>Context:</strong> Late night chatting with SkaterBoy2000 on AIM<br>
+                        <strong>Soundtrack:</strong> Blink-182 playing in background</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2001 - College All-Nighters</h4>
+                        <p><strong>Location:</strong> Anderson Hall, Room 312<br>
+                        <strong>Time:</strong> 3:24 AM, October 8th<br>
+                        <strong>Context:</strong> Procrastinating on essay via MSN Messenger<br>
+                        <strong>Soundtrack:</strong> Empty energy drink cans</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2005 - MySpace Customization</h4>
+                        <p><strong>Location:</strong> Parents' house, Home office<br>
+                        <strong>Time:</strong> 6:15 PM, March 22nd<br>
+                        <strong>Context:</strong> 3 hours picking perfect background, top 8, HTML music autoplay<br>
+                        <strong>Soundtrack:</strong> Dashboard Confessional on repeat</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2007 - First Job Facebook Break</h4>
+                        <p><strong>Location:</strong> Downtown office, 9th floor<br>
+                        <strong>Time:</strong> 2:47 PM, June 5th<br>
+                        <strong>Context:</strong> Sneaking onto Facebook during work, crush sent a poke<br>
+                        <strong>Soundtrack:</strong> Desktop tower humming under desk</p>
+                    </div>
+                    <div class="timeline-item">
+                        <h4>2024 - Gaming Night with Friends</h4>
+                        <p><strong>Location:</strong> Your apartment, Gaming room<br>
+                        <strong>Time:</strong> 9:30 PM, Every Friday<br>
+                        <strong>Context:</strong> Weekly Discord call with college friends now scattered across country<br>
+                        <strong>Soundtrack:</strong> RGB lights, mechanical keyboard clicks</p>
+                    </div>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>💡 Neural Interface Concept</strong><br>
+                    The 2050 setting allows us to look back at computing history as "digital archaeology" - browsing memories like we're accessing archived neural data.
+                </div>
+
+                <button class="demo-btn" onclick="window.open('memory-dive.html', '_blank')">🔮 Dive Into Memories</button>
+            </div>
+
+            <div class="section">
+                <h3>Layer 9-10: Physical Reality</h3>
+                <h4>🚪 Immersive Environment (immersive-environment.html)</h4>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Era</th>
+                            <th>Room Type</th>
+                            <th>Decorations</th>
+                            <th>Atmosphere</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>1999</strong></td>
+                            <td>Teenage Bedroom</td>
+                            <td>🎸 Guitar poster, 🎮 Game poster, Lava lamp</td>
+                            <td>Purple gradient, CRT glow, nostalgic</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2001</strong></td>
+                            <td>College Dorm</td>
+                            <td>📚 Textbooks, 🎬 Movie posters, Plants</td>
+                            <td>Brown tones, lived-in, academic</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2005</strong></td>
+                            <td>Home Office</td>
+                            <td>📊 Business charts, 🗂️ Filing cabinet</td>
+                            <td>Blue professional, organized</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2007</strong></td>
+                            <td>Coffee Shop</td>
+                            <td>☕ Coffee art, 🎨 Abstract paintings</td>
+                            <td>Warm yellows, creative, social</td>
+                        </tr>
+                        <tr>
+                            <td><strong>2024</strong></td>
+                            <td>Gaming Setup</td>
+                            <td>🎯 Target poster, 🚀 Space art, Bamboo</td>
+                            <td>Dark, RGB lighting, modern</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4>Entry Sequence Timeline</h4>
+                <div class="code-block">
+<span class="comment">// Complete entry sequence timing</span>
+<span class="keyword">async function</span> <span class="function">startExperience</span>() {
+  <span class="keyword">await</span> <span class="function">playCreakSound</span>();        <span class="comment">// Door opening: 200 Hz sawtooth</span>
+  <span class="keyword">await</span> <span class="function">sleep</span>(2000);              <span class="comment">// Door animation</span>
+
+  <span class="keyword">await</span> <span class="function">playFootsteps</span>();          <span class="comment">// 4 steps: 80 Hz, 0.4s apart</span>
+  <span class="keyword">await</span> <span class="function">sleep</span>(2000);              <span class="comment">// Walking animation</span>
+
+  <span class="keyword">await</span> <span class="function">playAmbientSound</span>();       <span class="comment">// Room tone: 100 Hz</span>
+  <span class="keyword">await</span> <span class="function">sleep</span>(2000);              <span class="comment">// Sitting down, zoom in</span>
+
+  <span class="function">activateMonitor</span>();              <span class="comment">// Glow effect fades in</span>
+  <span class="function">loadBootSimulation</span>();           <span class="comment">// Load boot-simulation.html in iframe</span>
+}
+                </div>
+
+                <button class="demo-btn" onclick="window.open('immersive-environment.html', '_blank')">🚪 Enter Physical Space</button>
+            </div>
+
+            <div class="section">
+                <h3>Layer 11-15: Digital Systems</h3>
+                <h4>🔌 Boot Simulation (boot-simulation.html)</h4>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>BIOS/POST</h4>
+                        <p><strong>PC:</strong> American Megatrends screen, memory test, 800 Hz beep<br>
+                        <strong>Mac:</strong> Apple logo, rotating spinner, C major chord (523.25, 659.25, 783.99 Hz)</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>OS Boot</h4>
+                        <p><strong>Win95:</strong> Blue/purple gradient, loading bar<br>
+                        <strong>XP:</strong> Blue background, sliding bar<br>
+                        <strong>Win11:</strong> Circular spinner</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Desktop</h4>
+                        <p><strong>Win95/XP:</strong> Teal background, Start button, taskbar<br>
+                        <strong>Mac OS 9/X:</strong> Gradient, menu bar, dock<br>
+                        <strong>Win11:</strong> Centered taskbar, modern icons</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Browser</h4>
+                        <p>Period-appropriate chrome: Netscape (1999), IE (2001), Firefox (2005), Safari (2007), Chrome (2024)</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Application</h4>
+                        <p>Authentic historical apps: AIM, MSN, MySpace, Facebook, Discord with working UI elements</p>
+                    </div>
+                </div>
+
+                <div class="code-block">
+<span class="comment">// Audio frequency reference</span>
+<span class="keyword">const</span> audioFrequencies = {
+  biosBeep: 800,           <span class="comment">// Hz - PC POST beep</span>
+  macChord: [523.25, 659.25, 783.99], <span class="comment">// C5, E5, G5</span>
+  windowsMelody: [
+    { freq: 523.25, duration: 0.15 },  <span class="comment">// C5</span>
+    { freq: 659.25, duration: 0.15 },  <span class="comment">// E5</span>
+    { freq: 783.99, duration: 0.15 },  <span class="comment">// G5</span>
+    { freq: 1046.50, duration: 0.4 }   <span class="comment">// C6</span>
+  ],
+  clickSound: 600,         <span class="comment">// Hz - UI interactions</span>
+  cosmicTone: <span class="string">'50-800'</span>,  <span class="comment">// Hz range</span>
+  neuralHum: 120,          <span class="comment">// Hz - ambient</span>
+  footsteps: 80,           <span class="comment">// Hz - low frequency</span>
+  doorCreak: 200           <span class="comment">// Hz - sawtooth wave</span>
+};
+                </div>
+
+                <button class="demo-btn" onclick="window.open('boot-simulation.html', '_blank')">🔌 Boot a Computer</button>
+            </div>
+        </div>
+
+        <!-- RECORDING TAB -->
+        <div id="tab-recording" class="tab-content">
+            <div class="section">
+                <h2>📹 Recording System Documentation</h2>
+                <p>The original purpose: Record and replay browser sessions with full interaction capture.</p>
+            </div>
+
+            <div class="section">
+                <h3>🔖 Bookmarklet Recorder (Recommended)</h3>
+                <div class="alert alert-success">
+                    <strong>✅ Works on ANY website</strong> - No iframe limitations, no CORS issues!
+                </div>
+
+                <div class="quickstart-box">
+                    <h3>Step-by-Step Setup</h3>
+                    <ol>
+                        <li>Start local server: <code>python -m http.server 8000</code></li>
+                        <li>Open <a href="bookmarklet.html" target="_blank">bookmarklet.html</a></li>
+                        <li>Drag the "📹 Record Page" button to your bookmarks bar</li>
+                        <li>Navigate to ANY website (Google, Microsoft 365, your own sites)</li>
+                        <li>Click the bookmarklet in your bookmarks bar</li>
+                        <li>A floating control panel appears - click "Start Recording"</li>
+                        <li>Interact with the page normally (clicks, typing, scrolling)</li>
+                        <li>Click "Stop Recording" when done</li>
+                        <li>Click "Export Recording" to download JSON file</li>
+                        <li>Load JSON in <a href="player.html" target="_blank">player.html</a> to replay!</li>
+                    </ol>
+                </div>
+
+                <h4>What Gets Recorded?</h4>
+                <ul style="margin-left: 20px; font-size: 16px;">
+                    <li>✅ All mouse movements, clicks, and scrolling</li>
+                    <li>✅ Form inputs and text changes</li>
+                    <li>✅ DOM mutations and element changes</li>
+                    <li>✅ CSS animations and transitions</li>
+                    <li>✅ Initial page snapshot</li>
+                    <li>✅ Timestamps for perfect replay timing</li>
+                    <li>❌ Video/audio content (timing may differ)</li>
+                    <li>❌ Third-party iframes (security restriction)</li>
+                    <li>❌ WebGL/Canvas content (partial support)</li>
+                </ul>
+
+                <button class="demo-btn" onclick="window.open('bookmarklet.html', '_blank')">📹 Get Bookmarklet</button>
+            </div>
+
+            <div class="section">
+                <h3>🎬 Playback with Editing</h3>
+                <p>The player isn't just for replay - it's a full editing suite!</p>
+
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>🚩 Playback Flags</h4>
+                        <p>Add markers at key moments. Jump between flags using keyboard shortcuts ([, ]).</p>
+                        <button class="demo-btn" onclick="alert('Load a recording in player.html, click Flags button, add markers at important moments!')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>📸 Frame Capture</h4>
+                        <p>Capture frames at each flag. Create animations by playing through frames.</p>
+                        <button class="demo-btn" onclick="alert('Add flags, navigate to each, click Capture Frame, then Play Animation!')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>✏️ Text Editor</h4>
+                        <p>Browse HTML tree, edit text live with purple pulsing outline showing selection.</p>
+                        <button class="demo-btn" onclick="alert('In player, click Edit Text, select elements from tree, edit in real-time!')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎯 Element Picker</h4>
+                        <p>Click elements on the page to select them in the tree. Shows all stacked elements!</p>
+                        <button class="demo-btn" onclick="alert('In text editor, click Pick Element, hover and click on the page!')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>👁️ Hide/Show</h4>
+                        <p>Remove unwanted elements like recording overlays, banners, or UI cruft.</p>
+                        <button class="demo-btn" onclick="alert('Select element in tree, click Hide Element. Show All Hidden to restore!')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>🎬 Template Mode</h4>
+                        <p>Mark dynamic elements, export template. Edit only dynamic parts in animator.</p>
+                        <button class="demo-btn" onclick="alert('Enable Template Mode, mark dynamic elements with 🎬, export template + mapping!')">Try It</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>💾 Export Formats</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Format</th>
+                            <th>Contents</th>
+                            <th>Use Case</th>
+                            <th>File Size</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Standard Export</strong></td>
+                            <td>rrweb events only</td>
+                            <td>Basic replay</td>
+                            <td>10-50 MB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>With Flags</strong></td>
+                            <td>Events + flags + metadata</td>
+                            <td>Presentations, demos</td>
+                            <td>10-50 MB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Edited Recording</strong></td>
+                            <td>Events + edits + flags</td>
+                            <td>Polished demos</td>
+                            <td>10-50 MB</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Framed Animation</strong></td>
+                            <td>Frames only (no events)</td>
+                            <td>Lightweight sharing</td>
+                            <td>5-10 MB (50-90% smaller!)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Template + Mapping</strong></td>
+                            <td>HTML + JSON selector list</td>
+                            <td>Reusable templates</td>
+                            <td>1-5 MB</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- EXAMPLES TAB -->
+        <div id="tab-examples" class="tab-content">
+            <div class="section">
+                <h2>💡 Interactive Examples</h2>
+                <p>Click these examples to see the system in action!</p>
+            </div>
+
+            <div class="section">
+                <h3>🌌 Meta-Layer Examples</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>Example 1: Big Bang to AIM</h4>
+                        <p>Complete journey from cosmic scale to chatting on AIM in 1999.</p>
+                        <strong>Layers:</strong> All 15<br>
+                        <strong>Duration:</strong> 45 minutes<br>
+                        <strong>Start:</strong> The Void<br>
+                        <strong>End:</strong> Chatting with SkaterBoy2000
+                        <button class="demo-btn" onclick="window.open('universal-consciousness.html', '_blank')">🚀 Launch</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 2: Memory Dive Only</h4>
+                        <p>Start from 2050 neural interface, browse memories, dive into one.</p>
+                        <strong>Layers:</strong> 6-15<br>
+                        <strong>Duration:</strong> 15 minutes<br>
+                        <strong>Start:</strong> Neural Chamber 2050<br>
+                        <strong>End:</strong> Historical application
+                        <button class="demo-btn" onclick="window.open('memory-dive.html', '_blank')">🔮 Launch</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 3: Room Entry Only</h4>
+                        <p>Walk into physical room, sit at desk, boot computer.</p>
+                        <strong>Layers:</strong> 9-15<br>
+                        <strong>Duration:</strong> 5 minutes<br>
+                        <strong>Start:</strong> Outside room<br>
+                        <strong>End:</strong> Computer booted
+                        <button class="demo-btn" onclick="window.open('immersive-environment.html', '_blank')">🚪 Launch</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 4: Boot Sequence Only</h4>
+                        <p>Just the boot - BIOS to desktop to app.</p>
+                        <strong>Layers:</strong> 11-15<br>
+                        <strong>Duration:</strong> 2 minutes<br>
+                        <strong>Start:</strong> Power button<br>
+                        <strong>End:</strong> Application loaded
+                        <button class="demo-btn" onclick="window.open('boot-simulation.html', '_blank')">🔌 Launch</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 5: App Evolution</h4>
+                        <p>Flip through historical apps like a slideshow.</p>
+                        <strong>Layers:</strong> 15 only (apps)<br>
+                        <strong>Duration:</strong> 10 minutes<br>
+                        <strong>Apps:</strong> 7 (1999-2024)<br>
+                        <strong>Mode:</strong> Flipbook
+                        <button class="demo-btn" onclick="window.open('visual-history.html', '_blank')">🎬 Launch</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 6: Parallel Timelines</h4>
+                        <p>Explore alternate computing histories where different companies won.</p>
+                        <strong>Branches:</strong> 5 timelines<br>
+                        <strong>Duration:</strong> 15 minutes<br>
+                        <strong>Decision Points:</strong> 3<br>
+                        <strong>Mode:</strong> Multiverse
+                        <button class="demo-btn" onclick="window.open('4d-timeline.html', '_blank')">🌌 Launch</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📹 Recording Examples</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>Example 7: Record Google Search</h4>
+                        <p>Record searching on Google.com and clicking results.</p>
+                        <ol style="font-size: 14px; margin: 10px 0;">
+                            <li>Get bookmarklet</li>
+                            <li>Go to google.com</li>
+                            <li>Click bookmarklet</li>
+                            <li>Search "computing history"</li>
+                            <li>Click a result</li>
+                            <li>Export recording</li>
+                        </ol>
+                        <button class="demo-btn" onclick="alert('Get bookmarklet from bookmarklet.html, then visit google.com and click it!')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 8: Edit a Recording</h4>
+                        <p>Load recording, add flags, edit text, hide elements, export.</p>
+                        <ol style="font-size: 14px; margin: 10px 0;">
+                            <li>Load recording in player</li>
+                            <li>Add 3 flags at key moments</li>
+                            <li>Open text editor</li>
+                            <li>Change heading text</li>
+                            <li>Hide a banner</li>
+                            <li>Export edited version</li>
+                        </ol>
+                        <button class="demo-btn" onclick="window.open('player.html', '_blank')">Try It</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 9: Create Animation</h4>
+                        <p>Capture frames at flags, create auto-playing animation.</p>
+                        <ol style="font-size: 14px; margin: 10px 0;">
+                            <li>Load recording with flags</li>
+                            <li>Navigate to first flag</li>
+                            <li>Click "Capture Frame"</li>
+                            <li>Repeat for each flag</li>
+                            <li>Click "Play Animation"</li>
+                            <li>Export framed animation</li>
+                        </ol>
+                        <button class="demo-btn" onclick="alert('Load recording in player.html, use Flags panel to add flags and capture frames!')">Try It</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>🎨 Editing Tool Examples</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>Example 10: WYSIWYG Editor</h4>
+                        <p>Visual editing with formatting toolbar.</p>
+                        <p><strong>What to do:</strong> Upload HTML frame, click text, make it bold and red, change font size, export.</p>
+                        <button class="demo-btn" onclick="window.open('wysiwyg-editor.html', '_blank')">Open Editor</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 11: Frame Splitter</h4>
+                        <p>Split monolithic HTML into modular files.</p>
+                        <p><strong>What to do:</strong> Upload HTML frame, extract CSS/JS, download separate files.</p>
+                        <button class="demo-btn" onclick="window.open('frame-splitter.html', '_blank')">Open Splitter</button>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Example 12: Static Animator</h4>
+                        <p>Edit only dynamic elements in template.</p>
+                        <p><strong>What to do:</strong> Upload template + mapping, edit dynamic elements only, play animation.</p>
+                        <button class="demo-btn" onclick="window.open('animator.html', '_blank')">Open Animator</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📊 Data Visualization Example</h3>
+                <div class="feature-card" style="max-width: 100%;">
+                    <h4>Example 13: Git History Visualizer</h4>
+                    <p>Watch how a file evolved over time with animated diffs.</p>
+                    <p><strong>Try these repos:</strong></p>
+                    <ul style="margin-left: 20px; font-size: 14px;">
+                        <li>facebook/react → packages/react/src/React.js</li>
+                        <li>microsoft/vscode → src/vs/base/common/arrays.ts</li>
+                        <li>nodejs/node → lib/buffer.js</li>
+                    </ul>
+                    <p><strong>What to do:</strong> Click example repo button, watch commit history animate, see green additions and red deletions.</p>
+                    <button class="demo-btn" onclick="window.open('git-visualizer.html', '_blank')">📊 Open Visualizer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API TAB -->
+        <div id="tab-api" class="tab-content">
+            <div class="section">
+                <h2>🔧 API Reference</h2>
+                <p>Technical documentation for developers who want to extend the system.</p>
+            </div>
+
+            <div class="section">
+                <h3>Audio API</h3>
+                <div class="code-block">
+<span class="comment">// Initialize audio context</span>
+<span class="keyword">function</span> <span class="function">initAudio</span>() {
+  <span class="keyword">if</span> (!audioContext) {
+    audioContext = <span class="keyword">new</span> (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+<span class="comment">// Play BIOS beep (800 Hz, 0.1s duration)</span>
+<span class="keyword">function</span> <span class="function">playBIOSBeep</span>() {
+  <span class="function">initAudio</span>();
+  <span class="keyword">const</span> oscillator = audioContext.<span class="function">createOscillator</span>();
+  <span class="keyword">const</span> gainNode = audioContext.<span class="function">createGain</span>();
+
+  oscillator.<span class="function">connect</span>(gainNode);
+  gainNode.<span class="function">connect</span>(audioContext.destination);
+
+  oscillator.frequency.value = 800;
+  oscillator.type = <span class="string">'sine'</span>;
+
+  gainNode.gain.<span class="function">setValueAtTime</span>(0.3, audioContext.currentTime);
+  gainNode.gain.<span class="function">exponentialRampToValueAtTime</span>(0.01, audioContext.currentTime + 0.1);
+
+  oscillator.<span class="function">start</span>(audioContext.currentTime);
+  oscillator.<span class="function">stop</span>(audioContext.currentTime + 0.1);
+}
+
+<span class="comment">// Play Mac startup chime (C major chord)</span>
+<span class="keyword">function</span> <span class="function">playMacStartupChime</span>() {
+  <span class="function">initAudio</span>();
+  <span class="keyword">const</span> notes = [523.25, 659.25, 783.99]; <span class="comment">// C5, E5, G5</span>
+
+  notes.<span class="function">forEach</span>(freq => {
+    <span class="keyword">const</span> oscillator = audioContext.<span class="function">createOscillator</span>();
+    <span class="keyword">const</span> gainNode = audioContext.<span class="function">createGain</span>();
+
+    oscillator.<span class="function">connect</span>(gainNode);
+    gainNode.<span class="function">connect</span>(audioContext.destination);
+
+    oscillator.frequency.value = freq;
+    oscillator.type = <span class="string">'sine'</span>;
+
+    gainNode.gain.<span class="function">setValueAtTime</span>(0.2, audioContext.currentTime);
+    gainNode.gain.<span class="function">exponentialRampToValueAtTime</span>(0.01, audioContext.currentTime + 1.5);
+
+    oscillator.<span class="function">start</span>(audioContext.currentTime);
+    oscillator.<span class="function">stop</span>(audioContext.currentTime + 1.5);
+  });
+}
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Timeline Navigation API</h3>
+                <div class="code-block">
+<span class="comment">// Timeline position: 0.0 to 1.0 (0% to 100% of 13.8B years)</span>
+<span class="keyword">let</span> timelinePosition = 0.0;
+
+<span class="comment">// Update timeline display based on position</span>
+<span class="keyword">function</span> <span class="function">updateTimeDisplay</span>(position) {
+  <span class="keyword">const</span> times = [
+    <span class="string">'Big Bang (13.8 BYA)'</span>,
+    <span class="string">'First Stars (13.6 BYA)'</span>,
+    <span class="string">'Milky Way Forms (13.5 BYA)'</span>,
+    <span class="string">'Solar System Forms (4.6 BYA)'</span>,
+    <span class="string">'Life on Earth (3.8 BYA)'</span>,
+    <span class="string">'Dinosaurs (230 MYA)'</span>,
+    <span class="string">'Humans Emerge (300 KYA)'</span>,
+    <span class="string">'Agriculture (10 KYA)'</span>,
+    <span class="string">'Written Language (5 KYA)'</span>,
+    <span class="string">'Computers (1950s)'</span>,
+    <span class="string">'Internet (1990s)'</span>,
+    <span class="string">'Mobile Computing (2000s)'</span>,
+    <span class="string">'Neural Interfaces (2050)'</span>,
+    <span class="string">'THE ETERNAL NOW'</span>
+  ];
+
+  <span class="keyword">const</span> index = Math.<span class="function">floor</span>(position * (times.length - 1));
+  <span class="keyword">return</span> times[index];
+}
+
+<span class="comment">// Jump to specific point in timeline</span>
+<span class="keyword">function</span> <span class="function">jumpToTime</span>(position) {
+  timelinePosition = Math.<span class="function">max</span>(0, Math.<span class="function">min</span>(1, position));
+  <span class="function">updateTimeDisplay</span>(timelinePosition);
+  <span class="function">playCosmicTone</span>(100 + timelinePosition * 700);
+}
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Layer Transition API</h3>
+                <div class="code-block">
+<span class="comment">// Zoom through layers with smooth transitions</span>
+<span class="keyword">async function</span> <span class="function">performZoomSequence</span>(targetYear) {
+  <span class="keyword">const</span> status = document.<span class="function">getElementById</span>(<span class="string">'zoomStatus'</span>);
+
+  <span class="comment">// Earth from space</span>
+  status.textContent = <span class="string">'Locating temporal coordinates...'</span>;
+  document.<span class="function">getElementById</span>(<span class="string">'earthLayer'</span>).classList.<span class="function">add</span>(<span class="string">'active'</span>);
+  <span class="keyword">await</span> <span class="function">sleep</span>(3000);
+
+  <span class="comment">// Zoom into city</span>
+  status.textContent = <span class="string">'Triangulating spatial position...'</span>;
+  document.<span class="function">getElementById</span>(<span class="string">'earthLayer'</span>).classList.<span class="function">add</span>(<span class="string">'zoom-out'</span>);
+  <span class="keyword">await</span> <span class="function">sleep</span>(500);
+  document.<span class="function">getElementById</span>(<span class="string">'cityLayer'</span>).classList.<span class="function">add</span>(<span class="string">'active'</span>);
+  <span class="keyword">await</span> <span class="function">sleep</span>(3000);
+
+  <span class="comment">// Zoom into building</span>
+  status.textContent = <span class="string">'Entering memory space...'</span>;
+  document.<span class="function">getElementById</span>(<span class="string">'cityLayer'</span>).classList.<span class="function">add</span>(<span class="string">'zoom-out'</span>);
+  <span class="keyword">await</span> <span class="function">sleep</span>(500);
+  document.<span class="function">getElementById</span>(<span class="string">'buildingLayer'</span>).classList.<span class="function">add</span>(<span class="string">'active'</span>);
+  <span class="keyword">await</span> <span class="function">sleep</span>(3000);
+
+  <span class="comment">// Transfer consciousness</span>
+  status.textContent = <span class="string">'Transferring consciousness...'</span>;
+  <span class="keyword">await</span> <span class="function">sleep</span>(2000);
+}
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Boot Sequence State Machine</h3>
+                <div class="code-block">
+<span class="comment">// Boot states</span>
+<span class="keyword">const</span> BOOT_STATES = {
+  OFF: <span class="string">'OFF'</span>,
+  POST: <span class="string">'POST/BIOS'</span>,
+  BOOTING: <span class="string">'BOOTING OS'</span>,
+  DESKTOP: <span class="string">'LOADING DESKTOP'</span>,
+  READY: <span class="string">'READY'</span>,
+  BROWSER: <span class="string">'BROWSER OPEN'</span>
+};
+
+<span class="comment">// Complete boot flow</span>
+<span class="keyword">async function</span> <span class="function">powerOn</span>() {
+  isPoweredOn = <span class="keyword">true</span>;
+  <span class="function">updateStatus</span>(BOOT_STATES.POST);
+
+  <span class="keyword">await</span> <span class="function">showBIOS</span>();        <span class="comment">// BIOS/POST screen with beep</span>
+  <span class="function">updateStatus</span>(BOOT_STATES.BOOTING);
+
+  <span class="keyword">await</span> <span class="function">bootOS</span>();          <span class="comment">// OS boot animation with melody</span>
+  <span class="function">updateStatus</span>(BOOT_STATES.DESKTOP);
+
+  <span class="keyword">await</span> <span class="function">showDesktop</span>();     <span class="comment">// Desktop with icons</span>
+  <span class="function">updateStatus</span>(BOOT_STATES.READY);
+
+  <span class="comment">// User clicks browser icon...</span>
+  <span class="comment">// Then: launchBrowser() → loadPage()</span>
+}
+                </div>
+            </div>
+        </div>
+
+        <!-- ARCHITECTURE TAB -->
+        <div id="tab-architecture" class="tab-content">
+            <div class="section">
+                <h2>🏗️ System Architecture</h2>
+                <p>How all the pieces fit together to create 15 nested layers of reality.</p>
+            </div>
+
+            <div class="section">
+                <h3>Technology Stack</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4>Core Recording</h4>
+                        <p><strong>rrweb:</strong> DOM snapshot & event recording<br>
+                        <strong>rrweb-player:</strong> Playback UI<br>
+                        <strong>MutationObserver:</strong> DOM change detection</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Meta-Layers</h4>
+                        <p><strong>Web Audio API:</strong> Synthesized sounds<br>
+                        <strong>CSS 3D:</strong> Transforms, perspective<br>
+                        <strong>SVG:</strong> Timeline graphs<br>
+                        <strong>Canvas:</strong> Particle effects</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4>Frontend</h4>
+                        <p><strong>Vanilla JS:</strong> No frameworks<br>
+                        <strong>ES6+:</strong> Async/await, modules<br>
+                        <strong>CSS3:</strong> Animations, gradients<br>
+                        <strong>HTML5:</strong> Semantic markup</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>File Organization</h3>
+                <div class="code-block">
+RepriseClone/
+├── <span class="comment">📄 Core Pages</span>
+├── index.html                  <span class="comment"># Main navigation hub</span>
+├── docs.html                   <span class="comment"># This documentation</span>
+├── tutorial.html               <span class="comment"># Step-by-step guides</span>
+│
+├── <span class="comment">🌌 Meta-Layer System</span>
+├── universal-consciousness.html <span class="comment"># 4D spacetime (Layer 1-5)</span>
+├── memory-dive.html            <span class="comment"># Neural interface (Layer 6-8)</span>
+├── immersive-environment.html  <span class="comment"># Physical rooms (Layer 9-10)</span>
+├── boot-simulation.html        <span class="comment"># Boot sequence (Layer 11-13)</span>
+├── visual-history.html         <span class="comment"># Flipbook viewer</span>
+├── meta-evolution.html         <span class="comment"># Hardware evolution</span>
+├── 4d-timeline.html           <span class="comment"># Branching timelines</span>
+├── git-visualizer.html        <span class="comment"># Git history animator</span>
+│
+├── <span class="comment">📁 Historical Apps (Layer 15)</span>
+├── demos/
+│   ├── aim-1999.html          <span class="comment"># AOL Instant Messenger</span>
+│   ├── msn-2001.html          <span class="comment"># MSN Messenger</span>
+│   ├── myspace-2005.html      <span class="comment"># MySpace</span>
+│   ├── facebook-2007.html     <span class="comment"># Facebook</span>
+│   ├── twitter-2009.html      <span class="comment"># Twitter</span>
+│   ├── instagram-2012.html    <span class="comment"># Instagram</span>
+│   └── discord-2024.html      <span class="comment"># Discord</span>
+│
+├── <span class="comment">📹 Recording Tools</span>
+├── bookmarklet.html           <span class="comment"># Bookmarklet installer</span>
+├── recorder.html              <span class="comment"># Iframe recorder</span>
+├── player.html                <span class="comment"># Playback + editing</span>
+│
+├── <span class="comment">🎨 Editing Tools</span>
+├── animator.html              <span class="comment"># Template/frame animator</span>
+├── wysiwyg-editor.html        <span class="comment"># Visual editor</span>
+├── frame-splitter.html        <span class="comment"># HTML → CSS/JS splitter</span>
+│
+└── <span class="comment">📚 Resources</span>
+    ├── styles.css             <span class="comment"># Shared styles</span>
+    ├── demo.html              <span class="comment"># Test page</span>
+    └── README.md              <span class="comment"># Documentation</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Data Flow</h3>
+                <div class="layer-diagram">
+                    <pre>
+User Interaction
+    ↓
+Universal Consciousness (cosmic navigation)
+    ↓ (click "Dive into Consciousness")
+Memory Dive (browse lifetime memories)
+    ↓ (select memory card)
+Spatial Zoom (Earth → City → Building → Room)
+    ↓ (loads in iframe)
+Immersive Environment (walk to desk, sit down)
+    ↓ (loads boot simulation in monitor)
+Boot Simulation (BIOS → OS → Desktop)
+    ↓ (click browser icon)
+Browser Window (period-appropriate chrome)
+    ↓ (loads in browser iframe)
+Historical App (AIM, Facebook, Discord, etc.)
+    ↓
+User Experience (the actual interaction)
+                    </pre>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Performance Optimizations</h3>
+                <ul style="margin-left: 20px; font-size: 16px;">
+                    <li><strong>CSS-only animations</strong> where possible (galaxies, stars, orbits)</li>
+                    <li><strong>Iframe lazy loading</strong> - only load when needed</li>
+                    <li><strong>Web Audio caching</strong> - reuse oscillators</li>
+                    <li><strong>Event delegation</strong> - single listeners, not per-element</li>
+                    <li><strong>RequestAnimationFrame</strong> for smooth transitions</li>
+                    <li><strong>Transform-based animations</strong> (GPU accelerated)</li>
+                    <li><strong>Debounced resize handlers</strong></li>
+                    <li><strong>Intersection Observer</strong> for scroll effects</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h3>Browser Compatibility</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Chrome</th>
+                            <th>Firefox</th>
+                            <th>Safari</th>
+                            <th>Edge</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Recording (rrweb)</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                        </tr>
+                        <tr>
+                            <td>Web Audio API</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                            <td>⚠️ Click required</td>
+                            <td>✅ Full</td>
+                        </tr>
+                        <tr>
+                            <td>3D Transforms</td>
+                            <td>✅ Excellent</td>
+                            <td>⚠️ Good</td>
+                            <td>⚠️ Good</td>
+                            <td>✅ Excellent</td>
+                        </tr>
+                        <tr>
+                            <td>CSS Animations</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                            <td>✅ Full</td>
+                        </tr>
+                        <tr>
+                            <td>Iframe Nesting</td>
+                            <td>✅ 3 levels</td>
+                            <td>✅ 3 levels</td>
+                            <td>✅ 3 levels</td>
+                            <td>✅ 3 levels</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- FAQ TAB -->
+        <div id="tab-faq" class="tab-content">
+            <div class="section">
+                <h2>❓ Frequently Asked Questions</h2>
+            </div>
+
+            <div class="section">
+                <h3>General Questions</h3>
+
+                <div class="quickstart-box">
+                    <h4>Q: What is this project?</h4>
+                    <p><strong>A:</strong> It started as a simple screen recording tool (like Reprise) but evolved into a 15-layer meta-visualization system that explores computing from cosmic to pixel scale. You can navigate from the Big Bang, through the formation of Earth, into a 2050 neural interface, browse your lifetime of computing memories, zoom into physical rooms from different eras, watch computers boot up, and finally interact with historical applications like AIM or MySpace.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Do I need to go through all 15 layers?</h4>
+                    <p><strong>A:</strong> No! You can start at any layer. Want to just see the boot sequence? Open boot-simulation.html directly. Just want to flip through historical apps? Open visual-history.html. Want the FULL experience? Start at universal-consciousness.html and travel through everything.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Does this actually record my screen?</h4>
+                    <p><strong>A:</strong> Yes! The recording functionality (bookmarklet and player) works great. The meta-layers are an additional visualization system built on top. You can use this purely as a recording tool if you want.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Can I use this for real work?</h4>
+                    <p><strong>A:</strong> Absolutely! The recording/playback features are production-ready. Many people use rrweb (the underlying library) in production. The meta-layers are more of an artistic/educational experience, but the core recording tools are very functional.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Technical Questions</h3>
+
+                <div class="quickstart-box">
+                    <h4>Q: Why are the audio sounds synthesized?</h4>
+                    <p><strong>A:</strong> Using the Web Audio API to synthesize sounds means no external audio files, no loading delays, and complete control over frequencies and timing. Plus it's more authentic - the BIOS beep is literally just an 800 Hz sine wave, exactly like real hardware!</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: How big are the recording files?</h4>
+                    <p><strong>A:</strong> Full rrweb recordings: 10-50 MB for complex pages. Framed animations (frames only, no events): 5-10 MB (50-90% smaller!). Templates: 1-5 MB. Use framed animations for sharing demos - much smaller files.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Can I record sites behind login?</h4>
+                    <p><strong>A:</strong> Yes! The bookmarklet works on ANY site you can visit, including authenticated pages. Just make sure you don't share recordings that contain sensitive data (passwords, personal info, etc.).</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Why doesn't audio play on Safari?</h4>
+                    <p><strong>A:</strong> Safari requires user interaction before allowing Web Audio. Just click anywhere on the page first, then the sounds will work. This is a browser security feature, not a bug.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Usage Questions</h3>
+
+                <div class="quickstart-box">
+                    <h4>Q: How do I share a recording?</h4>
+                    <p><strong>A:</strong> Export the recording as JSON, then share the file. Recipients load it in player.html (they need to run a local server too). For smaller files, use "Export Framed Animation" which is 50-90% smaller.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Can I edit recordings after export?</h4>
+                    <p><strong>A:</strong> Yes! Load the recording in player.html, use the text editor to make changes, hide unwanted elements, add flags, then export the edited version. The new file includes all your changes.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: What's the difference between Template Mode and Frame Animation?</h4>
+                    <p><strong>A:</strong> Template Mode separates static (template) from dynamic (changeable) elements. You mark what can change, export a template, then edit only those parts. Frame Animation captures specific moments as frames and plays through them like a slideshow. Templates are for repeated use; frames are for specific sequences.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: How accurate are the historical apps?</h4>
+                    <p><strong>A:</strong> They're CSS/HTML recreations, not pixel-perfect copies. The goal was to capture the "feel" and key UI elements of each era - the colors, layouts, and interactions that made each platform distinctive. They're educational replicas, not exact reproductions.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Philosophy Questions</h3>
+
+                <div class="quickstart-box">
+                    <h4>Q: Why 15 layers?</h4>
+                    <p><strong>A:</strong> Because computing doesn't happen in isolation. A chat message isn't just pixels - it exists within a browser, an OS, hardware, a room, a building, a city, a planet, a solar system, a galaxy, and the universe itself. Every layer of context is real. This project makes those layers visible and navigable.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Is this layer also nested in something bigger?</h4>
+                    <p><strong>A:</strong> That's the meta-revelation! The system questions whether this universe is itself a simulation, nested in another layer. It's "turtles all the way down" and "all the way up." The infinite recursion is intentional - it makes you think about scale and meaning.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: What's the point of all this meta stuff?</h4>
+                    <p><strong>A:</strong> To make visible the invisible context that surrounds every computing moment. We forget about the physical space, the hardware evolution, the historical moment, the cosmic scale. This project says: all of it matters. All of it is part of the experience. Computing is ultimately about humans, in rooms, in history, in the universe.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>Troubleshooting</h3>
+
+                <div class="quickstart-box">
+                    <h4>Q: The bookmarklet doesn't work!</h4>
+                    <p><strong>A:</strong> Make sure you're running a local server (not opening files directly). The bookmarklet needs to load from http://localhost:8000. Also check that the bookmarklet code has the correct port number (8000).</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: Playback is choppy or slow</h4>
+                    <p><strong>A:</strong> Large recordings can be CPU intensive. Try: (1) Close other tabs, (2) Use Chrome/Edge for best performance, (3) Convert to framed animation (much lighter), (4) Use a more powerful device.</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: The meta-layers won't load</h4>
+                    <p><strong>A:</strong> Deep iframe nesting can cause issues. Try: (1) Refresh the page, (2) Use Chrome (best support), (3) Check browser console for errors, (4) Make sure you're on a local server, not file://</p>
+                </div>
+
+                <div class="quickstart-box">
+                    <h4>Q: I found a bug! Where do I report it?</h4>
+                    <p><strong>A:</strong> Open an issue on the GitHub repo: <a href="https://github.com/kody-w/RepriseClone/issues" target="_blank">github.com/kody-w/RepriseClone/issues</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        ↑
+    </button>
+
+    <script>
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById('tab-' + tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Scroll to top
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Back to top button
+        window.addEventListener('scroll', () => {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+
+        // Initialize
+        console.log('📚 Documentation loaded - explore the tabs!');
+        console.log('🌌 Total layers: 15');
+        console.log('⏱️ Time span: 13.8 billion years');
+        console.log('🚀 Ready for navigation!');
+    </script>
+</body>
+</html>

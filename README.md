@@ -1,555 +1,844 @@
 # Reprise Clone
+
 [Github Pages Link](https://kody-w.github.io/RepriseClone/)
 
+**A browser-based demo recording and playback tool with revolutionary meta-layer visualization system**
 
-A browser-based demo recording and playback tool, similar to Reprise. Record user interactions on any webpage and replay them later.
+Experience computing history from the cosmic scale down to individual pixels - navigate through 15 nested layers of reality, from the Big Bang to your desktop applications.
 
-## 📚 [View Complete Tutorial](tutorial.html)
+---
 
-New to Reprise Clone? Check out the **[comprehensive tutorial](tutorial.html)** with step-by-step guides for all features!
+## 🌌 The Ultimate Meta-Layer Experience
 
-## Features
+This project has evolved beyond simple screen recording into **the most comprehensive computing history visualization system** ever built. Navigate through all of existence to reach a single computing moment:
 
-- **Recording:**
-  - Record full browser sessions with all interactions
-  - Capture clicks, form inputs, scrolling, and DOM changes
-  - Works on ANY website via bookmarklet (no iframe limitations)
-  - Real-time event counter
-
-- **Playback:**
-  - Replay recordings with full playback controls
-  - **Playback Flags**: Add markers/waypoints to recordings
-  - **Step-by-step navigation**: Jump between flags instead of real-time playback
-  - **Visual Text Editor**: Browse HTML tree, edit text with live preview
-  - **Element Picker**: Click elements on page to select them in tree
-  - **Hide/Show Elements**: Remove unwanted overlays, banners, or UI elements
-  - **HTML Editor**: Advanced editing with full HTML access
-  - **Template Mode**: Mark dynamic vs static elements, export templates
-  - **Static Page Animator**: Edit only dynamic elements in static templates
-  - Export modified recordings with flags
-
-- Built with [rrweb](https://www.rrweb.io/) - an open-source web session replay library
-
-## Getting Started
-
-### Option 1: Bookmarklet (Recommended - Works on ANY Site!)
-
-The easiest way to record any webpage:
-
-1. Start a local server:
-```bash
-python -m http.server 8000
+```
+∞ The Void / Multiverse
+  └─ Observable Universe (13.8 billion years)
+     └─ Milky Way Galaxy
+        └─ Solar System
+           └─ Earth
+              └─ 2050 Neural Memory Interface
+                 └─ Memory Browser (Your Digital Life)
+                    └─ Spatial Zoom (Space → City → Building)
+                       └─ Physical Room (1999-2024 Environments)
+                          └─ Computer Hardware (CRT, iMac, Gaming PC)
+                             └─ Boot Sequence (BIOS, POST)
+                                └─ Operating System (Win95-Win11, Mac OS)
+                                   └─ Desktop Environment
+                                      └─ Browser Window
+                                         └─ Web Application (AIM, Facebook, Discord)
+                                            └─ ??? (Infinite recursion...)
 ```
 
-2. Open http://localhost:8000 in your browser
-3. Click "Get Bookmarklet"
-4. Drag the "📹 Record Page" button to your bookmarks bar
-5. Navigate to ANY webpage you want to record (Google, Microsoft 365, your own sites, etc.)
-6. Click the bookmarklet in your bookmarks bar
-7. A floating control panel appears - click "Start Recording"
-8. Interact with the page normally
-9. Click "Stop Recording" then "Export Recording"
-10. Load the JSON file in the Player to watch the replay!
+---
 
-**Benefits:**
-- Works on external sites (no iframe limitations)
-- No CORS issues
+## 🎯 Quick Start
+
+### New Users: Start Here
+
+1. **Launch the Index** → Open `index.html` in your browser
+2. **Try the Ultimate Experience** → Click **"🌌 Universal Consciousness"**
+3. **Follow the Journey**:
+   - Click the singularity to trigger the Big Bang
+   - Navigate through cosmic scales (Universe → Galaxy → Solar System → Earth)
+   - Dive into 2050 neural memory interface
+   - Browse your lifetime of computing memories
+   - Zoom from space down to a specific room
+   - Enter the physical environment and sit at the computer
+   - Power on and watch the complete boot sequence
+   - Experience authentic historical applications
+
+---
+
+## 🚀 New Meta-Layer Features
+
+### 🌌 Universal Consciousness (4D Spacetime Navigator)
+
+**File**: `universal-consciousness.html`
+
+The ultimate meta-layer. Navigate **all of existence** in 4-dimensional spacetime.
+
+**Features**:
+- **The Void** - Experience the moment before existence
+- **4D Hypercube** - Time rendered as a spatial dimension
+- **Multiverse Visualization** - Interactive branching timeline tree with infinite realities
+- **Cosmic Zoom Sequence**:
+  - Observable Universe (200 animated galaxies, 500 twinkling stars)
+  - Milky Way Galaxy (rotating spiral arms with glowing core)
+  - Solar System (Sun and orbiting Earth)
+  - Earth from space
+- **4D Timeline Scrubber** - Navigate 13.8 billion years of history:
+  - Big Bang → First Stars → Milky Way → Solar System
+  - Life on Earth → Humans → Computing → Neural Interfaces → Now
+- **Meta-Revelation** - Questions about simulation and nested reality
+- **Cosmic Audio** - Synthesized tones for each scale
+- **Seamless Integration** - Connects to Memory Dive layer below
+
+**Controls**:
+- Navigation buttons to jump between scales
+- Timeline scrubber to navigate all of time
+- Click/drag to explore interactive elements
+
+---
+
+### 🔮 Memory Dive (Neural Interface 2050)
+
+**File**: `memory-dive.html`
+
+Set in **2050**, this neural memory interface lets you browse your lifetime of computing experiences.
+
+**Features**:
+- **Neural Chamber** - Animated headset with pulsing sensors and neural waves
+- **Memory Browser** - Timeline of your digital life:
+  - **1999**: First Online Conversation (AIM in bedroom, 11:47 PM)
+  - **2001**: College All-Nighters (MSN in dorm, 3:24 AM)
+  - **2005**: MySpace Profile Customization (home office, 6:15 PM)
+  - **2007**: First Job Facebook Break (downtown office, 2:47 PM)
+  - **2024**: Gaming Night with Discord (gaming setup, 9:30 PM)
+- **Spatial Zoom Sequence**:
+  - Earth from space
+  - City skyline with 6 buildings
+  - Building cross-section (15 floors)
+  - Target room highlighted
+- **Consciousness Transfer Effect** - Visual representation of diving into memories
+- **Memory Playback Controls**:
+  - Rewind, Pause, Play, Fast-forward
+  - Timeline display (00:00 / 05:30)
+  - Exit memory to return to browser
+- **Audio Feedback** - Neural hums and dive sounds
+
+**How to Use**:
+1. Press any key to start the neural interface
+2. Browse memories on the timeline
+3. Click any memory to dive into it
+4. Watch spatial zoom sequence
+5. Experience the immersive environment
+6. Use playback controls to navigate
+7. Exit to return to memory browser
+
+---
+
+### 🚪 Immersive Environment (Physical Reality Layer)
+
+**File**: `immersive-environment.html`
+
+Experience the **complete physical context** where computing happens - walk into period-accurate rooms.
+
+**Features**:
+- **5 Era-Specific Rooms**:
+  - **1999**: Teenage Bedroom (lava lamp, guitar posters, CRT glow)
+  - **2001**: College Dorm (textbooks, movie posters, plants)
+  - **2005**: Home Office (professional desk, filing cabinet)
+  - **2007**: Coffee Shop (café atmosphere, artistic vibe)
+  - **2024**: Gaming Setup (RGB lights, modern hardware)
+- **Environmental Details**:
+  - Period-accurate wall decorations (posters, art)
+  - Time of day lighting (morning, afternoon, evening, night)
+  - Animated windows with stars at night
+  - Lava lamps, plants, and room-specific objects
+  - Desk, chair, and computer hardware
+- **Entry Sequence**:
+  1. Door opens with creak sound
+  2. Walk to desk with footstep sounds (bobbing animation)
+  3. Sit down at computer (camera zooms)
+  4. Monitor glow activates
+  5. Boot simulation loads in screen
+- **Controls**:
+  - Era selector (change before entering)
+  - Time of day selector (4 options)
+  - Auto-minimizing control panel (slides left when screen active)
+  - **Maximize button** - Expand boot simulation to 95% viewport
+  - Status display (fades after loading)
+- **Audio**: Creaking doors, footsteps, ambient room tone
+- **Seamless Integration**: Loads boot-simulation.html inside the monitor
+
+**Tips**:
+- Select your era and time of day BEFORE clicking "Enter Room"
+- Hover over left edge to reveal minimized controls
+- Click Maximize button for fullscreen boot experience
+- Refresh page to change environments after entering
+
+---
+
+### 🎬 Visual History Player
+
+**File**: `visual-history.html`
+
+Navigate through computing history like a flipbook with demo buttons for instant access.
+
+**Features**:
+- **Demo Loading Buttons**:
+  - Messaging Evolution (AIM → MSN → Discord)
+  - Social Media Evolution (MySpace → Facebook → Twitter → Instagram)
+- **Flipbook Navigation**:
+  - Previous/Next buttons
+  - Version counter display
+  - Timeline scrubber
+- **Dual Mode Support**:
+  - rrweb event playback
+  - Static HTML iframe loading
+- **Auto-Detection**: Automatically handles different content types
+
+**Demos Included**:
+- **demos/aim-1999.html** - AOL Instant Messenger with buddy list
+- **demos/msn-2001.html** - MSN Messenger with butterfly logo
+- **demos/myspace-2005.html** - MySpace profile customization
+- **demos/facebook-2007.html** - Facebook with "The Wall" and Poke
+- **demos/twitter-2009.html** - Twitter with 140 character limit
+- **demos/instagram-2012.html** - Instagram photo-first design
+- **demos/discord-2024.html** - Modern Discord with dark theme
+
+---
+
+### 🖥️ Hardware Evolution
+
+**File**: `meta-evolution.html`
+
+See applications running on **actual period-accurate hardware** from different computing eras.
+
+**Features**:
+- **Hardware Shells**:
+  - **1999**: Beige PC with CRT monitor (scanline effects, curvature)
+  - **2001**: Translucent iMac G3 (iconic colorful design)
+  - **2007**: MacBook (aluminum body, trackpad, camera)
+  - **2024**: RGB Gaming Rig (glass panel, LED strips, liquid cooling)
+- **Browser Integration**: Apps load inside appropriate browsers
+- **Hardware Details**:
+  - CRT: Curved screen, scanlines, bezel
+  - iMac G3: Translucent plastic, all-in-one design
+  - MacBook: Thin profile, webcam, sleek aluminum
+  - Gaming PC: RGB lighting, tempered glass, power LED
+- **Authentic Styling**: CSS-rendered hardware with realistic effects
+
+---
+
+### 🌌 4D Temporal Timeline
+
+**File**: `4d-timeline.html`
+
+Navigate **parallel universes** of computing history with branching timelines and decision points.
+
+**Features**:
+- **Three View Modes**:
+  - **Fullscreen**: Immersive single-timeline view
+  - **Timeline Graph**: SVG visualization of all branches
+  - **Parallel Compare**: Side-by-side reality comparison
+- **Decision Points**: Moments where history could diverge
+- **Timeline Branches**:
+  - **Main Timeline**: The path actually taken
+  - **Microsoft Teams**: If MSN evolved to Teams dominance
+  - **Google Hangouts**: If Google won the messaging wars
+  - **Facebook Professional**: If Facebook pivoted to business
+  - **Decentralized Social**: If blockchain social won
+- **Interactive Navigation**:
+  - Click nodes to view that moment
+  - Decision modals explain branch choices
+  - Switch between timelines seamlessly
+- **Scrubber Controls**: Drag through time within each branch
+
+**Timeline Structure**:
+```
+Main: AIM → MSN → MySpace → Facebook → Twitter → Instagram → Discord
+
+Branches from MSN (2001):
+  ├─ MS Teams: MSN → Skype → Teams → Enterprise Dominance
+  └─ Hangouts: MSN → Google Talk → Hangouts → Meet
+
+Branches from Facebook (2007):
+  ├─ FB Professional: Facebook → LinkedIn Competitor → B2B Platform
+  └─ Decentralized: Facebook → Diaspora → Mastodon → Web3 Social
+```
+
+---
+
+### 🔌 Full Boot Simulation
+
+**File**: `boot-simulation.html`
+
+Watch the **complete boot sequence** from power button to application - with authentic audio.
+
+**Features**:
+- **Complete Boot Flow**:
+  1. **Power Button** - Click to toggle on/off
+  2. **BIOS/POST** - Memory test, device detection, BIOS beep
+  3. **OS Boot** - Authentic loading animations
+  4. **Desktop** - Icons, taskbar/dock, period UI
+  5. **Browser Launch** - Click icon to open browser
+  6. **Page Load** - Loading spinner, then app appears
+- **5 Computing Eras**:
+  - **1999 - Windows 95**: Beige PC, CRT, Netscape, AIM
+  - **2001 - Mac OS 9**: iMac G3, IE, MSN Messenger
+  - **2005 - Windows XP**: HP Laptop, Firefox, MySpace
+  - **2007 - Mac OS X**: MacBook, Safari, Facebook
+  - **2024 - Windows 11**: Gaming PC, Chrome, Discord
+- **Authentic Audio** (Web Audio API):
+  - BIOS beep (800 Hz) for PC systems
+  - Mac startup chime (C major chord)
+  - Windows startup melody (4-note ascending)
+  - Click sounds for all interactions
+- **Era Selector**: Choose your computing era before booting
+- **Status Display**: Shows current boot state (OFF → POST → BOOTING → READY)
+- **Hardware Shells**: Each era has appropriate visual hardware
+- **Browser Compatibility**: Period-accurate browser chrome
+
+**Audio System**:
+- `playBIOSBeep()` - PC POST beep
+- `playMacStartupChime()` - C5, E5, G5 chord
+- `playWindowsStartup()` - Ascending melody
+- `playClickSound()` - UI interaction feedback
+
+---
+
+### 📊 Git History Visualizer
+
+**File**: `git-visualizer.html`
+
+Visualize file changes over time with **animated git diffs** and GitHub API integration.
+
+**Features**:
+- **GitHub API Integration**: Fetch commit history for any public repo
+- **Example Repositories**: Pre-loaded buttons for popular repos
+  - React, VS Code, Node.js, Vue.js, Angular
+- **File Tracking**: See how a specific file evolved
+- **Diff Visualization**:
+  - Green for additions
+  - Red for deletions
+  - Line-by-line changes
+- **Commit Timeline**: Navigate through commits chronologically
+- **Playback Controls**: Step through history automatically
+
+**Example Repos Included**:
+- facebook/react - React.js
+- microsoft/vscode - VS Code arrays utility
+- nodejs/node - Node.js buffer implementation
+- vuejs/core - Vue.js reactivity system
+- angular/angular - Angular core module
+
+---
+
+## 📚 Original Recording Features
+
+### Bookmarklet Recorder (Recommended)
+
+Record **ANY webpage** - no iframe limitations!
+
+**How to Use**:
+1. Start local server: `python -m http.server 8000`
+2. Open http://localhost:8000
+3. Click "Get Bookmarklet"
+4. Drag "📹 Record Page" to bookmarks bar
+5. Navigate to ANY site (Google, Microsoft 365, etc.)
+6. Click bookmarklet
+7. Click "Start Recording"
+8. Interact with page
+9. Click "Stop Recording" then "Export Recording"
+10. Load JSON in player to replay!
+
+**Benefits**:
+- Works on external sites (no CORS issues)
 - Draggable control panel
 - Real-time event counter
-- Works on any modern browser
-
-### Option 2: Iframe Recorder (Local Pages Only)
-
-For recording local pages in an embedded iframe:
-
-1. Open `recorder.html`
-2. Enter a local URL (like `demo.html`)
-3. Click "Load" and then "Start Recording"
-4. Interact with the page
-5. Click "Stop Recording" and "Export Recording"
-
-**Note:** This method only works for same-origin pages due to browser security restrictions.
-
-## How It Works
-
-### Recording
-
-The recorder uses rrweb to:
-1. Take a snapshot of the initial DOM state
-2. Monitor all DOM mutations using MutationObserver
-3. Capture user interactions (clicks, inputs, scrolling)
-4. Record all events with timestamps
-5. Export as a JSON file containing the event stream
-
-### Playback
-
-The player uses rrweb-player to:
-1. Load the JSON recording file
-2. Reconstruct the initial DOM state
-3. Replay all events at their original timestamps
-4. Provide playback controls (play, pause, speed adjustment)
-
-### Using Playback Flags
-
-Flags allow you to mark important moments and navigate through your recording step-by-step:
-
-1. **Load a recording** in the player
-2. Click **"🚩 Flags"** button to open the flags panel
-3. **Pause or play** to the moment you want to mark
-4. Click **"+ Add Flag at Current Time"**
-5. Enter a label (e.g., "Introduction", "Feature Demo", "Conclusion")
-6. Optionally add a description
-7. Click **"Save Flag"**
-
-**Navigation:**
-- Click **"← Prev"** or **"Next →"** to jump between flags
-- Click any flag in the list to jump to that moment
-- Use keyboard shortcuts: `[` or `←` for previous, `]` or `→` for next
-- Click the delete (×) button to remove a flag
-
-**Export:**
-- Click **"Export with Flags"** to save the recording with all your flags included
-- Flags will be loaded automatically when you import the recording again
-
-**Use Cases:**
-- Create step-by-step product demos
-- Mark key moments for presentation
-- Build interactive tutorials
-- Navigate long recordings efficiently
-
-### Frame-Based Animation
-
-Turn your flags into custom animations by capturing individual frames:
-
-**Capturing Frames:**
-1. Load a recording and open the **🚩 Flags** panel
-2. Add flags at moments you want to capture
-3. Navigate to each flag (using prev/next or clicking)
-4. Click **"📸 Capture Current Frame"** at each flag
-5. The flag gets a 🎬 indicator showing a frame is captured
-6. Make edits to the page (text, hide elements, etc.)
-7. Capture another frame at the next flag
-
-**Playing Animations:**
-1. Once you have frames captured at multiple flags
-2. Click **"▶️ Play Animation"**
-3. The player automatically cycles through your frames
-4. Adjust **Animation Speed** slider (0.5s - 3s per frame)
-5. Click **"⏹ Stop Animation"** to stop
-
-**Navigation with Frames:**
-- When clicking flags with captured frames, the frame loads instead of seeking video
-- Press **"← Prev"** or **"Next →"** to step through frames manually
-- Each frame shows your custom edits
-- Create custom animations by editing each frame differently
-
-**Workflow Example:**
-```
-1. Record a demo
-2. Add flags at: "Start", "Middle", "End"
-3. Go to "Start" flag → Edit text to "Welcome!" → Capture frame
-4. Go to "Middle" flag → Edit text to "Feature Demo" → Capture frame
-5. Go to "End" flag → Edit text to "Thank You!" → Capture frame
-6. Click "Play Animation" → Watch text change automatically!
-```
-
-**Export Options:**
-
-1. **Export with Flags** - Saves full recording + flags + frames (large file)
-   - Frame data includes full HTML snapshot
-   - Re-import to continue editing or playing animation
-   - Includes original rrweb event stream
-
-2. **🎬 Export Framed Animation** - Saves ONLY frames (lightweight!)
-   - **No rrweb events** - just the captured frames
-   - **Massive data savings** (typically 50-90% smaller)
-   - Plays through frames step-by-step
-   - Can be loaded in player like a normal recording
-   - Perfect for sharing animated demos
-
-**Framed Animation Format:**
-```json
-{
-  "type": "framed-animation",
-  "version": "1.0",
-  "frames": [
-    { "id": 123, "label": "Intro", "html": "..." },
-    { "id": 456, "label": "Demo", "html": "..." }
-  ]
-}
-```
-
-**Loading Framed Animations:**
-- Load like any recording - player auto-detects the format
-- Shows **"🎬 FRAMED ANIMATION"** badge
-- Custom playback controls (Play, Prev, Next, Speed)
-- No timeline scrubbing - just frame-by-frame navigation
-- All editing tools still work (text editor, hide/show, etc.)
-
-**Use Cases:**
-- Custom product demos with changing content
-- Animated tutorials with step-by-step changes
-- Before/after comparisons
-- Multi-state UI demonstrations
-- Interactive presentations
-- **Sharing lightweight animated demos** (small file size!)
-
-### Editing Text with Visual Tree (Easy Mode)
-
-The powerful visual editor with live preview:
-
-1. Load a recording in the player
-2. Click **"✏️ Edit Text"** button
-3. A panel slides up from the bottom with:
-   - **Left**: HTML tree structure with indentation
-   - **Right**: Live text editor
-4. **Optional: Click "🗗 Pop Out"** to open the editor in a separate window for full screen space!
-5. **Browse the tree** and click any element
-6. The element **highlights with purple pulsing outline** on the page
-7. **Type in the editor** - changes appear **live on the page**
-8. Click **"👁️ Hide Element"** to remove unwanted elements (like recording overlays)
-9. Click **"👁️ Show Element"** to restore hidden elements
-10. Click **"Exit Text Edit"** when done
-
-**Pop-Out Editor Window:**
-- Click **"🗗 Pop Out"** to open the text editor in a separate window
-- Gives you full screen space for the recording
-- All features work in the popup: tree navigation, live editing, picker mode, hide/show
-- Changes sync automatically between windows
-- Element highlighting still shows in the main window
-- Perfect for dual monitor setups!
-
-**Features:**
-- Visual HTML tree structure with indentation
-- Elements with text highlighted in blue
-- Live preview - changes as you type
-- Purple pulsing outline shows selected element
-- Auto-scroll to selected element
-- 🎯 **Element Picker** - click on the page to select elements (shows in tree!)
-- 🔍 **Find Text** - search for specific text
-- 👁️ **Hide/Show Elements** - remove unwanted overlays, banners, etc.
-- **Show All Hidden** - restore all hidden elements at once
-- Hidden elements shown with strikethrough in tree
-
-**Element Picker Mode:**
-1. Click **"🎯 Pick Element from Page"**
-2. Cursor changes to crosshair
-3. Hover over elements - **ALL stacked elements highlight with different colors** (pyramid effect like Chrome DevTools!)
-4. Tooltip shows all elements in the stack with color indicators
-5. Click to select the **deepest** element at that position
-6. Click the **same spot again** to cycle up through the element stack
-7. Shows "(X of Y)" to track position in stack
-8. Selected element automatically highlights in the HTML tree with **bright purple pulsing glow**
-9. Element is ready to edit!
-
-**Perfect for:**
-- Editing text without code knowledge
-- Removing recording overlays and banners
-- Cleaning up demos
-- Updating product names or values
-- Hiding unwanted UI elements
-
-**Note:** Hidden elements persist across playback! When you hide an element, it will stay hidden even when you scrub through the recording timeline. This ensures your edits remain visible throughout the entire playback.
-
-### Exporting Edited Recordings
-
-After making changes to your recording (editing text, hiding elements, etc.), you can export a new version:
-
-1. Make your edits using the text editor
-2. Hide any unwanted elements
-3. Click **"💾 Export Edited Recording"** at the bottom of the text editor panel
-4. The exported file will contain:
-   - All original recording events
-   - Your edited HTML with all changes
-   - All flags you've added
-   - An "EDITED" indicator
-
-**Loading Edited Recordings:**
-- When you load an edited recording, it will automatically display your changes
-- The recording info will show an **✏️ EDITED** badge
-- All text edits and hidden elements are preserved
-- You can continue editing and export again
-
-**Use Cases:**
-- Clean up recordings by removing overlays before sharing
-- Update product names or pricing in demos
-- Hide sensitive information before exporting
-- Create polished presentations from raw recordings
-
-### Editing HTML (Advanced Mode)
-
-For advanced users who want full control:
-
-1. Load a recording and pause at the desired moment
-2. Click **"Edit HTML"** button
-3. The HTML editor panel opens on the right
-4. Edit the HTML directly in the editor
-5. Click **"Apply Changes"** to update the replay
-6. Use **"Refresh HTML"** to reload current HTML
-7. Use **"Copy HTML"** to copy to clipboard
-8. Press **ESC** to close the editor
-
-**Use Cases:**
-- Complex layout changes
-- Modifying styles, images, or attributes
-- Advanced customization
-- Developers who prefer code editing
-
-### Template Mode (Separate Static from Dynamic Content)
-
-Template Mode lets you mark which elements are dynamic (like chat messages) versus static (like headers, navigation):
-
-1. Load a recording in the player
-2. Click **"🎬 Template Mode"** button
-3. Open the **"✏️ Edit Text"** panel
-4. Browse the HTML tree and select dynamic elements
-5. Click **"🎬 Mark as Dynamic"** for each dynamic element
-   - Dynamic elements get a blue background and 🎬 badge
-6. Click **"📤 Export Template + Mapping"**
-   - Downloads **template HTML** (static content only, dynamic elements removed)
-   - Downloads **mapping JSON** (list of dynamic element selectors)
-7. Click **"📥 Load Template"** to reverse the process:
-   - Upload a template HTML
-   - System auto-detects what's dynamic vs static
-   - Marks detected elements for animation
-
-**What gets exported:**
-- `template-{timestamp}.html` - Static HTML page with dynamic elements removed
-- `template-mapping-{timestamp}.json` - JSON file mapping dynamic element selectors
-
-**Use Cases:**
-- Create reusable templates for product demos
-- Separate UI chrome from dynamic content
-- Define which parts animate during playback
-- Build template libraries for consistent demos
-
-### Static Page Animator (Edit Dynamic Elements Only)
-
-The Static Page Animator is a specialized tool for editing ONLY the dynamic elements in a static template:
-
-1. Click **"🎨 Open Static Page Animator"** from Template Mode panel
-   - Or navigate to `animator.html` directly
-2. Upload the **template HTML** file
-3. Upload the **mapping JSON** file
-4. The page loads with dynamic elements highlighted
-5. Click any dynamic element to edit its content
-6. Static elements are locked 🔒 and show "cannot be edited" message
-7. Make changes in the live editor
-8. Click **"✓ Apply"** to save changes
-9. Click **"↶ Revert"** to restore original content
-
-**Features:**
-- **Live preview** - See changes as you type
-- **Click to select** - Click elements on the page or in the list
-- **Locked static elements** - Can't accidentally edit template structure
-- **Visual indicators** - Dynamic elements pulse with purple outline
-- **Original content** - Always able to revert to original
-
-**Perfect for:**
-- Updating chat messages in demos
-- Changing dynamic data without touching template
-- Creating variations of the same template
-- Non-technical users editing specific content areas
-- Protecting template structure while allowing content updates
-
-**Workflow Example:**
-```
-1. Record a chat conversation
-2. Mark chat messages as dynamic (🎬)
-3. Export template + mapping
-4. Open Static Page Animator
-5. Load template + mapping
-6. Edit chat messages only
-7. Static header/sidebar are locked
-8. Export edited version
-```
-
-#### Mode 2: Frame Animation (Multi-Frame Playback)
-
-Create animations from multiple HTML frames with full frame management:
-
-1. Open `animator.html`
-2. Switch mode to **"Frame Animation"**
-3. Upload multiple HTML frames (snapshots, exported frames, etc.)
-4. Frames load in sequential order (sorted by filename)
-5. Click any frame to view it
-6. Use **Play** button to animate through frames automatically
-7. Adjust animation speed (0.5s - 3s per frame)
-
-**Frame Management Actions:**
-
-Each frame has action buttons:
-- **📋 Duplicate** - Creates a copy of the frame inserted right after
-- **💾 Export** - Downloads the frame as HTML file for external editing
-- **🔄 Replace** - Upload a new HTML file to replace this frame
-- **🗑️ Delete** - Remove the frame from the animation
-
-**Workflow Example:**
-```
-1. Upload initial frames (frame1.html, frame2.html, frame3.html)
-2. Click "Export" on frame2 to download it
-3. Edit frame2 externally (change text, modify elements, etc.)
-4. Click "Replace" on frame2 and upload the edited version
-5. The animation now uses your updated frame
-6. Duplicate frame3 to create variations
-7. Play animation to see the result
-```
-
-**Perfect for:**
-- Iterating on frame designs without losing originals
-- Making external edits and re-importing
-- Creating frame variations by duplicating and modifying
-- Building complex multi-frame animations step by step
-- Testing different versions of the same frame
-
-**Keyboard Shortcuts:**
-- `←` or `[` - Previous frame
-- `→` or `]` - Next frame
-- `Space` - Play/Pause animation
-
-## Recording Tips
-
-1. **Use the Bookmarklet**: The bookmarklet works on ANY webpage, including external sites
-2. **Test with Demo Page**: Use the included `demo.html` for testing all features
-3. **File size**: Complex pages with many interactions can produce large JSON files
-4. **Draggable Controls**: The bookmarklet control panel can be dragged anywhere on the page
-5. **Multiple Recordings**: Each export gets a unique timestamp - you can record multiple sessions
-
-## WYSIWYG Frame Editor (Visual Editing)
-
-The WYSIWYG (What You See Is What You Get) editor provides a visual interface for editing HTML frames:
-
-1. Open `wysiwyg-editor.html`
-2. Upload an HTML frame (snapshot, exported frame, etc.)
-3. Click on any text element to edit it directly
-4. Use the toolbar for rich text formatting:
-   - **Bold, Italic, Underline, Strikethrough**
-   - **Text alignment** (left, center, right)
-   - **Lists** (bullet points, numbered)
-   - **Font size** adjustment
-   - **Clear formatting**, Undo, Redo
-5. Select elements to change:
-   - **Text color** (color picker)
-   - **Background color** (color picker)
-6. Export the edited frame
-7. Use the **Replace** button in animator to upload the edited version
-
-**Features:**
-- Live WYSIWYG editing - see changes as you make them
-- Click-to-edit interface - no code knowledge needed
-- Rich text toolbar with common formatting options
-- Color pickers for text and background
-- Element information panel shows current tag and classes
-- Preserves all original HTML structure and styles
-- Exports with `-edited` suffix for easy identification
-- Keyboard shortcuts (Ctrl/Cmd + B/I/U)
-
-**Workflow with Animator:**
-```
-1. In animator, export frame 3
-2. Open WYSIWYG editor
-3. Upload frame 3
-4. Click on heading and change text
-5. Make text bold and change color
-6. Export edited frame
-7. Back in animator, click "Replace" on frame 3
-8. Upload the edited frame
-9. Animation now shows your changes
-```
-
-**Perfect for:**
-- Quick text edits without opening code editors
-- Non-technical users making content changes
-- Visual formatting adjustments
-- Rapid prototyping of frame variations
-- Testing different color schemes
-- Making small tweaks to frames
-
-**Use Cases:**
-- Edit product names or prices in demo frames
-- Change marketing copy quickly
-- Adjust text colors for better visibility
-- Format text with bold/italic for emphasis
-- Test different heading styles
-
-## Frame Splitter (Modular File Export)
-
-The Frame Splitter tool allows you to split monolithic HTML frames into separate, modular files:
-
-1. Open `frame-splitter.html`
-2. Upload an HTML frame (snapshot, exported frame, etc.)
-3. The tool automatically extracts:
-   - **HTML** - Clean structure with external CSS/JS references
-   - **CSS** - All styles from `<style>` tags and inline styles
-   - **JavaScript** - All scripts from `<script>` tags and inline event handlers
-4. Configure extraction options:
-   - Extract inline styles (converts `style=""` to CSS classes)
-   - Extract inline scripts (converts `onclick=""` to event listeners)
-   - Beautify output (formatted with indentation)
-   - Include comments (explanatory comments in output)
-5. Preview extracted code in real-time
-6. Export files individually or all at once
-
-**Use Cases:**
-- Convert single-file exports to modular projects
-- Clean up inline styles and scripts
-- Prepare frames for easier editing and maintenance
-- Create reusable CSS/JS from snapshots
-- Organize exported snapshots into proper web projects
-
-**Features:**
-- Drag-and-drop file upload
-- Real-time statistics (elements, CSS rules, JS scripts)
-- Live code preview with syntax highlighting
-- Individual or batch file export
-- Smart extraction of inline styles and scripts
-- Automatic class name generation for extracted styles
-- Event handler conversion to modern event listeners
-
-## File Structure
+- Any modern browser
+
+---
+
+### Playback Features
+
+**Player**: `player.html`
+
+Full-featured playback with editing capabilities.
+
+**Features**:
+- **Playback Controls**: Play, pause, speed, scrubbing
+- **Playback Flags**: Markers/waypoints in recordings
+  - Add flags at key moments
+  - Jump between flags (keyboard: `[` `]`)
+  - Export with flags included
+- **Frame-Based Animation**:
+  - Capture frames at each flag
+  - Auto-play through frames
+  - Adjustable speed (0.5s - 3s per frame)
+  - Export lightweight framed animations
+- **Visual Text Editor**:
+  - Browse HTML tree
+  - Live text editing with preview
+  - Element picker (click elements on page)
+  - Hide/show unwanted elements
+  - Purple pulsing outline for selection
+  - Pop-out editor window
+- **HTML Editor**: Advanced direct HTML editing
+- **Template Mode**:
+  - Mark dynamic vs static elements
+  - Export template + mapping
+  - Load templates for animation
+- **Export Options**:
+  - Export with flags
+  - Export edited recording
+  - Export framed animation (lightweight)
+
+---
+
+### Static Page Animator
+
+**File**: `animator.html`
+
+Edit ONLY dynamic elements in static templates.
+
+**Two Modes**:
+
+**1. Template Editing**:
+- Upload template HTML + mapping JSON
+- Edit dynamic elements only
+- Static elements locked 🔒
+- Live preview of changes
+- Click to select elements
+
+**2. Frame Animation**:
+- Upload multiple HTML frames
+- Play through frames automatically
+- Frame management:
+  - 📋 Duplicate
+  - 💾 Export
+  - 🔄 Replace
+  - 🗑️ Delete
+- Speed control
+- Keyboard shortcuts (`←` `→` `Space`)
+
+---
+
+### WYSIWYG Frame Editor
+
+**File**: `wysiwyg-editor.html`
+
+Visual editor with formatting toolbar - no code knowledge needed!
+
+**Features**:
+- Click-to-edit interface
+- Rich text toolbar:
+  - Bold, Italic, Underline, Strikethrough
+  - Text alignment (left, center, right)
+  - Lists (bullet, numbered)
+  - Font size adjustment
+  - Clear formatting, Undo, Redo
+- Color pickers (text + background)
+- Element info panel
+- Preserves HTML structure
+- Export with `-edited` suffix
+
+**Workflow**:
+1. Export frame from animator
+2. Open in WYSIWYG editor
+3. Make visual changes
+4. Export edited frame
+5. Replace in animator
+6. Animation shows changes
+
+---
+
+### Frame Splitter
+
+**File**: `frame-splitter.html`
+
+Split monolithic HTML into modular files.
+
+**Extracts**:
+- **HTML** - Clean structure with external references
+- **CSS** - All styles from `<style>` tags + inline
+- **JavaScript** - Scripts + inline event handlers
+
+**Options**:
+- Extract inline styles → CSS classes
+- Extract inline scripts → event listeners
+- Beautify output
+- Include comments
+
+**Use Cases**:
+- Convert single-file exports to projects
+- Clean up inline code
+- Create reusable CSS/JS
+- Organize snapshots properly
+
+---
+
+## 🗂️ Complete File Structure
 
 ```
 RepriseClone/
-├── index.html          # Main landing page
-├── tutorial.html       # Complete step-by-step tutorial (START HERE!)
-├── bookmarklet.html    # Bookmarklet installation page (RECOMMENDED)
-├── recorder.html       # Iframe-based recording interface
-├── player.html         # Playback interface with editing tools
-├── animator.html       # Static Page Animator for template editing
-├── wysiwyg-editor.html # WYSIWYG visual editor for frames
-├── frame-splitter.html # Frame Splitter for modular file export
-├── demo.html          # Sample page for testing
-├── styles.css         # Shared styles
-└── README.md          # This file
+├── index.html                  # Main hub with all navigation cards
+│
+├── 🌌 META-LAYER SYSTEM
+├── universal-consciousness.html # 4D spacetime navigator (Big Bang to Now)
+├── memory-dive.html            # Neural memory interface (2050)
+├── immersive-environment.html  # Physical room environments (1999-2024)
+├── boot-simulation.html        # Complete boot sequence with audio
+├── visual-history.html         # Flipbook player with demo buttons
+├── meta-evolution.html         # Hardware evolution viewer
+├── 4d-timeline.html           # Branching timeline multiverse
+├── git-visualizer.html        # Git history animator
+│
+├── 📁 DEMO APPLICATIONS (Historical Replicas)
+├── demos/
+│   ├── aim-1999.html          # AOL Instant Messenger
+│   ├── msn-2001.html          # MSN Messenger
+│   ├── myspace-2005.html      # MySpace profile
+│   ├── facebook-2007.html     # Facebook with Wall
+│   ├── twitter-2009.html      # Twitter (140 chars)
+│   ├── instagram-2012.html    # Instagram photos
+│   └── discord-2024.html      # Modern Discord
+│
+├── 📹 RECORDING & PLAYBACK TOOLS
+├── tutorial.html              # Complete step-by-step tutorial
+├── bookmarklet.html          # Bookmarklet installer (RECOMMENDED)
+├── recorder.html             # Iframe recorder (local only)
+├── player.html               # Playback with editing tools
+├── animator.html             # Static page animator (2 modes)
+├── wysiwyg-editor.html       # WYSIWYG visual editor
+├── frame-splitter.html       # Modular file extraction
+│
+├── 🎨 SHARED RESOURCES
+├── demo.html                 # Test/demo page
+├── styles.css                # Shared styles
+└── README.md                 # This file
 ```
 
-## Technologies Used
+---
 
-- [rrweb](https://www.rrweb.io/) - Session recording and replay
-- [rrweb-player](https://github.com/rrweb-io/rrweb-player) - Playback UI with controls
-- Vanilla JavaScript - No build tools required
-- HTML5/CSS3 - Modern web standards
+## 🎯 Recommended User Journeys
 
-## Limitations
+### Journey 1: The Ultimate Meta Experience (45 minutes)
 
-- Some dynamic content (WebGL, Canvas) may not replay perfectly
-- Video and audio playback timing may differ
-- Third-party iframes within the recorded page won't be captured
-- Very large pages with thousands of events can produce large files
+**For those who want to experience EVERYTHING**
 
-## Future Enhancements
+1. **Start**: Open `universal-consciousness.html`
+2. Click the singularity → Watch the Big Bang
+3. Navigate: Hypercube → Multiverse → Universe → Galaxy → Solar System → Earth
+4. Scrub the 4D timeline (13.8 billion years)
+5. Dive into consciousness → Loads `memory-dive.html`
+6. Browse memories, select **1999 - First Online Conversation**
+7. Watch spatial zoom: Earth → City → Building → Room
+8. Loads `immersive-environment.html`
+9. Click "Enter Room" → Door opens, walk to desk, sit down
+10. Monitor activates → Loads `boot-simulation.html`
+11. Click Maximize button → Fullscreen boot experience
+12. Power on computer → Watch BIOS → OS boot → Desktop
+13. Click browser icon → Opens Netscape
+14. Watch page load → AIM appears
+15. Chat with SkaterBoy2000 in authentic 1999 interface
 
-- Cloud storage for recordings
-- Annotation tools for highlighting during playback
-- Recording editing capabilities (trim, cut, merge)
-- Multiple session comparison
-- Custom branding and watermarks
-- Screenshot capture at key moments
+**Total layers traversed**: 15 (∞ → Pixel)
 
-## License
+---
 
-This is a demo project for educational purposes. rrweb is licensed under MIT.
+### Journey 2: History Explorer (20 minutes)
 
-## Credits
+**For those interested in computing evolution**
 
-Built with [rrweb](https://www.rrweb.io/) by the rrweb team.
+1. Open `visual-history.html`
+2. Click "Messaging Evolution" demo button
+3. Step through: AIM (1999) → MSN (2001) → Discord (2024)
+4. Click "Social Media Evolution" button
+5. Navigate: MySpace → Facebook → Twitter → Instagram
+6. Open `meta-evolution.html`
+7. See each app on period hardware (CRT → iMac → MacBook → Gaming PC)
+8. Open `4d-timeline.html`
+9. Explore branching realities and alternate histories
+10. Play with decision points
+
+---
+
+### Journey 3: Recording & Editing (30 minutes)
+
+**For those who want to create content**
+
+1. Open `index.html` → Click "Get Bookmarklet"
+2. Drag bookmarklet to bookmarks bar
+3. Navigate to any website
+4. Click bookmarklet → Start recording
+5. Interact with page
+6. Stop recording → Export JSON
+7. Open `player.html` → Load recording
+8. Add flags at key moments
+9. Open text editor → Make edits
+10. Hide unwanted elements
+11. Export edited recording
+12. Share with team!
+
+---
+
+### Journey 4: Template Creation (25 minutes)
+
+**For building reusable demos**
+
+1. Record a demo (bookmarklet)
+2. Load in `player.html`
+3. Enable Template Mode
+4. Mark dynamic elements (chat messages, content)
+5. Export template + mapping
+6. Open `animator.html`
+7. Load template + mapping
+8. Edit dynamic content only
+9. Export frames
+10. Use `wysiwyg-editor.html` to polish
+11. Load back in animator
+12. Play animation!
+
+---
+
+## 🎨 Technologies & Architecture
+
+### Core Recording Stack
+- **[rrweb](https://www.rrweb.io/)** - Session recording/replay
+- **[rrweb-player](https://github.com/rrweb-io/rrweb-player)** - Playback UI
+- **Vanilla JavaScript** - No build tools required
+
+### Meta-Layer Stack
+- **Web Audio API** - Synthesized cosmic tones, startup sounds
+- **CSS 3D Transforms** - Spatial zoom effects, perspective
+- **SVG** - Timeline graphs, branching visualizations
+- **Canvas** - Particle effects (galaxies, stars)
+- **Intersection Observer** - Smooth scroll animations
+- **CSS Animations** - Orbital motion, rotations, glows
+- **Iframe Communication** - Cross-layer messaging
+- **State Machines** - Boot sequence logic
+- **Async/Await** - Smooth transition sequencing
+
+### Audio Synthesis
+All sounds generated programmatically using Web Audio API:
+- **BIOS Beep**: 800 Hz sine wave
+- **Mac Startup**: C5-E5-G5 chord (523.25, 659.25, 783.99 Hz)
+- **Windows Melody**: C5→E5→G5→C6 ascending
+- **Cosmic Tones**: 50-800 Hz range
+- **Neural Hums**: 120 Hz ambient
+- **Footsteps**: 80 Hz low frequency
+- **Door Creak**: 200 Hz sawtooth
+
+---
+
+## 🌟 Key Innovations
+
+### 1. **Infinite Nested Reality**
+First system to visualize computing from cosmic to quantum scale with **15 interactive layers**.
+
+### 2. **4D Timeline Navigation**
+Scrub through **13.8 billion years** of existence with real-time visual updates.
+
+### 3. **Multiverse Branching**
+Explore **parallel computing histories** - what if MSN beat Discord? What if Facebook went B2B?
+
+### 4. **Complete Boot Authenticity**
+From pressing the power button through **BIOS, OS boot, desktop, browser launch** to final app - with period-accurate audio.
+
+### 5. **Physical Context Layer**
+First to show the **actual room environment** - walk through the door, sit at the desk, experience the space.
+
+### 6. **Neural Memory Interface**
+Browse your **lifetime of computing memories** as if in 2050 looking back at your digital archaeology.
+
+### 7. **Consciousness Transfer**
+Visual representation of **diving through dimensional layers** to reach specific moments.
+
+### 8. **Meta-Revelation**
+Questions about **simulation theory** and **infinite nesting** - is this layer itself nested?
+
+---
+
+## 🎮 Keyboard Shortcuts
+
+### Universal Controls
+- `ESC` - Exit/dismiss modals
+- `Space` - Play/pause animations
+
+### Player Controls
+- `[` or `←` - Previous flag/frame
+- `]` or `→` - Next flag/frame
+
+### Animator Controls
+- `←` - Previous frame
+- `→` - Next frame
+- `Space` - Play/pause animation
+
+### Editor Controls
+- `Ctrl/Cmd + B` - Bold
+- `Ctrl/Cmd + I` - Italic
+- `Ctrl/Cmd + U` - Underline
+- `Ctrl/Cmd + Z` - Undo
+- `Ctrl/Cmd + Shift + Z` - Redo
+
+---
+
+## 🚀 Performance Considerations
+
+### Large File Sizes
+- Full rrweb recordings can be **10-50 MB** for complex pages
+- Framed animations are **50-90% smaller** (no event stream)
+- Use frame export for sharing demos
+
+### Browser Compatibility
+- Tested in Chrome, Firefox, Safari, Edge
+- Web Audio API requires user interaction to start
+- 3D transforms work best in Chrome/Edge
+
+### Memory Usage
+- Cosmic layers use CSS-only animations (lightweight)
+- Iframe nesting limited to 3 levels deep max
+- Large recordings may cause slowdown on older devices
+
+---
+
+## 🛠️ Development & Local Setup
+
+### Prerequisites
+- Modern web browser
+- Python (for local server) or any HTTP server
+
+### Running Locally
+```bash
+# Option 1: Python
+python -m http.server 8000
+
+# Option 2: Node.js
+npx http-server -p 8000
+
+# Option 3: PHP
+php -S localhost:8000
+```
+
+Then open: http://localhost:8000
+
+### No Build Step Required
+All code is vanilla HTML/CSS/JS - just serve the files!
+
+---
+
+## 📝 Limitations
+
+### Recording Limitations
+- WebGL/Canvas content may not replay perfectly
+- Video/audio timing may differ
+- Third-party iframes not captured
+- Very large pages = large files
+
+### Meta-Layer Limitations
+- Audio requires user interaction (browser security)
+- Deep iframe nesting may impact performance
+- 3D transforms require modern browser
+- Some effects disabled on mobile for performance
+
+### Known Issues
+- Safari may require clicking page before audio plays
+- Firefox 3D transforms less smooth than Chrome
+- Mobile view of meta-layers not optimized
+
+---
+
+## 🔮 Future Enhancements
+
+### Meta-Layers
+- [ ] VR/AR mode for immersive cosmic navigation
+- [ ] Real NASA imagery for Earth/space layers
+- [ ] Quantum scale visualization below atoms
+- [ ] Actual astronomical data integration
+- [ ] Multi-user shared consciousness experiences
+
+### Recording Tools
+- [ ] Cloud storage for recordings
+- [ ] Real-time collaboration
+- [ ] Video export (MP4)
+- [ ] Annotation tools
+- [ ] Recording editing (trim, merge)
+- [ ] Custom branding/watermarks
+- [ ] AI-powered auto-flagging
+
+### Integration
+- [ ] GitHub Actions for automated recording
+- [ ] Slack/Discord bot integration
+- [ ] API for programmatic recording
+- [ ] Browser extension version
+- [ ] Electron desktop app
+
+---
+
+## 📊 Statistics
+
+- **Total Files**: 20+ HTML pages
+- **Lines of Code**: ~15,000
+- **Meta-Layers**: 15 nested levels
+- **Time Span**: 13.8 billion years
+- **Computing Eras**: 5 (1999-2024)
+- **Historical Apps**: 7 full replicas
+- **Audio Cues**: 8 synthesized sounds
+- **Galaxies Rendered**: 200
+- **Stars Rendered**: 500
+- **Timeline Branches**: 5 alternate realities
+
+---
+
+## 🙏 Credits & Acknowledgments
+
+### Built With
+- **[rrweb](https://www.rrweb.io/)** by the rrweb team - MIT License
+- **Web Audio API** - W3C Standard
+- **Modern CSS** - CSS3 animations, transforms, gradients
+- **Vanilla JavaScript** - ES6+
+
+### Inspiration
+- **Reprise** - Original demo recording tool
+- **Powers of Ten** (1977) - Cosmic zoom concept
+- **Primer** - Timeline branching visualization
+- **Black Mirror** - Neural memory interface concepts
+- **Inception** - Nested reality layers
+- **Interstellar** - 4D spacetime representation
+
+### Special Thanks
+- The rrweb team for their incredible recording library
+- Computing history preservationists
+- Everyone who contributed to the platforms recreated here
+
+---
+
+## 📄 License
+
+This is a demo project for educational purposes.
+
+- rrweb is licensed under **MIT**
+- Original code in this project: **MIT**
+- Historical app replicas: Educational fair use
+
+---
+
+## 🌐 Links & Resources
+
+- **Live Demo**: https://kody-w.github.io/RepriseClone/
+- **GitHub Repo**: https://github.com/kody-w/RepriseClone
+- **rrweb Docs**: https://www.rrweb.io/
+- **Tutorial Page**: tutorial.html (included)
+
+---
+
+## 🤔 Philosophy
+
+This project explores the relationship between **scale, context, and meaning** in computing.
+
+A chat message in AIM isn't just pixels on a screen. It exists within:
+- A browser window
+- An operating system
+- A physical computer
+- A room in a house
+- A city on Earth
+- A planet in a solar system
+- A star system in a galaxy
+- A galaxy in the universe
+- The universe in... what?
+
+Every layer of abstraction is real. Every scale matters.
+
+**Computing doesn't happen in isolation** - it happens in rooms, in moments, in lives, in history, in the cosmos.
+
+This project makes those layers **visible, navigable, and experiential**.
+
+---
+
+**Built with curiosity, iteration, and a lot of meta-thinking 🌌**
+
+*Last Updated: 2024*
