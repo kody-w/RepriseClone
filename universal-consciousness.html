@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal Consciousness - 4D Spacetime Navigator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* The Void - Initial state */
+        .void {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            opacity: 1;
+            transition: opacity 3s;
+        }
+
+        .void.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .void-text {
+            font-size: 14px;
+            letter-spacing: 4px;
+            color: #333;
+            margin-bottom: 30px;
+            animation: fadeInOut 4s ease-in-out infinite;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .singularity {
+            width: 2px;
+            height: 2px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 40px #fff, 0 0 80px #fff, 0 0 120px #fff;
+            animation: singularityPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes singularityPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 40px #fff, 0 0 80px #fff, 0 0 120px #fff; }
+            50% { transform: scale(2); box-shadow: 0 0 60px #fff, 0 0 120px #fff, 0 0 180px #fff; }
+        }
+
+        /* 4D Hypercube Visualization */
+        .hypercube-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            perspective: 2000px;
+            opacity: 0;
+            transition: opacity 2s;
+        }
+
+        .hypercube-container.active {
+            opacity: 1;
+        }
+
+        .hypercube {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            height: 400px;
+            transform-style: preserve-3d;
+            transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg);
+            animation: rotate4D 60s linear infinite;
+        }
+
+        @keyframes rotate4D {
+            from { transform: translate(-50%, -50%) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            to { transform: translate(-50%, -50%) rotateX(360deg) rotateY(360deg) rotateZ(360deg); }
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border: 2px solid rgba(102, 126, 234, 0.4);
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+        }
+
+        .cube-face:nth-child(1) { transform: translateZ(200px); }
+        .cube-face:nth-child(2) { transform: rotateY(180deg) translateZ(200px); }
+        .cube-face:nth-child(3) { transform: rotateY(90deg) translateZ(200px); }
+        .cube-face:nth-child(4) { transform: rotateY(-90deg) translateZ(200px); }
+        .cube-face:nth-child(5) { transform: rotateX(90deg) translateZ(200px); }
+        .cube-face:nth-child(6) { transform: rotateX(-90deg) translateZ(200px); }
+
+        /* Multiverse Branches */
+        .multiverse-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .multiverse-view.active {
+            opacity: 1;
+        }
+
+        .timeline-tree {
+            width: 90%;
+            height: 80%;
+            position: relative;
+        }
+
+        svg.timeline-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .timeline-branch {
+            stroke: #667eea;
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+
+        .timeline-branch:hover {
+            stroke-width: 4;
+            opacity: 1;
+            filter: drop-shadow(0 0 10px #667eea);
+        }
+
+        .timeline-node {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .timeline-node:hover {
+            transform: scale(1.5);
+        }
+
+        /* Cosmic Zoom Layers */
+        .cosmic-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 3s ease-in-out;
+        }
+
+        .cosmic-layer.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .cosmic-layer.zoom-out {
+            opacity: 0;
+            transform: scale(10);
+        }
+
+        /* Observable Universe */
+        .universe {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center,
+                rgba(139, 69, 255, 0.1) 0%,
+                rgba(64, 23, 131, 0.2) 20%,
+                rgba(0, 0, 20, 0.8) 60%,
+                #000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .galaxy {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(200, 150, 255, 0.8) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Milky Way Galaxy */
+        .milky-way {
+            width: 800px;
+            height: 800px;
+            position: relative;
+        }
+
+        .galaxy-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, #fff 0%, #ffeb3b 30%, transparent 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 100px rgba(255, 235, 59, 0.8);
+            animation: coreGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes coreGlow {
+            0%, 100% { box-shadow: 0 0 100px rgba(255, 235, 59, 0.8); }
+            50% { box-shadow: 0 0 150px rgba(255, 235, 59, 1); }
+        }
+
+        .spiral-arm {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 400px;
+            height: 400px;
+            transform-origin: center;
+            animation: spiralRotate 40s linear infinite;
+        }
+
+        .spiral-arm:nth-child(2) { transform: rotate(60deg); animation-delay: -13s; }
+        .spiral-arm:nth-child(3) { transform: rotate(120deg); animation-delay: -27s; }
+        .spiral-arm:nth-child(4) { transform: rotate(180deg); animation-delay: -7s; }
+        .spiral-arm:nth-child(5) { transform: rotate(240deg); animation-delay: -20s; }
+        .spiral-arm:nth-child(6) { transform: rotate(300deg); animation-delay: -33s; }
+
+        @keyframes spiralRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .star-cluster {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, transparent 50%);
+            border-radius: 50%;
+        }
+
+        /* Solar System */
+        .solar-system {
+            width: 800px;
+            height: 800px;
+            position: relative;
+        }
+
+        .sun {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #fff 0%, #ffeb3b 50%, #ff9800 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(255, 235, 59, 0.8);
+        }
+
+        .planet-orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 50%;
+        }
+
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            animation: orbit 20s linear infinite;
+        }
+
+        .earth-orbit {
+            width: 300px;
+            height: 300px;
+        }
+
+        .earth-planet {
+            top: -15px;
+            left: 50%;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #4a90e2 0%, #1a4d8f 100%);
+            box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
+            animation: orbit 20s linear infinite;
+        }
+
+        @keyframes orbit {
+            from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+        }
+
+        /* 4D Timeline Scrubber */
+        .timeline-scrubber {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 30px;
+            border-top: 2px solid rgba(102, 126, 234, 0.5);
+            z-index: 1000;
+        }
+
+        .scrubber-label {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .scrubber-track {
+            width: 100%;
+            height: 60px;
+            background: rgba(26, 26, 46, 0.5);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .scrubber-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .scrubber-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 40px;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            cursor: grab;
+        }
+
+        .scrubber-marker:active {
+            cursor: grabbing;
+        }
+
+        .time-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .current-time-display {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 24px;
+            color: #667eea;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        /* Navigation Controls */
+        .nav-controls {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            display: flex;
+            gap: 15px;
+            z-index: 1001;
+        }
+
+        .nav-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .nav-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+        }
+
+        /* Meta-revelation overlay */
+        .meta-revelation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s;
+            z-index: 10001;
+        }
+
+        .meta-revelation.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .revelation-text {
+            font-size: 20px;
+            color: #667eea;
+            letter-spacing: 3px;
+            text-align: center;
+            margin-bottom: 30px;
+            line-height: 1.8;
+            max-width: 800px;
+            animation: textGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(102, 126, 234, 0.5); }
+            50% { text-shadow: 0 0 30px rgba(102, 126, 234, 1); }
+        }
+
+        .nested-layers {
+            font-size: 14px;
+            color: #999;
+            text-align: center;
+            line-height: 2;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Embedded frame for deeper layers */
+        .embedded-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s;
+            z-index: 100;
+        }
+
+        .embedded-layer.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .embedded-layer iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Info display */
+        .info-display {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            z-index: 1000;
+            min-width: 250px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Stars */
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            animation: starTwinkle 3s ease-in-out infinite;
+        }
+
+        @keyframes starTwinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- The Void - Beginning -->
+    <div class="void" id="void">
+        <div class="void-text">BEFORE TIME. BEFORE SPACE. BEFORE EXISTENCE.</div>
+        <div class="singularity" id="singularity"></div>
+        <div style="margin-top: 50px; font-size: 12px; color: #666;">
+            Click the singularity to begin
+        </div>
+    </div>
+
+    <!-- 4D Hypercube View -->
+    <div class="hypercube-container" id="hypercubeView">
+        <div class="hypercube">
+            <div class="cube-face"></div>
+            <div class="cube-face"></div>
+            <div class="cube-face"></div>
+            <div class="cube-face"></div>
+            <div class="cube-face"></div>
+            <div class="cube-face"></div>
+        </div>
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 10; pointer-events: none;">
+            <div style="font-size: 18px; color: #667eea; letter-spacing: 3px; margin-bottom: 10px;">
+                4-DIMENSIONAL SPACETIME
+            </div>
+            <div style="font-size: 12px; color: #666;">
+                TIME RENDERED AS A SPATIAL DIMENSION
+            </div>
+        </div>
+    </div>
+
+    <!-- Multiverse View -->
+    <div class="multiverse-view" id="multiverseView">
+        <div class="timeline-tree">
+            <svg class="timeline-svg" id="timelineSvg">
+                <!-- Will be generated by JavaScript -->
+            </svg>
+        </div>
+        <div style="position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none;">
+            <div style="font-size: 24px; color: #667eea; letter-spacing: 3px; margin-bottom: 10px;">
+                THE MULTIVERSE
+            </div>
+            <div style="font-size: 12px; color: #666;">
+                INFINITE BRANCHES OF REALITY
+            </div>
+        </div>
+    </div>
+
+    <!-- Cosmic Layers -->
+    <div class="cosmic-layer" id="universeLayer">
+        <div class="universe" id="universe">
+            <!-- Galaxies will be generated -->
+        </div>
+    </div>
+
+    <div class="cosmic-layer" id="galaxyLayer">
+        <div class="milky-way">
+            <div class="galaxy-core"></div>
+            <div class="spiral-arm"></div>
+            <div class="spiral-arm"></div>
+            <div class="spiral-arm"></div>
+            <div class="spiral-arm"></div>
+            <div class="spiral-arm"></div>
+            <div class="spiral-arm"></div>
+        </div>
+    </div>
+
+    <div class="cosmic-layer" id="solarSystemLayer">
+        <div class="solar-system">
+            <div class="sun"></div>
+            <div class="planet-orbit earth-orbit">
+                <div class="planet earth-planet"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="showView('hypercube')">4D SPACETIME</button>
+        <button class="nav-btn" onclick="showView('multiverse')">MULTIVERSE</button>
+        <button class="nav-btn" onclick="showView('universe')">UNIVERSE</button>
+        <button class="nav-btn" onclick="showView('galaxy')">GALAXY</button>
+        <button class="nav-btn" onclick="showView('solar')">SOLAR SYSTEM</button>
+        <button class="nav-btn" onclick="showView('earth')">EARTH</button>
+        <button class="nav-btn" onclick="diveIntoConsciousness()">DIVE INTO CONSCIOUSNESS</button>
+    </div>
+
+    <!-- Info Display -->
+    <div class="info-display">
+        <div class="info-label">Current Scale</div>
+        <div class="info-value" id="scaleDisplay">VOID</div>
+
+        <div class="info-label">Temporal Position</div>
+        <div class="info-value" id="timeDisplay">T = 0</div>
+
+        <div class="info-label">Layer Depth</div>
+        <div class="info-value" id="layerDisplay">∞</div>
+    </div>
+
+    <!-- Timeline Scrubber -->
+    <div class="timeline-scrubber">
+        <div class="scrubber-label">4D TEMPORAL NAVIGATION - SCRUB THROUGH ALL OF EXISTENCE</div>
+        <div class="scrubber-track" id="scrubberTrack">
+            <div class="scrubber-fill" id="scrubberFill"></div>
+            <div class="scrubber-marker" id="scrubberMarker"></div>
+        </div>
+        <div class="time-markers">
+            <div>Big Bang<br>13.8 BYA</div>
+            <div>First Stars<br>13.6 BYA</div>
+            <div>Milky Way<br>13.5 BYA</div>
+            <div>Solar System<br>4.6 BYA</div>
+            <div>Life on Earth<br>3.8 BYA</div>
+            <div>Humans<br>300 KYA</div>
+            <div>Computing<br>1950s</div>
+            <div>Now<br>2050</div>
+        </div>
+        <div class="current-time-display" id="currentTimeDisplay">
+            THE ETERNAL NOW
+        </div>
+    </div>
+
+    <!-- Meta-Revelation -->
+    <div class="meta-revelation" id="metaRevelation">
+        <div class="revelation-text">
+            WHAT IF THIS ENTIRE UNIVERSE<br>
+            IS ITSELF A SIMULATION?<br><br>
+            WHAT IF CONSCIOUSNESS EXPERIENCING CONSCIOUSNESS<br>
+            IS THE FUNDAMENTAL NATURE OF REALITY?<br><br>
+            WHAT IF THERE ARE INFINITE LAYERS,<br>
+            TURTLES ALL THE WAY DOWN,<br>
+            AND ALL THE WAY UP?
+        </div>
+        <div class="nested-layers">
+            ∞<br>
+            └─ Multiverse<br>
+            &nbsp;&nbsp;&nbsp;└─ Universe<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Galaxy<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Solar System<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Earth<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 2050 Consciousness<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Memory Space<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Physical Environment<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Computer Hardware<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Operating System<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Browser<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ Application<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ User Experience<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ ?<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ ??<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ ∞
+        </div>
+        <div style="margin-top: 40px; font-size: 12px; color: #666;">
+            Press ESC to continue the journey
+        </div>
+    </div>
+
+    <!-- Embedded Layer (loads memory-dive.html) -->
+    <div class="embedded-layer" id="embeddedLayer">
+        <iframe id="consciousnessFrame" src=""></iframe>
+    </div>
+
+    <script>
+        let currentView = 'void';
+        let audioContext = null;
+        let timelinePosition = 0; // 0 to 1
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playCosmicTone(frequency = 100) {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 2);
+        }
+
+        // Initialize universe with galaxies
+        function initializeUniverse() {
+            const universe = document.getElementById('universe');
+            for (let i = 0; i < 200; i++) {
+                const galaxy = document.createElement('div');
+                galaxy.className = 'galaxy';
+                galaxy.style.left = Math.random() * 100 + '%';
+                galaxy.style.top = Math.random() * 100 + '%';
+                galaxy.style.width = (Math.random() * 40 + 20) + 'px';
+                galaxy.style.height = galaxy.style.width;
+                galaxy.style.animationDelay = (Math.random() * 3) + 's';
+                universe.appendChild(galaxy);
+            }
+
+            // Add stars
+            for (let i = 0; i < 500; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = (Math.random() * 3) + 's';
+                universe.appendChild(star);
+            }
+        }
+
+        // Initialize multiverse tree
+        function initializeMultiverse() {
+            const svg = document.getElementById('timelineSvg');
+            const width = svg.clientWidth;
+            const height = svg.clientHeight;
+
+            // Main timeline spine
+            const mainPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            mainPath.setAttribute('class', 'timeline-branch');
+            mainPath.setAttribute('d', `M 100 ${height/2} L ${width - 100} ${height/2}`);
+            mainPath.setAttribute('stroke-width', '4');
+            svg.appendChild(mainPath);
+
+            // Branch points
+            const branches = [
+                { x: 250, y: height/2, splits: [height/2 - 100, height/2 + 100] },
+                { x: 500, y: height/2, splits: [height/2 - 150, height/2 + 150] },
+                { x: 750, y: height/2, splits: [height/2 - 200, height/2 + 200] },
+            ];
+
+            branches.forEach(branch => {
+                branch.splits.forEach(splitY => {
+                    const branchPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    branchPath.setAttribute('class', 'timeline-branch');
+                    branchPath.setAttribute('d', `M ${branch.x} ${branch.y} Q ${branch.x + 100} ${(branch.y + splitY)/2} ${width - 100} ${splitY}`);
+                    svg.appendChild(branchPath);
+
+                    // Add node
+                    const node = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    node.setAttribute('class', 'timeline-node');
+                    node.setAttribute('cx', branch.x);
+                    node.setAttribute('cy', branch.y);
+                    node.setAttribute('r', '8');
+                    node.setAttribute('fill', '#667eea');
+                    svg.appendChild(node);
+                });
+            });
+        }
+
+        // Big Bang!
+        document.getElementById('singularity').addEventListener('click', async () => {
+            playCosmicTone(50);
+            document.getElementById('void').classList.add('hidden');
+            await sleep(3000);
+
+            // Show revelation
+            document.getElementById('metaRevelation').classList.add('active');
+        });
+
+        // ESC to continue
+        document.addEventListener('keydown', async (e) => {
+            if (e.key === 'Escape' && document.getElementById('metaRevelation').classList.contains('active')) {
+                document.getElementById('metaRevelation').classList.remove('active');
+                await sleep(2000);
+                showView('hypercube');
+            }
+        });
+
+        async function showView(view) {
+            playCosmicTone(200 + Math.random() * 200);
+            currentView = view;
+
+            // Hide all views
+            document.querySelectorAll('.cosmic-layer, .hypercube-container, .multiverse-view').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Update active button
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Show selected view
+            switch(view) {
+                case 'hypercube':
+                    document.getElementById('hypercubeView').classList.add('active');
+                    updateInfo('4D HYPERCUBE', '13.8 Billion Years', '∞');
+                    break;
+                case 'multiverse':
+                    document.getElementById('multiverseView').classList.add('active');
+                    updateInfo('MULTIVERSE', 'All Timelines', '∞ + 1');
+                    break;
+                case 'universe':
+                    document.getElementById('universeLayer').classList.add('active');
+                    updateInfo('Observable Universe', '13.8 Billion Years', '∞ - 1');
+                    break;
+                case 'galaxy':
+                    document.getElementById('universeLayer').classList.add('zoom-out');
+                    await sleep(500);
+                    document.getElementById('galaxyLayer').classList.add('active');
+                    updateInfo('Milky Way Galaxy', '13.5 Billion Years Old', '∞ - 2');
+                    break;
+                case 'solar':
+                    document.getElementById('galaxyLayer').classList.add('zoom-out');
+                    await sleep(500);
+                    document.getElementById('solarSystemLayer').classList.add('active');
+                    updateInfo('Solar System', '4.6 Billion Years Old', '∞ - 3');
+                    break;
+                case 'earth':
+                    document.getElementById('solarSystemLayer').classList.add('zoom-out');
+                    await sleep(1000);
+                    updateInfo('Earth Transition', 'Approaching 2050...', '∞ - 4');
+                    await sleep(2000);
+                    diveIntoConsciousness();
+                    break;
+            }
+        }
+
+        async function diveIntoConsciousness() {
+            playCosmicTone(800);
+            updateInfo('Neural Interface 2050', 'Present Moment', '∞ - 5');
+
+            // Hide cosmic views
+            document.querySelectorAll('.cosmic-layer').forEach(el => el.classList.add('zoom-out'));
+            await sleep(1500);
+
+            // Load memory-dive.html
+            document.getElementById('consciousnessFrame').src = 'memory-dive.html';
+            await sleep(1000);
+            document.getElementById('embeddedLayer').classList.add('active');
+        }
+
+        function updateInfo(scale, time, layer) {
+            document.getElementById('scaleDisplay').textContent = scale;
+            document.getElementById('timeDisplay').textContent = time;
+            document.getElementById('layerDisplay').textContent = layer;
+        }
+
+        // Timeline scrubber
+        const scrubberTrack = document.getElementById('scrubberTrack');
+        const scrubberMarker = document.getElementById('scrubberMarker');
+        const scrubberFill = document.getElementById('scrubberFill');
+        let isDragging = false;
+
+        scrubberMarker.addEventListener('mousedown', () => isDragging = true);
+        document.addEventListener('mouseup', () => isDragging = false);
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const rect = scrubberTrack.getBoundingClientRect();
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const percent = (x / rect.width) * 100;
+
+                scrubberMarker.style.left = percent + '%';
+                scrubberFill.style.width = percent + '%';
+
+                timelinePosition = x / rect.width;
+                updateTimeDisplay(timelinePosition);
+            }
+        });
+
+        scrubberTrack.addEventListener('click', (e) => {
+            if (e.target === scrubberTrack || e.target === scrubberFill) {
+                const rect = scrubberTrack.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = (x / rect.width) * 100;
+
+                scrubberMarker.style.left = percent + '%';
+                scrubberFill.style.width = percent + '%';
+
+                timelinePosition = x / rect.width;
+                updateTimeDisplay(timelinePosition);
+                playCosmicTone(100 + timelinePosition * 700);
+            }
+        });
+
+        function updateTimeDisplay(position) {
+            const times = [
+                'Big Bang (13.8 BYA)',
+                'First Stars (13.6 BYA)',
+                'Milky Way Forms (13.5 BYA)',
+                'Solar System Forms (4.6 BYA)',
+                'Life on Earth (3.8 BYA)',
+                'Dinosaurs (230 MYA)',
+                'Humans Emerge (300 KYA)',
+                'Agriculture (10 KYA)',
+                'Written Language (5 KYA)',
+                'Computers (1950s)',
+                'Internet (1990s)',
+                'Mobile Computing (2000s)',
+                'Neural Interfaces (2050)',
+                'THE ETERNAL NOW'
+            ];
+
+            const index = Math.floor(position * (times.length - 1));
+            document.getElementById('currentTimeDisplay').textContent = times[index];
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Initialize
+        initializeUniverse();
+        initializeMultiverse();
+        updateInfo('THE VOID', 'Before Time', '∞');
+    </script>
+</body>
+</html>

@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Dive - Neural Interface 2050</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Neural Interface Chamber - 2050 */
+        .neural-chamber {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #0a0a1a 0%, #000000 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            transition: opacity 2s;
+            z-index: 10000;
+        }
+
+        .neural-chamber.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .chamber-content {
+            text-align: center;
+            max-width: 800px;
+        }
+
+        .year-display {
+            font-size: 80px;
+            font-weight: 100;
+            letter-spacing: 20px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .chamber-subtitle {
+            font-size: 24px;
+            color: #999;
+            margin-bottom: 50px;
+            letter-spacing: 2px;
+        }
+
+        .neural-headset {
+            width: 300px;
+            height: 200px;
+            margin: 0 auto 40px;
+            position: relative;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .headset-band {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 100px;
+            border: 4px solid #667eea;
+            border-bottom: none;
+            border-radius: 100px 100px 0 0;
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .headset-sensor {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(102, 126, 234, 0.8);
+            animation: sensorPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes sensorPulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+            50% { box-shadow: 0 0 60px rgba(102, 126, 234, 1); }
+        }
+
+        .neural-waves {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+        }
+
+        .wave {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            animation: waveExpand 3s ease-out infinite;
+        }
+
+        .wave:nth-child(2) { animation-delay: 1s; }
+        .wave:nth-child(3) { animation-delay: 2s; }
+
+        @keyframes waveExpand {
+            0% {
+                width: 100%;
+                height: 100%;
+                opacity: 1;
+            }
+            100% {
+                width: 300%;
+                height: 300%;
+                opacity: 0;
+            }
+        }
+
+        /* Memory Browser Interface */
+        .memory-browser {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+            z-index: 9999;
+        }
+
+        .memory-browser.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .browser-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .browser-title {
+            font-size: 48px;
+            font-weight: 300;
+            letter-spacing: 4px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .browser-subtitle {
+            font-size: 18px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        .timeline-container {
+            width: 90%;
+            max-width: 1200px;
+            position: relative;
+        }
+
+        .timeline {
+            display: flex;
+            gap: 30px;
+            overflow-x: auto;
+            padding: 40px 20px;
+            scroll-behavior: smooth;
+        }
+
+        .timeline::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .timeline::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .timeline::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+
+        .memory-card {
+            min-width: 300px;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-10px);
+            border-color: #667eea;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        }
+
+        .memory-year {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .memory-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+
+        .memory-description {
+            font-size: 14px;
+            color: #999;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .memory-details {
+            font-size: 12px;
+            color: #666;
+            margin-top: auto;
+        }
+
+        .memory-icon {
+            font-size: 80px;
+            margin: 20px 0;
+        }
+
+        .dive-instruction {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            letter-spacing: 1px;
+        }
+
+        /* Spatial Zoom Sequence */
+        .zoom-sequence {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s;
+            z-index: 9998;
+        }
+
+        .zoom-sequence.active {
+            opacity: 1;
+        }
+
+        .zoom-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 3s ease-in-out, opacity 2s;
+            opacity: 0;
+        }
+
+        .zoom-layer.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .zoom-layer.zoom-out {
+            transform: translate(-50%, -50%) scale(10);
+            opacity: 0;
+        }
+
+        /* Earth from space */
+        .earth {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle at 30% 30%, #4a90e2 0%, #1a4d8f 100%);
+            border-radius: 50%;
+            box-shadow:
+                inset -40px -40px 60px rgba(0,0,0,0.5),
+                0 0 80px rgba(74, 144, 226, 0.5);
+            position: relative;
+        }
+
+        .earth::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 40%, transparent 20%, rgba(46, 125, 50, 0.6) 20%, rgba(46, 125, 50, 0.6) 25%, transparent 25%),
+                radial-gradient(circle at 70% 30%, transparent 15%, rgba(139, 69, 19, 0.4) 15%, rgba(139, 69, 19, 0.4) 20%, transparent 20%);
+            border-radius: 50%;
+            animation: earthRotate 60s linear infinite;
+        }
+
+        @keyframes earthRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* City skyline */
+        .city {
+            width: 800px;
+            height: 400px;
+            position: relative;
+        }
+
+        .building {
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #0f0f1e 100%);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .building::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(255,255,200,0.1) 20px, rgba(255,255,200,0.1) 25px);
+        }
+
+        .building:nth-child(1) { left: 50px; width: 80px; height: 250px; }
+        .building:nth-child(2) { left: 150px; width: 100px; height: 350px; }
+        .building:nth-child(3) { left: 270px; width: 120px; height: 300px; }
+        .building:nth-child(4) { left: 410px; width: 90px; height: 280px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .building:nth-child(5) { left: 520px; width: 110px; height: 320px; }
+        .building:nth-child(6) { left: 650px; width: 95px; height: 270px; }
+
+        /* Building cross-section */
+        .building-interior {
+            width: 600px;
+            height: 800px;
+            background: linear-gradient(to bottom, #2a2a3e 0%, #1a1a2e 100%);
+            border: 4px solid #667eea;
+            border-radius: 8px;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 10px;
+            padding: 20px;
+        }
+
+        .floor {
+            background: rgba(26, 26, 46, 0.5);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s;
+        }
+
+        .floor.target {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            border-color: #667eea;
+            box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+            animation: targetPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes targetPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Zoom status */
+        .zoom-status {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            border-radius: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            font-size: 20px;
+            letter-spacing: 2px;
+            z-index: 10001;
+        }
+
+        /* Memory playback controls */
+        .playback-controls {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+            z-index: 9997;
+        }
+
+        .playback-controls.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .playback-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .playback-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+
+        .memory-time {
+            color: #667eea;
+            font-size: 14px;
+            letter-spacing: 1px;
+            margin: 0 15px;
+        }
+
+        /* Consciousness transfer effect */
+        .transfer-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, transparent 0%, #667eea 100%);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .transfer-effect.active {
+            opacity: 0.3;
+        }
+
+        /* Embedded experience */
+        .experience-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 2s;
+            z-index: 100;
+        }
+
+        .experience-container.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .experience-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Exit memory button */
+        .exit-memory {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        .exit-memory.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .exit-memory:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Neural Chamber - Starting point 2050 -->
+    <div class="neural-chamber" id="neuralChamber">
+        <div class="chamber-content">
+            <div class="year-display">2050</div>
+            <div class="chamber-subtitle">NEURAL MEMORY INTERFACE</div>
+
+            <div class="neural-headset">
+                <div class="headset-band"></div>
+                <div class="headset-sensor"></div>
+                <div class="neural-waves">
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                    <div class="wave"></div>
+                </div>
+            </div>
+
+            <div style="color: #666; font-size: 16px; margin-bottom: 30px;">
+                Initializing neural link...<br>
+                Accessing memory archives...
+            </div>
+
+            <div style="color: #999; font-size: 14px;">
+                Press any key to continue
+            </div>
+        </div>
+    </div>
+
+    <!-- Memory Browser -->
+    <div class="memory-browser" id="memoryBrowser">
+        <div class="browser-header">
+            <div class="browser-title">YOUR DIGITAL MEMORIES</div>
+            <div class="browser-subtitle">A LIFETIME OF COMPUTING EXPERIENCES</div>
+        </div>
+
+        <div class="timeline-container">
+            <div class="timeline" id="timeline">
+                <div class="memory-card" onclick="diveIntoMemory('1999', 'aim')">
+                    <div class="memory-year">1999</div>
+                    <div class="memory-icon">💬</div>
+                    <div class="memory-title">First Online Conversation</div>
+                    <div class="memory-description">
+                        Late night in your bedroom. The dial-up modem just connected.
+                        Your friend SkaterBoy2000 comes online...
+                    </div>
+                    <div class="memory-details">
+                        📍 Suburban bedroom, Cincinnati<br>
+                        🕐 11:47 PM, July 14th<br>
+                        🎵 Blink-182 playing in background
+                    </div>
+                </div>
+
+                <div class="memory-card" onclick="diveIntoMemory('2001', 'msn')">
+                    <div class="memory-year">2001</div>
+                    <div class="memory-icon">🦋</div>
+                    <div class="memory-title">College All-Nighters</div>
+                    <div class="memory-description">
+                        Dorm room, freshman year. Procrastinating on your essay by chatting with friends on MSN Messenger until 4 AM...
+                    </div>
+                    <div class="memory-details">
+                        📍 Anderson Hall, Room 312<br>
+                        🕐 3:24 AM, October 8th<br>
+                        ☕ Empty energy drink cans
+                    </div>
+                </div>
+
+                <div class="memory-card" onclick="diveIntoMemory('2005', 'myspace')">
+                    <div class="memory-year">2005</div>
+                    <div class="memory-icon">🎸</div>
+                    <div class="memory-title">MySpace Profile Customization</div>
+                    <div class="memory-description">
+                        Spent 3 hours picking the perfect background and top 8 friends. Added HTML to make your profile play music automatically...
+                    </div>
+                    <div class="memory-details">
+                        📍 Parents' house, Home office<br>
+                        🕐 6:15 PM, March 22nd<br>
+                        🎵 Dashboard Confessional on repeat
+                    </div>
+                </div>
+
+                <div class="memory-card" onclick="diveIntoMemory('2007', 'facebook')">
+                    <div class="memory-year">2007</div>
+                    <div class="memory-icon">👔</div>
+                    <div class="memory-title">First Job, Facebook Break</div>
+                    <div class="memory-description">
+                        Sneaking onto Facebook during work hours at your first job. That "poke" from your crush made your day...
+                    </div>
+                    <div class="memory-details">
+                        📍 Downtown office, 9th floor<br>
+                        🕐 2:47 PM, June 5th<br>
+                        ☕ Still had a desktop tower under desk
+                    </div>
+                </div>
+
+                <div class="memory-card" onclick="diveIntoMemory('2024', 'discord')">
+                    <div class="memory-year">2024</div>
+                    <div class="memory-icon">🎮</div>
+                    <div class="memory-title">Gaming Night with Old Friends</div>
+                    <div class="memory-description">
+                        Your gaming setup with RGB everything. Weekly Discord call with college friends - now scattered across the country...
+                    </div>
+                    <div class="memory-details">
+                        📍 Your apartment, Gaming room<br>
+                        🕐 9:30 PM, Every Friday<br>
+                        🎮 The crew still plays together
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dive-instruction">
+            CLICK ANY MEMORY TO RE-EXPERIENCE IT
+        </div>
+    </div>
+
+    <!-- Zoom Sequence -->
+    <div class="zoom-sequence" id="zoomSequence">
+        <div class="zoom-layer" id="earthLayer">
+            <div class="earth"></div>
+        </div>
+        <div class="zoom-layer" id="cityLayer">
+            <div class="city">
+                <div class="building"></div>
+                <div class="building"></div>
+                <div class="building"></div>
+                <div class="building"></div>
+                <div class="building"></div>
+                <div class="building"></div>
+            </div>
+        </div>
+        <div class="zoom-layer" id="buildingLayer">
+            <div class="building-interior">
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor target">🖥️</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+                <div class="floor">🏢</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="zoom-status" id="zoomStatus" style="opacity: 0;">Initializing memory dive...</div>
+
+    <!-- Consciousness transfer effect -->
+    <div class="transfer-effect" id="transferEffect"></div>
+
+    <!-- Experience Container (loads immersive-environment.html) -->
+    <div class="experience-container" id="experienceContainer">
+        <iframe id="experienceFrame" src=""></iframe>
+    </div>
+
+    <!-- Memory Playback Controls -->
+    <div class="playback-controls" id="playbackControls">
+        <button class="playback-btn" onclick="rewindMemory()" title="Rewind">⏪</button>
+        <button class="playback-btn" onclick="pauseMemory()" title="Pause">⏸️</button>
+        <button class="playback-btn" onclick="resumeMemory()" title="Play">▶️</button>
+        <button class="playback-btn" onclick="fastForwardMemory()" title="Fast Forward">⏩</button>
+        <div class="memory-time" id="memoryTime">00:00 / 05:30</div>
+        <button class="playback-btn" onclick="exitMemory()" title="Exit Memory">🚪</button>
+    </div>
+
+    <!-- Exit Memory Button -->
+    <button class="exit-memory" id="exitBtn" onclick="exitMemory()">
+        ← EXIT MEMORY
+    </button>
+
+    <script>
+        let audioContext = null;
+        let currentMemory = null;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playNeuralHum() {
+            initAudio();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 120;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 2);
+        }
+
+        function playDiveSound() {
+            initAudio();
+            // Descending tone for diving into memory
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 2);
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 2);
+        }
+
+        // Initialize - show neural chamber
+        setTimeout(() => {
+            playNeuralHum();
+        }, 1000);
+
+        // Keyboard listener to start
+        document.addEventListener('keydown', function initKeyboard(e) {
+            document.removeEventListener('keydown', initKeyboard);
+            startMemoryBrowser();
+        });
+
+        async function startMemoryBrowser() {
+            playNeuralHum();
+            document.getElementById('neuralChamber').classList.add('hidden');
+            await sleep(2000);
+            document.getElementById('memoryBrowser').classList.add('active');
+        }
+
+        async function diveIntoMemory(year, app) {
+            currentMemory = { year, app };
+            playDiveSound();
+
+            // Hide memory browser
+            document.getElementById('memoryBrowser').classList.remove('active');
+            await sleep(1000);
+
+            // Start zoom sequence
+            await performZoomSequence(year);
+
+            // Load immersive experience
+            await loadImmersiveExperience(year);
+        }
+
+        async function performZoomSequence(year) {
+            const zoomSeq = document.getElementById('zoomSequence');
+            const status = document.getElementById('zoomStatus');
+            const transfer = document.getElementById('transferEffect');
+
+            zoomSeq.classList.add('active');
+            status.style.opacity = '1';
+
+            // Earth from space
+            status.textContent = 'Locating temporal coordinates...';
+            document.getElementById('earthLayer').classList.add('active');
+            transfer.classList.add('active');
+            await sleep(3000);
+
+            // Zoom into city
+            status.textContent = 'Triangulating spatial position...';
+            document.getElementById('earthLayer').classList.add('zoom-out');
+            await sleep(500);
+            document.getElementById('cityLayer').classList.add('active');
+            await sleep(3000);
+
+            // Zoom into building
+            status.textContent = 'Entering memory space...';
+            document.getElementById('cityLayer').classList.add('zoom-out');
+            await sleep(500);
+            document.getElementById('buildingLayer').classList.add('active');
+            await sleep(3000);
+
+            // Transfer consciousness
+            status.textContent = 'Transferring consciousness...';
+            await sleep(2000);
+
+            status.style.opacity = '0';
+            zoomSeq.classList.remove('active');
+        }
+
+        async function loadImmersiveExperience(year) {
+            const container = document.getElementById('experienceContainer');
+            const frame = document.getElementById('experienceFrame');
+
+            // Load the immersive environment
+            frame.src = 'immersive-environment.html';
+
+            await sleep(1000);
+            container.classList.add('active');
+
+            // Show controls and exit button
+            await sleep(2000);
+            document.getElementById('playbackControls').classList.add('active');
+            document.getElementById('exitBtn').classList.add('active');
+
+            // Start memory playback timer
+            startMemoryTimer();
+        }
+
+        let memoryStartTime = 0;
+        let memoryDuration = 330; // 5:30 in seconds
+        let memoryInterval = null;
+
+        function startMemoryTimer() {
+            memoryStartTime = Date.now();
+            memoryInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - memoryStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                const totalMinutes = Math.floor(memoryDuration / 60);
+                const totalSeconds = memoryDuration % 60;
+
+                document.getElementById('memoryTime').textContent =
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} / ${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds).padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        function pauseMemory() {
+            if (memoryInterval) {
+                clearInterval(memoryInterval);
+                memoryInterval = null;
+            }
+        }
+
+        function resumeMemory() {
+            if (!memoryInterval) {
+                startMemoryTimer();
+            }
+        }
+
+        function rewindMemory() {
+            memoryStartTime = Date.now() + 30000; // Go back 30 seconds
+        }
+
+        function fastForwardMemory() {
+            memoryStartTime = Date.now() - 30000; // Skip ahead 30 seconds
+        }
+
+        async function exitMemory() {
+            playNeuralHum();
+
+            if (memoryInterval) {
+                clearInterval(memoryInterval);
+            }
+
+            // Hide controls
+            document.getElementById('playbackControls').classList.remove('active');
+            document.getElementById('exitBtn').classList.remove('active');
+
+            // Fade out experience
+            document.getElementById('experienceContainer').classList.remove('active');
+            document.getElementById('transferEffect').classList.remove('active');
+
+            await sleep(2000);
+
+            // Reset zoom layers
+            document.querySelectorAll('.zoom-layer').forEach(layer => {
+                layer.classList.remove('active', 'zoom-out');
+            });
+
+            // Return to memory browser
+            document.getElementById('memoryBrowser').classList.add('active');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
