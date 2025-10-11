@@ -565,6 +565,189 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        /* Fullscreen Presentation Mode */
+        .fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 99999;
+            display: none;
+        }
+
+        .fullscreen-container.active {
+            display: block;
+        }
+
+        .fullscreen-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+            display: block;
+        }
+
+        .fullscreen-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 40px 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .fullscreen-container:hover .fullscreen-controls {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .fullscreen-controls.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .fs-btn {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .fs-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .fs-btn.exit {
+            background: rgba(231, 76, 60, 0.95);
+            color: white;
+        }
+
+        .fs-btn.exit:hover {
+            background: #e74c3c;
+        }
+
+        .fs-frame-indicator {
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .fullscreen-help {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 8px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .fullscreen-container:hover .fullscreen-help {
+            opacity: 1;
+        }
+
+        .fullscreen-help.visible {
+            opacity: 1;
+        }
+
+        .fullscreen-help p {
+            margin: 4px 0;
+        }
+
+        /* Debug Mode - Scrollbar Detection */
+        .debug-mode-overlay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(231, 76, 60, 0.95);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 999999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .debug-mode-overlay.active {
+            display: block;
+        }
+
+        .debug-resize-handle {
+            position: absolute;
+            right: -10px;
+            top: 0;
+            bottom: 0;
+            width: 20px;
+            background: rgba(231, 76, 60, 0.8);
+            cursor: ew-resize;
+            z-index: 999998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .debug-resize-handle:hover {
+            background: rgba(231, 76, 60, 1);
+            width: 30px;
+        }
+
+        .debug-element-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: rgba(231, 76, 60, 0.95);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: 999999;
+            pointer-events: none;
+        }
+
+        .debug-width-display {
+            position: absolute;
+            top: -30px;
+            right: 0;
+            background: rgba(52, 152, 219, 0.95);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 999999;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="animator-page">
@@ -633,6 +816,7 @@
                         <button id="prevFrameBtn" class="btn btn-secondary" disabled>← Prev</button>
                         <button id="nextFrameBtn" class="btn btn-secondary" disabled>Next →</button>
                     </div>
+                    <button id="fullscreenBtn" class="btn btn-purple btn-group full" style="margin-bottom: 12px; width: 100%;" disabled>🖥️ Fullscreen Presentation</button>
                     <div class="speed-control">
                         <label>Speed: <span id="speedValue">1.0s</span> per frame</label>
                         <input type="range" id="animationSpeed" min="0.5" max="3" step="0.1" value="1.0" disabled>
@@ -650,6 +834,12 @@
                         <button id="diffFramesBtn" class="btn btn-purple" disabled>🔍 Compare</button>
                         <button id="clearDiffBtn" class="btn btn-gray" style="display: none;">✕ Clear</button>
                     </div>
+                </div>
+
+                <!-- Debug Tools -->
+                <div class="control-group">
+                    <div class="control-group-title">🐛 Debug Tools</div>
+                    <button id="showDebugBookmarklet" class="btn btn-secondary btn-group full" style="width: 100%;">📋 Get Debug Bookmarklet</button>
                 </div>
 
                 <!-- Frame List -->
@@ -757,6 +947,96 @@
             <div class="btn-group">
                 <button id="copyDiffBtn" class="btn btn-primary">📋 Copy Diff</button>
                 <button id="exportDiffBtn" class="btn btn-secondary">💾 Export HTML</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULLSCREEN PRESENTATION MODE -->
+    <div class="fullscreen-container" id="fullscreenContainer">
+        <iframe class="fullscreen-iframe" id="fullscreenIframe" sandbox="allow-same-origin allow-popups"></iframe>
+        <div class="fullscreen-controls" id="fullscreenControls">
+            <button class="fs-btn" id="fsPrevBtn">← Previous</button>
+            <button class="fs-btn" id="fsPlayBtn">▶️ Play</button>
+            <button class="fs-btn" id="fsStopBtn" style="display: none;">⏹ Stop</button>
+            <div class="fs-frame-indicator">
+                Frame <span id="fsCurrentFrame">1</span> / <span id="fsTotalFrames">1</span>
+            </div>
+            <button class="fs-btn" id="fsNextBtn">Next →</button>
+            <button class="fs-btn" id="fsDebugBtn" style="background: rgba(231, 76, 60, 0.95);">🔧 Debug Scrollbars</button>
+            <button class="fs-btn exit" id="fsExitBtn">✕ Exit Fullscreen</button>
+        </div>
+        <div class="debug-mode-overlay" id="debugModeOverlay">
+            🔧 DEBUG MODE: Resize elements with scrollbars
+        </div>
+        <div class="fullscreen-help" id="fullscreenHelp">
+            <p><strong>Keyboard Shortcuts:</strong></p>
+            <p>← / → : Previous / Next frame</p>
+            <p>Space : Play / Pause</p>
+            <p>D : Toggle debug mode</p>
+            <p>ESC : Exit debug / Exit fullscreen</p>
+        </div>
+    </div>
+
+    <!-- DEBUG BOOKMARKLET MODAL -->
+    <div class="diff-panel-overlay" id="debugBookmarkletOverlay" style="display: none;">
+        <div class="diff-panel" style="max-width: 900px;">
+            <div class="diff-panel-header">
+                <h3 class="diff-panel-title">🐛 Debug Bookmarklet</h3>
+                <button class="diff-close-btn" id="closeDebugBookmarkletBtn">✕ Close</button>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <h4 style="color: #9b59b6; margin-bottom: 12px; font-size: 16px;">📋 Step 1: Install Bookmarklet</h4>
+                <p style="color: #ccc; font-size: 13px; margin-bottom: 12px;">
+                    Drag this button to your bookmarks bar, or right-click and add to bookmarks:
+                </p>
+                <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; text-align: center;">
+                    <a href="javascript:(function(){const animatorHTML=document.documentElement.outerHTML;const style=document.createElement('style');style.textContent='#debug-animator-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:999999;display:flex;align-items:center;justify-content:center;padding:40px}#debug-animator-panel{background:#2d2d2d;border:4px solid #9b59b6;border-radius:16px;padding:32px;max-width:800px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(155,89,182,0.6)}#debug-animator-panel h2{color:#9b59b6;margin:0 0 20px 0}#debug-animator-panel button{background:#27ae60;color:white;border:none;padding:12px 24px;border-radius:8px;font-weight:600;cursor:pointer;margin:8px}#debug-animator-panel button:hover{background:#229954}#debug-animator-panel textarea{width:100%;min-height:300px;background:#1a1a1a;border:2px solid #9b59b6;border-radius:8px;color:#27ae60;padding:15px;font-family:monospace;font-size:12px;margin:16px 0}';document.head.appendChild(style);const overlay=document.createElement('div');overlay.id='debug-animator-overlay';overlay.innerHTML=`<div id=\"debug-animator-panel\"><h2>🐛 Animator Debug Info</h2><p style=\"color:#ccc;margin-bottom:16px\">Current page HTML captured. Copy this and paste into the animator to compare.</p><textarea id=\"debug-captured-html\" readonly>${animatorHTML.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea><div><button onclick=\"document.getElementById('debug-captured-html').select();document.execCommand('copy');alert('Copied to clipboard!')\">📋 Copy HTML</button><button onclick=\"const blob=new Blob([document.getElementById('debug-captured-html').value],{type:'text/html'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='debug-capture.html';a.click();URL.revokeObjectURL(url)\">💾 Download HTML</button><button onclick=\"document.getElementById('debug-animator-overlay').remove()\">✕ Close</button></div></div>`;document.body.appendChild(overlay)})();"
+                    style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        🐛 Debug Animator Frame
+                    </a>
+                </div>
+                <p style="color: #888; font-size: 11px; margin-top: 12px; font-style: italic;">
+                    💡 Tip: If you can't drag, right-click the button above and select "Add to Bookmarks" or "Bookmark This Link"
+                </p>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <h4 style="color: #9b59b6; margin-bottom: 12px; font-size: 16px;">🔍 Step 2: Capture & Compare</h4>
+                <ol style="color: #ccc; font-size: 13px; line-height: 1.8; padding-left: 20px;">
+                    <li>Open the page you want to debug (e.g., M365 Copilot)</li>
+                    <li>Click the bookmarklet in your bookmarks bar</li>
+                    <li>Copy the captured HTML</li>
+                    <li>Return to the animator and click <strong>"Compare with Capture"</strong> below</li>
+                    <li>Paste the HTML and see the differences!</li>
+                </ol>
+            </div>
+
+            <div style="background: #1a1a1a; padding: 20px; border-radius: 8px; border: 2px solid #9b59b6;">
+                <h4 style="color: #9b59b6; margin-bottom: 12px; font-size: 16px;">📊 Compare Current Frame</h4>
+                <p style="color: #ccc; font-size: 13px; margin-bottom: 16px;">
+                    Paste the HTML captured from the bookmarklet to see differences:
+                </p>
+                <textarea id="debugCompareInput" placeholder="Paste captured HTML here..."
+                    style="width: 100%; min-height: 150px; background: #252525; border: 2px solid #444; border-radius: 6px; color: #fff; padding: 12px; font-family: monospace; font-size: 12px; margin-bottom: 12px;"></textarea>
+                <button id="compareDebugBtn" class="btn btn-primary" style="width: 100%;">🔍 Compare & Show Differences</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEBUG RESULTS MODAL -->
+    <div class="diff-panel-overlay" id="debugResultsOverlay" style="display: none;">
+        <div class="diff-panel" style="max-width: 1000px;">
+            <div class="diff-panel-header">
+                <h3 class="diff-panel-title">📊 Debug Comparison Results</h3>
+                <button class="diff-close-btn" id="closeDebugResultsBtn">✕ Close</button>
+            </div>
+
+            <div id="debugResults" style="color: #ccc; font-size: 13px; line-height: 1.6;"></div>
+
+            <div class="btn-group" style="margin-top: 24px;">
+                <button id="copyDebugResultsBtn" class="btn btn-primary">📋 Copy Results</button>
+                <button id="downloadDebugResultsBtn" class="btn btn-secondary">💾 Download Report</button>
             </div>
         </div>
     </div>
@@ -1184,24 +1464,20 @@
             previewIframe = document.getElementById('previewIframe');
             const frame = frames[index];
 
-            // Sanitize HTML to prevent CSP issues and script errors
+            // Use the HTML exactly as-is, only remove scripts for security
             let sanitizedHTML = frame.html;
-
-            // Remove or disable scripts that cause CSP violations
             sanitizedHTML = sanitizedHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
-            // Add meta tag to prevent external resource loading issues
+            // Don't inject ANY styles - let the page render naturally
+            // Only add minimal CSP if needed for security
             if (!sanitizedHTML.includes('<head>')) {
                 sanitizedHTML = sanitizedHTML.replace('<html', '<html><head></head');
             }
 
-            sanitizedHTML = sanitizedHTML.replace('<head>', `<head>
-                <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob: https:; script-src 'none';">
-                <style>
-                    /* Suppress error overlays and ensure smooth rendering */
-                    * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important; }
-                    body { margin: 0; padding: 20px; overflow-x: hidden; }
-                </style>`);
+            if (!sanitizedHTML.includes('Content-Security-Policy')) {
+                sanitizedHTML = sanitizedHTML.replace('<head>', `<head>
+                <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data: blob: https:; script-src 'none';">`);
+            }
 
             const blob = new Blob([sanitizedHTML], {type: 'text/html'});
             const url = URL.createObjectURL(blob);
@@ -1233,6 +1509,7 @@
             document.getElementById('prevFrameBtn').disabled = !hasFrames;
             document.getElementById('nextFrameBtn').disabled = !hasFrames;
             document.getElementById('animationSpeed').disabled = !hasFrames;
+            document.getElementById('fullscreenBtn').disabled = !hasFrames;
         }
 
         document.getElementById('playAnimationBtn').addEventListener('click', playAnimation);
@@ -1546,8 +1823,311 @@
             document.getElementById('jsonInput').click();
         });
 
+        // FULLSCREEN PRESENTATION MODE
+        let isFullscreen = false;
+        let fullscreenInterval = null;
+        let debugMode = false;
+        let resizableElements = [];
+        let currentResizeElement = null;
+        let resizeStartX = 0;
+        let resizeStartWidth = 0;
+
+        document.getElementById('fullscreenBtn').addEventListener('click', enterFullscreen);
+
+        function enterFullscreen() {
+            if (frames.length === 0) return;
+
+            isFullscreen = true;
+            const container = document.getElementById('fullscreenContainer');
+            container.classList.add('active');
+
+            // Display current frame in fullscreen
+            displayFrameFullscreen(currentFrameIndex);
+
+            // Update indicators
+            document.getElementById('fsCurrentFrame').textContent = currentFrameIndex + 1;
+            document.getElementById('fsTotalFrames').textContent = frames.length;
+
+            // Request native fullscreen if available
+            if (container.requestFullscreen) {
+                container.requestFullscreen().catch(err => {
+                    console.log('Fullscreen request failed:', err);
+                });
+            }
+        }
+
+        function exitFullscreen() {
+            isFullscreen = false;
+            stopFullscreenAnimation();
+            document.getElementById('fullscreenContainer').classList.remove('active');
+
+            // Exit native fullscreen if active
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+            }
+        }
+
+        function displayFrameFullscreen(index) {
+            if (index < 0 || index >= frames.length) return;
+
+            const fullscreenIframe = document.getElementById('fullscreenIframe');
+            const frame = frames[index];
+
+            // Use the HTML exactly as-is, only remove scripts for security
+            let sanitizedHTML = frame.html;
+            sanitizedHTML = sanitizedHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+            // Ensure proper head tag exists
+            if (!sanitizedHTML.includes('<head>')) {
+                sanitizedHTML = sanitizedHTML.replace(/<html/i, '<html><head></head');
+            }
+
+            // Inject debug functionality if debug mode is active
+            if (debugMode) {
+                const debugScript = `<style>
+.debug-resize-handle {
+    position: absolute !important;
+    right: -10px !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 20px !important;
+    background: rgba(231, 76, 60, 0.8) !important;
+    cursor: ew-resize !important;
+    z-index: 999998 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: white !important;
+    font-weight: bold !important;
+    font-size: 16px !important;
+}
+.debug-resize-handle:hover {
+    background: rgba(231, 76, 60, 1) !important;
+    width: 30px !important;
+}
+.debug-element-label {
+    position: absolute !important;
+    top: -30px !important;
+    left: 0 !important;
+    background: rgba(231, 76, 60, 0.95) !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    white-space: nowrap !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+}
+.debug-width-display {
+    position: absolute !important;
+    top: -30px !important;
+    right: 0 !important;
+    background: rgba(52, 152, 219, 0.95) !important;
+    color: white !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    z-index: 999999 !important;
+    pointer-events: none !important;
+}
+</style>
+<script>
+(function() {
+    window.addEventListener('load', function() {
+        var foundCount = 0;
+        var currentResizeElement = null;
+        var resizeStartX = 0;
+        var resizeStartWidth = 0;
+
+        var allElements = document.querySelectorAll('*');
+
+        allElements.forEach(function(element) {
+            var hasHorizontalScroll = element.scrollWidth > element.clientWidth;
+
+            if (hasHorizontalScroll && element.clientWidth > 0) {
+                foundCount++;
+
+                element.style.outline = '3px dashed rgba(231, 76, 60, 0.8)';
+
+                if (element.style.position === 'static' || element.style.position === '') {
+                    element.style.position = 'relative';
+                }
+
+                var handle = document.createElement('div');
+                handle.className = 'debug-resize-handle';
+                handle.innerHTML = '↔';
+                element.appendChild(handle);
+
+                var label = document.createElement('div');
+                label.className = 'debug-element-label';
+                var tagName = element.tagName.toLowerCase();
+                var identifier = element.id ? '#' + element.id : element.className ? '.' + element.className.split(' ')[0] : '';
+                label.textContent = tagName + identifier;
+                element.appendChild(label);
+
+                var widthDisplay = document.createElement('div');
+                widthDisplay.className = 'debug-width-display';
+                var currentWidth = element.getBoundingClientRect().width;
+                widthDisplay.textContent = Math.round(currentWidth) + 'px (scroll: ' + element.scrollWidth + 'px)';
+                element.appendChild(widthDisplay);
+
+                handle.addEventListener('mousedown', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentResizeElement = element;
+                    resizeStartX = e.clientX;
+                    resizeStartWidth = element.getBoundingClientRect().width;
+
+                    document.addEventListener('mousemove', mouseMoveHandler);
+                    document.addEventListener('mouseup', mouseUpHandler);
+                });
+
+                function mouseMoveHandler(e) {
+                    if (currentResizeElement) {
+                        var deltaX = e.clientX - resizeStartX;
+                        var newWidth = resizeStartWidth + deltaX;
+                        currentResizeElement.style.width = newWidth + 'px';
+
+                        var currentWidthDisplay = currentResizeElement.querySelector('.debug-width-display');
+                        if (currentWidthDisplay) {
+                            currentWidthDisplay.textContent = Math.round(newWidth) + 'px (scroll: ' + currentResizeElement.scrollWidth + 'px)';
+
+                            if (currentResizeElement.scrollWidth > currentResizeElement.clientWidth) {
+                                currentWidthDisplay.style.background = 'rgba(231, 76, 60, 0.95)';
+                            } else {
+                                currentWidthDisplay.style.background = 'rgba(39, 174, 96, 0.95)';
+                            }
+                        }
+                    }
+                }
+
+                function mouseUpHandler() {
+                    currentResizeElement = null;
+                    document.removeEventListener('mousemove', mouseMoveHandler);
+                    document.removeEventListener('mouseup', mouseUpHandler);
+                }
+            }
+        });
+
+        window.parent.postMessage({type: 'debugCount', count: foundCount}, '*');
+    });
+})();
+<\/script>`;
+
+                sanitizedHTML = sanitizedHTML.replace(/<\/head>/i, debugScript + '</head>');
+            }
+
+            const blob = new Blob([sanitizedHTML], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
+
+            fullscreenIframe.onload = () => {
+                URL.revokeObjectURL(url);
+            };
+            fullscreenIframe.src = url;
+
+            // Update indicator
+            document.getElementById('fsCurrentFrame').textContent = index + 1;
+            currentFrameIndex = index;
+        }
+
+        function playFullscreenAnimation() {
+            if (frames.length === 0) return;
+
+            stopFullscreenAnimation();
+            document.getElementById('fsPlayBtn').style.display = 'none';
+            document.getElementById('fsStopBtn').style.display = 'inline-block';
+
+            let index = currentFrameIndex;
+            fullscreenInterval = setInterval(() => {
+                displayFrameFullscreen(index);
+                index = (index + 1) % frames.length;
+            }, animationSpeed * 1000);
+
+            // Hide controls after starting
+            setTimeout(() => {
+                document.getElementById('fullscreenControls').classList.remove('visible');
+                document.getElementById('fullscreenHelp').classList.remove('visible');
+            }, 2000);
+        }
+
+        function stopFullscreenAnimation() {
+            if (fullscreenInterval) {
+                clearInterval(fullscreenInterval);
+                fullscreenInterval = null;
+            }
+            document.getElementById('fsPlayBtn').style.display = 'inline-block';
+            document.getElementById('fsStopBtn').style.display = 'none';
+        }
+
+        // Fullscreen controls
+        document.getElementById('fsExitBtn').addEventListener('click', exitFullscreen);
+
+        document.getElementById('fsPrevBtn').addEventListener('click', () => {
+            stopFullscreenAnimation();
+            const newIndex = currentFrameIndex > 0 ? currentFrameIndex - 1 : frames.length - 1;
+            displayFrameFullscreen(newIndex);
+        });
+
+        document.getElementById('fsNextBtn').addEventListener('click', () => {
+            stopFullscreenAnimation();
+            const newIndex = currentFrameIndex < frames.length - 1 ? currentFrameIndex + 1 : 0;
+            displayFrameFullscreen(newIndex);
+        });
+
+        document.getElementById('fsPlayBtn').addEventListener('click', playFullscreenAnimation);
+        document.getElementById('fsStopBtn').addEventListener('click', stopFullscreenAnimation);
+
+        // Show controls on mouse move
+        let hideControlsTimeout;
+        document.getElementById('fullscreenContainer').addEventListener('mousemove', () => {
+            const controls = document.getElementById('fullscreenControls');
+            const help = document.getElementById('fullscreenHelp');
+            controls.classList.add('visible');
+            help.classList.add('visible');
+
+            clearTimeout(hideControlsTimeout);
+            hideControlsTimeout = setTimeout(() => {
+                if (fullscreenInterval) {
+                    controls.classList.remove('visible');
+                    help.classList.remove('visible');
+                }
+            }, 3000);
+        });
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
+            // Fullscreen mode shortcuts
+            if (isFullscreen) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    if (debugMode) {
+                        toggleDebugMode();
+                    } else {
+                        exitFullscreen();
+                    }
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    document.getElementById('fsPrevBtn').click();
+                } else if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    document.getElementById('fsNextBtn').click();
+                } else if (e.key === ' ') {
+                    e.preventDefault();
+                    if (fullscreenInterval) {
+                        stopFullscreenAnimation();
+                    } else {
+                        playFullscreenAnimation();
+                    }
+                } else if (e.key === 'd' || e.key === 'D') {
+                    e.preventDefault();
+                    toggleDebugMode();
+                }
+                return;
+            }
+
+            // Normal mode shortcuts
             if (currentMode !== 'animation' || frames.length === 0) return;
 
             if (e.key === 'ArrowLeft' || e.key === '[') {
@@ -1566,6 +2146,240 @@
             } else if (e.key === 'Escape') {
                 hideDiffPanel();
             }
+        });
+
+        // DEBUG MODE FUNCTIONS
+        document.getElementById('fsDebugBtn').addEventListener('click', toggleDebugMode);
+
+        // Listen for messages from iframe
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'debugCount') {
+                const overlay = document.getElementById('debugModeOverlay');
+                const count = event.data.count;
+                overlay.textContent = `🔧 DEBUG MODE: ${count} element${count !== 1 ? 's' : ''} with horizontal scrollbars`;
+            }
+        });
+
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            const overlay = document.getElementById('debugModeOverlay');
+            const btn = document.getElementById('fsDebugBtn');
+
+            if (debugMode) {
+                overlay.classList.add('active');
+                overlay.textContent = '🔧 DEBUG MODE: Scanning...';
+                btn.style.background = '#27ae60';
+                btn.textContent = '✓ Debug Active';
+                // Reload the frame with debug mode enabled
+                displayFrameFullscreen(currentFrameIndex);
+            } else {
+                overlay.classList.remove('active');
+                btn.style.background = 'rgba(231, 76, 60, 0.95)';
+                btn.textContent = '🔧 Debug Scrollbars';
+                // Reload the frame without debug mode
+                displayFrameFullscreen(currentFrameIndex);
+            }
+        }
+
+        // DEBUG BOOKMARKLET FUNCTIONALITY
+        let debugCapturedHTML = '';
+
+        document.getElementById('showDebugBookmarklet').addEventListener('click', () => {
+            document.getElementById('debugBookmarkletOverlay').style.display = 'flex';
+        });
+
+        document.getElementById('closeDebugBookmarkletBtn').addEventListener('click', () => {
+            document.getElementById('debugBookmarkletOverlay').style.display = 'none';
+        });
+
+        document.getElementById('closeDebugResultsBtn').addEventListener('click', () => {
+            document.getElementById('debugResultsOverlay').style.display = 'none';
+        });
+
+        document.getElementById('compareDebugBtn').addEventListener('click', () => {
+            const capturedHTML = document.getElementById('debugCompareInput').value.trim();
+
+            if (!capturedHTML) {
+                alert('Please paste the captured HTML first!');
+                return;
+            }
+
+            if (frames.length === 0 || currentFrameIndex < 0) {
+                alert('No frame is currently displayed. Please load and select a frame first.');
+                return;
+            }
+
+            // Get current frame HTML
+            const currentFrame = frames[currentFrameIndex];
+            performDebugComparison(capturedHTML, currentFrame.html);
+        });
+
+        function performDebugComparison(originalHTML, animatorHTML) {
+            const results = [];
+
+            results.push('# 🐛 Animator Debug Comparison Report');
+            results.push('');
+            results.push(`**Generated:** ${new Date().toISOString()}`);
+            results.push(`**Frame:** ${currentFrameIndex + 1} / ${frames.length}`);
+            results.push(`**Frame Name:** ${frames[currentFrameIndex].name}`);
+            results.push('');
+            results.push('---');
+            results.push('');
+
+            // Size comparison
+            results.push('## 📏 Size Comparison');
+            results.push('');
+            results.push(`- **Original HTML:** ${originalHTML.length.toLocaleString()} characters`);
+            results.push(`- **Animator HTML:** ${animatorHTML.length.toLocaleString()} characters`);
+            results.push(`- **Difference:** ${(animatorHTML.length - originalHTML.length).toLocaleString()} characters`);
+            results.push('');
+
+            // Parse both HTMLs
+            const parser = new DOMParser();
+            const originalDoc = parser.parseFromString(originalHTML, 'text/html');
+            const animatorDoc = parser.parseFromString(animatorHTML, 'text/html');
+
+            // Head comparison
+            results.push('## 📋 Head Elements');
+            results.push('');
+            const originalHead = Array.from(originalDoc.head.children).map(el => el.tagName + (el.id ? `#${el.id}` : '') + (el.className ? `.${el.className}` : '')).join(', ');
+            const animatorHead = Array.from(animatorDoc.head.children).map(el => el.tagName + (el.id ? `#${el.id}` : '') + (el.className ? `.${el.className}` : '')).join(', ');
+
+            results.push(`- **Original:** ${originalHead}`);
+            results.push(`- **Animator:** ${animatorHead}`);
+            results.push('');
+
+            // Body classes
+            results.push('## 🎨 Body Attributes');
+            results.push('');
+            results.push(`- **Original body class:** "${originalDoc.body.className}"`);
+            results.push(`- **Animator body class:** "${animatorDoc.body.className}"`);
+            results.push(`- **Original body style:** "${originalDoc.body.getAttribute('style') || 'none'}"`);
+            results.push(`- **Animator body style:** "${animatorDoc.body.getAttribute('style') || 'none'}"`);
+            results.push('');
+
+            // Script tags
+            const originalScripts = originalDoc.querySelectorAll('script').length;
+            const animatorScripts = animatorDoc.querySelectorAll('script').length;
+            results.push('## 📜 Scripts');
+            results.push('');
+            results.push(`- **Original scripts:** ${originalScripts}`);
+            results.push(`- **Animator scripts:** ${animatorScripts} (scripts are removed for security)`);
+            results.push('');
+
+            // Style tags and links
+            const originalStyles = originalDoc.querySelectorAll('style, link[rel="stylesheet"]').length;
+            const animatorStyles = animatorDoc.querySelectorAll('style, link[rel="stylesheet"]').length;
+            results.push('## 🎨 Styles');
+            results.push('');
+            results.push(`- **Original style elements:** ${originalStyles}`);
+            results.push(`- **Animator style elements:** ${animatorStyles}`);
+            results.push('');
+
+            // Element count
+            const originalElements = originalDoc.querySelectorAll('*').length;
+            const animatorElements = animatorDoc.querySelectorAll('*').length;
+            results.push('## 🏗️ DOM Structure');
+            results.push('');
+            results.push(`- **Original total elements:** ${originalElements}`);
+            results.push(`- **Animator total elements:** ${animatorElements}`);
+            results.push(`- **Difference:** ${animatorElements - originalElements} elements`);
+            results.push('');
+
+            // Find styling differences
+            results.push('## 🔍 Key Differences Found');
+            results.push('');
+
+            const differences = [];
+
+            // Check for overflow/height changes
+            const originalBodyStyle = window.getComputedStyle(originalDoc.body);
+            const animatorBodyStyle = window.getComputedStyle(animatorDoc.body);
+
+            if (originalDoc.body.style.overflow !== animatorDoc.body.style.overflow) {
+                differences.push(`- Body overflow changed: "${originalDoc.body.style.overflow}" → "${animatorDoc.body.style.overflow}"`);
+            }
+
+            if (originalDoc.body.style.height !== animatorDoc.body.style.height) {
+                differences.push(`- Body height changed: "${originalDoc.body.style.height}" → "${animatorDoc.body.style.height}"`);
+            }
+
+            if (originalScripts !== animatorScripts) {
+                differences.push(`- Scripts removed: ${originalScripts - animatorScripts} script tags stripped for security`);
+            }
+
+            // Check for added CSP
+            const originalCSP = originalDoc.querySelector('meta[http-equiv="Content-Security-Policy"]');
+            const animatorCSP = animatorDoc.querySelector('meta[http-equiv="Content-Security-Policy"]');
+
+            if (!originalCSP && animatorCSP) {
+                differences.push('- Content Security Policy meta tag added by animator');
+            }
+
+            // Check for style additions
+            const animatorAddedStyles = animatorDoc.querySelectorAll('head style');
+            animatorAddedStyles.forEach((style, idx) => {
+                if (style.textContent.includes('overflow: auto')) {
+                    differences.push('- Overflow styling added to enable scrolling');
+                }
+            });
+
+            if (differences.length === 0) {
+                results.push('✅ No significant differences detected!');
+            } else {
+                results.push(differences.join('\n'));
+            }
+
+            results.push('');
+            results.push('---');
+            results.push('');
+            results.push('## 💡 Recommendations');
+            results.push('');
+
+            if (animatorScripts < originalScripts) {
+                results.push('- ✅ Scripts are correctly removed for security');
+            }
+
+            if (originalElements !== animatorElements) {
+                results.push('- ⚠️ Element count mismatch - check if DOM structure is preserved');
+            }
+
+            results.push('');
+            results.push('**Copy this report and share it for debugging!**');
+
+            // Display results
+            const resultsHTML = results.join('\n').replace(/\n/g, '<br>').replace(/#{2,}/g, (match) => {
+                return '</div><div style="margin-top: 20px;"><strong style="color: #9b59b6; font-size: 18px;">';
+            }).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            document.getElementById('debugResults').innerHTML = `<div>${resultsHTML}</div>`;
+            document.getElementById('debugBookmarkletOverlay').style.display = 'none';
+            document.getElementById('debugResultsOverlay').style.display = 'flex';
+
+            debugCapturedHTML = results.join('\n');
+        }
+
+        document.getElementById('copyDebugResultsBtn').addEventListener('click', () => {
+            const textarea = document.createElement('textarea');
+            textarea.value = debugCapturedHTML;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('Debug report copied to clipboard! ✓');
+        });
+
+        document.getElementById('downloadDebugResultsBtn').addEventListener('click', () => {
+            const blob = new Blob([debugCapturedHTML], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+            a.download = `animator-debug-${timestamp}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
 
         // Initialize
