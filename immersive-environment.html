@@ -676,6 +676,9 @@
             <div class="monitor-glow" id="monitorGlow"></div>
             <div class="screen-container" id="screenContainer">
                 <iframe id="bootFrame" src="" style="display: none;"></iframe>
+                <button class="fullscreen-toggle" id="fullscreenBtn" onclick="toggleFullscreen()" style="position: absolute; top: 25px; right: 25px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; opacity: 0; transition: opacity 0.3s; z-index: 10;">
+                    ⛶ Maximize
+                </button>
             </div>
             <div class="computer-unit" id="computerUnit">
                 <!-- Will be populated based on era -->
