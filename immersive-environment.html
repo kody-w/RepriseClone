@@ -811,6 +811,11 @@
             // Minimize control panel to not block view
             document.querySelector('.control-panel').classList.add('minimized');
 
+            // Show fullscreen toggle button
+            setTimeout(() => {
+                document.getElementById('fullscreenBtn').style.opacity = '0.7';
+            }, 1000);
+
             // Hide status display after a moment
             setTimeout(() => {
                 document.querySelector('.status-display').style.opacity = '0';
@@ -820,6 +825,34 @@
             frame.addEventListener('load', () => {
                 updateStatus('Boot simulation loaded - interact with screen');
             });
+        }
+
+        function toggleFullscreen() {
+            const container = document.getElementById('screenContainer');
+            const btn = document.getElementById('fullscreenBtn');
+
+            if (container.classList.contains('fullscreen')) {
+                container.classList.remove('fullscreen');
+                container.style.position = 'absolute';
+                container.style.top = 'auto';
+                container.style.left = '50%';
+                container.style.transform = 'translateX(-50%) scale(1.2)';
+                container.style.width = '800px';
+                container.style.height = '600px';
+                container.style.bottom = '10%';
+                btn.textContent = '⛶ Maximize';
+            } else {
+                container.classList.add('fullscreen');
+                container.style.position = 'fixed';
+                container.style.top = '50%';
+                container.style.left = '50%';
+                container.style.transform = 'translate(-50%, -50%)';
+                container.style.width = '95vw';
+                container.style.height = '95vh';
+                container.style.bottom = 'auto';
+                container.style.zIndex = '2000';
+                btn.textContent = '⛶ Restore';
+            }
         }
 
         function selectEnvironment(era) {
