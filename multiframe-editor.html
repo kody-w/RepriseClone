@@ -329,7 +329,12 @@
 <body>
     <div class="editor-header">
         <h2>🎯 Multi-Frame Editor</h2>
-        <button class="close-btn" onclick="window.close()">✕ Close Window</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="file" id="jsonUploadInput" accept=".json" style="display: none;">
+            <button class="btn btn-primary" onclick="document.getElementById('jsonUploadInput').click()" style="padding: 8px 16px;">📁 Import JSON</button>
+            <button class="btn btn-success" id="exportJsonBtn" style="padding: 8px 16px;" disabled>💾 Export JSON</button>
+            <button class="close-btn" onclick="window.close()">✕ Close Window</button>
+        </div>
     </div>
 
     <div class="editor-main">
@@ -349,7 +354,7 @@
 
             <div class="frame-preview-section">
                 <h4 class="section-title" style="margin-bottom: 12px;">🖼️ Frame Preview</h4>
-                <div id="multiFramePreviewContainer" class="preview-container"></div>
+                <iframe id="multiFramePreviewIframe" style="width: 100%; height: 100%; border: none; border-radius: 6px; background: white;"></iframe>
             </div>
         </div>
 
@@ -388,17 +393,132 @@
         let multiFrameSelections = [];
         let elementGroups = [];
 
-        // Load frames from opener
+        // Try to load frames from opener, otherwise wait for JSON upload
         if (window.opener && window.opener.getFramesForMultiFrameEditor) {
-            frames = window.opener.getFramesForMultiFrameEditor();
-            if (frames && frames.length > 0) {
-                initMultiFrameMode();
-            } else {
-                alert('No frames available to edit.');
+            try {
+                frames = window.opener.getFramesForMultiFrameEditor();
+                console.log('Loaded frames from parent window:', frames.length);
+                if (frames && frames.length > 0) {
+                    initMultiFrameMode();
+                    document.getElementById('exportJsonBtn').disabled = false;
+                } else {
+                    showUploadMessage();
+                }
+            } catch (e) {
+                console.error('Error loading from parent:', e);
+                showUploadMessage();
             }
         } else {
-            alert('Unable to load frames from parent window. Please make sure the animator window is still open.');
+            showUploadMessage();
         }
+
+        function showUploadMessage() {
+            const iframe = document.getElementById('multiFramePreviewIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(`
+                <html>
+                <head>
+                    <style>
+                        body {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100vh;
+                            margin: 0;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                            background: #f5f5f5;
+                        }
+                        .message {
+                            text-align: center;
+                            padding: 40px;
+                            background: white;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                        }
+                        .icon {
+                            font-size: 64px;
+                            margin-bottom: 20px;
+                        }
+                        h2 {
+                            color: #333;
+                            margin: 0 0 10px 0;
+                        }
+                        p {
+                            color: #666;
+                            margin: 0;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="message">
+                        <div class="icon">📁</div>
+                        <h2>Import Frames JSON</h2>
+                        <p>Click "Import JSON" above to load your frames</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            iframeDoc.close();
+        }
+
+        // JSON Upload Handler
+        document.getElementById('jsonUploadInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            try {
+                const text = await file.text();
+                const data = JSON.parse(text);
+
+                // Check if it's array format or object format
+                if (Array.isArray(data)) {
+                    frames = data;
+                } else if (data.frames && Array.isArray(data.frames)) {
+                    frames = data.frames;
+                } else {
+                    alert('Invalid JSON format. Expected array of frames or object with "frames" property.');
+                    return;
+                }
+
+                console.log('Loaded', frames.length, 'frames from JSON file');
+
+                if (frames.length > 0) {
+                    initMultiFrameMode();
+                    document.getElementById('exportJsonBtn').disabled = false;
+                } else {
+                    alert('No frames found in JSON file.');
+                }
+            } catch (err) {
+                console.error('Error loading JSON:', err);
+                alert('Error loading JSON file: ' + err.message);
+            }
+        });
+
+        // JSON Export Handler
+        document.getElementById('exportJsonBtn').addEventListener('click', () => {
+            if (frames.length === 0) {
+                alert('No frames to export');
+                return;
+            }
+
+            const json = JSON.stringify(frames, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited-frames-' + Date.now() + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Also send back to parent window if available
+            if (window.opener && window.opener.updateFramesFromMultiFrameEditor) {
+                window.opener.updateFramesFromMultiFrameEditor(frames);
+                console.log('Updated parent window with edited frames');
+            }
+        });
 
         function initMultiFrameMode() {
             if (frames.length === 0) {
@@ -415,56 +535,108 @@
         }
 
         function renderMultiFramePreview() {
-            const container = document.getElementById('multiFramePreviewContainer');
-            if (!container || frames.length === 0) return;
+            const iframe = document.getElementById('multiFramePreviewIframe');
+            if (!iframe || frames.length === 0) {
+                console.error('Iframe not found or no frames');
+                return;
+            }
 
             const frame = frames[multiFrameCurrentIndex];
-            container.innerHTML = frame.html;
+            console.log('Rendering frame:', multiFrameCurrentIndex, 'Name:', frame.name);
 
-            // Make all text-containing elements clickable
-            const allElements = container.querySelectorAll('*');
-            allElements.forEach((el, index) => {
-                // Only make clickable if has direct text content
-                const hasText = Array.from(el.childNodes).some(
-                    node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
-                );
+            // Remove scripts for security but keep everything else
+            let sanitizedHTML = frame.html;
+            sanitizedHTML = sanitizedHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
 
-                if (hasText) {
-                    el.style.cursor = 'pointer';
-                    el.style.transition = 'all 0.2s';
+            // Create blob URL and load into iframe
+            const blob = new Blob([sanitizedHTML], {type: 'text/html'});
+            const url = URL.createObjectURL(blob);
 
-                    // Check if this element is already selected
-                    const isSelected = multiFrameSelections.some(
-                        sel => sel.frameIndex === multiFrameCurrentIndex &&
-                               sel.path === getElementPath(el)
+            iframe.onload = () => {
+                URL.revokeObjectURL(url);
+                console.log('Iframe loaded, making elements clickable...');
+
+                // Access iframe document
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                if (!iframeDoc) {
+                    console.error('Cannot access iframe document');
+                    return;
+                }
+
+                // Make all text-containing elements clickable
+                const allElements = iframeDoc.querySelectorAll('*');
+                console.log('Found', allElements.length, 'total elements in iframe');
+
+                let clickableCount = 0;
+                allElements.forEach((el) => {
+                    // Only make clickable if has direct text content
+                    const hasText = Array.from(el.childNodes).some(
+                        node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
                     );
 
-                    if (isSelected) {
-                        el.style.outline = '3px solid #27ae60';
-                        el.style.background = 'rgba(39, 174, 96, 0.1)';
+                    if (hasText) {
+                        clickableCount++;
+                        el.style.cursor = 'pointer';
+                        el.style.transition = 'all 0.2s';
+
+                        // Check if this element is already selected
+                        const isSelected = multiFrameSelections.some(
+                            sel => sel.frameIndex === multiFrameCurrentIndex &&
+                                   sel.path === getElementPathInIframe(el, iframeDoc)
+                        );
+
+                        if (isSelected) {
+                            el.style.outline = '3px solid #27ae60';
+                            el.style.background = 'rgba(39, 174, 96, 0.1)';
+                        }
+
+                        el.addEventListener('mouseenter', () => {
+                            if (!isSelected) {
+                                el.style.outline = '2px solid #667eea';
+                                el.style.background = 'rgba(102, 126, 234, 0.1)';
+                            }
+                        });
+
+                        el.addEventListener('mouseleave', () => {
+                            if (!isSelected) {
+                                el.style.outline = '';
+                                el.style.background = '';
+                            }
+                        });
+
+                        el.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            console.log('Element clicked:', el.tagName, el.textContent.substring(0, 50));
+                            handleElementSelection(el, iframeDoc);
+                        });
                     }
+                });
 
-                    el.addEventListener('mouseenter', () => {
-                        if (!isSelected) {
-                            el.style.outline = '2px solid #667eea';
-                            el.style.background = 'rgba(102, 126, 234, 0.1)';
-                        }
-                    });
+                console.log('Made', clickableCount, 'elements clickable');
+            };
 
-                    el.addEventListener('mouseleave', () => {
-                        if (!isSelected) {
-                            el.style.outline = '';
-                            el.style.background = '';
-                        }
-                    });
+            iframe.src = url;
+        }
 
-                    el.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        handleElementSelection(el);
-                    });
+        function getElementPathInIframe(element, iframeDoc) {
+            const path = [];
+            let current = element;
+            while (current && current.tagName && current !== iframeDoc.body && current !== iframeDoc.documentElement) {
+                let selector = current.tagName.toLowerCase();
+                if (current.id) {
+                    selector += '#' + current.id;
+                } else if (current.className) {
+                    selector += '.' + Array.from(current.classList).join('.');
                 }
-            });
+                // Add index among siblings
+                const siblings = Array.from(current.parentNode?.children || []);
+                const index = siblings.indexOf(current);
+                selector += `[${index}]`;
+                path.unshift(selector);
+                current = current.parentNode;
+            }
+            return path.join(' > ');
         }
 
         function getElementPath(element) {
@@ -487,12 +659,15 @@
             return path.join(' > ');
         }
 
-        function handleElementSelection(element) {
-            const path = getElementPath(element);
+        function handleElementSelection(element, iframeDoc) {
+            console.log('handleElementSelection called');
+            const path = getElementPathInIframe(element, iframeDoc);
             const text = element.textContent.trim();
             const tag = element.tagName.toLowerCase();
             const classes = Array.from(element.classList).join(' ');
             const id = element.id;
+
+            console.log('Element details:', {tag, text: text.substring(0, 50), path});
 
             // Check if already selected
             const existingIndex = multiFrameSelections.findIndex(
@@ -501,11 +676,13 @@
 
             if (existingIndex > -1) {
                 // Deselect
+                console.log('Deselecting element');
                 multiFrameSelections.splice(existingIndex, 1);
                 element.style.outline = '';
                 element.style.background = '';
             } else {
                 // Select
+                console.log('Selecting element');
                 multiFrameSelections.push({
                     frameIndex: multiFrameCurrentIndex,
                     frameName: frames[multiFrameCurrentIndex].name,
@@ -520,6 +697,7 @@
                 element.style.background = 'rgba(39, 174, 96, 0.1)';
             }
 
+            console.log('Total selections:', multiFrameSelections.length);
             updateMultiFrameUI();
         }
 
