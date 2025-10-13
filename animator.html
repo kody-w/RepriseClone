@@ -1132,8 +1132,15 @@
                         </div>
 
                         <div style="background: #1a1a1a; padding: 16px; border-radius: 8px; flex: 1; overflow: auto; display: flex; flex-direction: column;">
-                            <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">🖼️ Frame Preview</h4>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                <h4 style="color: #9b59b6; margin: 0; font-size: 14px;">🖼️ Frame Preview</h4>
+                                <div style="display: flex; gap: 8px;">
+                                    <button id="visualViewBtn" class="btn" style="padding: 4px 12px; font-size: 11px; background: #667eea; color: white;">Visual</button>
+                                    <button id="treeViewBtn" class="btn" style="padding: 4px 12px; font-size: 11px; background: transparent; border: 1px solid #667eea; color: #667eea;">Tree</button>
+                                </div>
+                            </div>
                             <iframe id="multiFramePreviewIframe" style="width: 100%; flex: 1; min-height: 400px; border: none; border-radius: 6px; background: white;"></iframe>
+                            <div id="treeViewContainer" style="display: none; width: 100%; flex: 1; min-height: 400px; overflow: auto; background: #0d1117; border-radius: 6px; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8;"></div>
                         </div>
                     </div>
 
@@ -1150,7 +1157,8 @@
                         </div>
 
                         <div style="background: #1a1a1a; padding: 16px; border-radius: 8px;">
-                            <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">🔧 Group & Edit</h4>
+                            <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">🔧 Actions</h4>
+                            <button id="duplicateElementsBtn" class="btn" style="width: 100%; margin-bottom: 8px; background: #f39c12; color: white;" disabled>📋 Duplicate & Append</button>
                             <button id="groupElementsBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" disabled>📊 Group Similar Elements</button>
                             <button id="applyMultiFrameEditsBtn" class="btn" style="width: 100%; background: #27ae60; color: white;" disabled>✓ Apply to All Frames</button>
                         </div>
@@ -2709,6 +2717,9 @@
         let multiFrameCurrentIndex = 0;
         let multiFrameSelections = []; // Array of {frameIndex, element, text, path, tag, classes, id}
         let elementGroups = []; // Array of grouped elements {groupId, elements[], newText}
+        let currentViewMode = 'visual'; // 'visual' or 'tree'
+        let draggedElement = null;
+        let draggedElementNode = null;
 
         // Mode switching
         document.getElementById('htmlEditModeBtn').addEventListener('click', () => {
@@ -3220,10 +3231,33 @@
             multiFrameCurrentIndex = 0;
             multiFrameSelections = [];
             elementGroups = [];
+            currentViewMode = 'visual';
             document.getElementById('groupingPanel').style.display = 'none';
             renderMultiFramePreview();
             updateMultiFrameUI();
         }
+
+        // View mode toggle
+        document.getElementById('visualViewBtn').addEventListener('click', () => {
+            currentViewMode = 'visual';
+            document.getElementById('visualViewBtn').style.background = '#667eea';
+            document.getElementById('visualViewBtn').style.color = 'white';
+            document.getElementById('treeViewBtn').style.background = 'transparent';
+            document.getElementById('treeViewBtn').style.color = '#667eea';
+            document.getElementById('multiFramePreviewIframe').style.display = 'block';
+            document.getElementById('treeViewContainer').style.display = 'none';
+        });
+
+        document.getElementById('treeViewBtn').addEventListener('click', () => {
+            currentViewMode = 'tree';
+            document.getElementById('treeViewBtn').style.background = '#667eea';
+            document.getElementById('treeViewBtn').style.color = 'white';
+            document.getElementById('visualViewBtn').style.background = 'transparent';
+            document.getElementById('visualViewBtn').style.color = '#667eea';
+            document.getElementById('multiFramePreviewIframe').style.display = 'none';
+            document.getElementById('treeViewContainer').style.display = 'block';
+            renderTreeView();
+        });
 
         function renderMultiFramePreview() {
             const iframe = document.getElementById('multiFramePreviewIframe');
@@ -3313,6 +3347,138 @@
                     console.log('Made', clickableCount, 'elements clickable');
                 }, 100);
             };
+        }
+
+        function renderTreeView() {
+            const container = document.getElementById('treeViewContainer');
+            if (!container || frames.length === 0) return;
+
+            const frame = frames[multiFrameCurrentIndex];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(frame.html, 'text/html');
+
+            container.innerHTML = '';
+
+            // Render body children
+            if (doc.body) {
+                renderTreeNode(doc.body, container, 0);
+            }
+        }
+
+        function renderTreeNode(node, parentContainer, depth) {
+            // Skip text nodes, comments, and scripts
+            if (node.nodeType !== Node.ELEMENT_NODE) return;
+            if (node.tagName.toLowerCase() === 'script') return;
+
+            const indent = depth * 20;
+            const nodeDiv = document.createElement('div');
+            nodeDiv.style.cssText = `
+                padding: 6px 8px 6px ${indent + 8}px;
+                margin: 2px 0;
+                cursor: move;
+                background: #161b22;
+                border: 1px solid #30363d;
+                border-radius: 6px;
+                transition: all 0.2s;
+                user-select: none;
+            `;
+            nodeDiv.draggable = true;
+
+            // Store reference to the actual DOM node
+            nodeDiv.dataset.nodeId = Math.random().toString(36).substr(2, 9);
+            nodeDiv.__domNode = node;
+
+            // Get element info
+            const tag = node.tagName.toLowerCase();
+            const classes = node.className ? `.${Array.from(node.classList).join('.')}` : '';
+            const id = node.id ? `#${node.id}` : '';
+            const textContent = node.childNodes.length > 0 && node.childNodes[0].nodeType === Node.TEXT_NODE
+                ? node.childNodes[0].textContent.trim().substring(0, 50)
+                : '';
+
+            // Build display text
+            let displayText = `<span style="color: #8b949e;">&lt;</span><span style="color: #7ee787;">${tag}</span>`;
+            if (id) displayText += `<span style="color: #79c0ff;">${id}</span>`;
+            if (classes) displayText += `<span style="color: #ffa657;">${classes}</span>`;
+            displayText += `<span style="color: #8b949e;">&gt;</span>`;
+            if (textContent) displayText += ` <span style="color: #a5d6ff;">"${textContent}${textContent.length >= 50 ? '...' : ''}"</span>`;
+
+            nodeDiv.innerHTML = displayText;
+
+            // Drag and drop handlers
+            nodeDiv.addEventListener('dragstart', (e) => {
+                draggedElement = nodeDiv;
+                draggedElementNode = node;
+                nodeDiv.style.opacity = '0.5';
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            nodeDiv.addEventListener('dragend', () => {
+                nodeDiv.style.opacity = '1';
+                draggedElement = null;
+                draggedElementNode = null;
+            });
+
+            nodeDiv.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                if (draggedElement && draggedElement !== nodeDiv) {
+                    nodeDiv.style.background = '#1f6feb';
+                }
+            });
+
+            nodeDiv.addEventListener('dragleave', () => {
+                nodeDiv.style.background = '#161b22';
+            });
+
+            nodeDiv.addEventListener('drop', (e) => {
+                e.preventDefault();
+                nodeDiv.style.background = '#161b22';
+
+                if (!draggedElement || !draggedElementNode || draggedElement === nodeDiv) return;
+
+                const targetNode = nodeDiv.__domNode;
+
+                // Move the dragged node after the target node
+                if (draggedElementNode.parentNode && targetNode.parentNode) {
+                    if (targetNode.nextSibling) {
+                        targetNode.parentNode.insertBefore(draggedElementNode, targetNode.nextSibling);
+                    } else {
+                        targetNode.parentNode.appendChild(draggedElementNode);
+                    }
+
+                    // Update the frame HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(frames[multiFrameCurrentIndex].html, 'text/html');
+                    frames[multiFrameCurrentIndex].html = doc.documentElement.outerHTML;
+
+                    // Re-render tree view
+                    renderTreeView();
+
+                    // Also update the main frame display if viewing same frame
+                    if (currentFrameIndex === multiFrameCurrentIndex) {
+                        displayFrame(currentFrameIndex);
+                    }
+                }
+            });
+
+            // Click to select
+            nodeDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (nodeDiv.style.borderColor === 'rgb(39, 174, 96)') {
+                    nodeDiv.style.borderColor = '#30363d';
+                } else {
+                    nodeDiv.style.borderColor = '#27ae60';
+                    nodeDiv.style.borderWidth = '2px';
+                }
+            });
+
+            parentContainer.appendChild(nodeDiv);
+
+            // Recursively render children
+            Array.from(node.children).forEach(child => {
+                renderTreeNode(child, parentContainer, depth + 1);
+            });
         }
 
         function getElementPathInIframe(element, iframeDoc) {
@@ -3445,6 +3611,7 @@
             }
 
             // Enable/disable buttons
+            document.getElementById('duplicateElementsBtn').disabled = multiFrameSelections.length === 0;
             document.getElementById('groupElementsBtn').disabled = multiFrameSelections.length < 2;
             document.getElementById('clearSelectionsBtn').disabled = multiFrameSelections.length === 0;
         }
@@ -3453,7 +3620,11 @@
         document.getElementById('multiFramePrevBtn').addEventListener('click', () => {
             if (multiFrameCurrentIndex > 0) {
                 multiFrameCurrentIndex--;
-                renderMultiFramePreview();
+                if (currentViewMode === 'visual') {
+                    renderMultiFramePreview();
+                } else {
+                    renderTreeView();
+                }
                 updateMultiFrameUI();
             }
         });
@@ -3461,7 +3632,11 @@
         document.getElementById('multiFrameNextBtn').addEventListener('click', () => {
             if (multiFrameCurrentIndex < frames.length - 1) {
                 multiFrameCurrentIndex++;
-                renderMultiFramePreview();
+                if (currentViewMode === 'visual') {
+                    renderMultiFramePreview();
+                } else {
+                    renderTreeView();
+                }
                 updateMultiFrameUI();
             }
         });
@@ -3475,6 +3650,81 @@
                 renderMultiFramePreview();
                 updateMultiFrameUI();
             }
+        });
+
+        // Duplicate elements
+        document.getElementById('duplicateElementsBtn').addEventListener('click', () => {
+            if (multiFrameSelections.length === 0) return;
+
+            let totalDuplicated = 0;
+            const framesWithSelections = new Map();
+
+            // Group selections by frame
+            multiFrameSelections.forEach(sel => {
+                if (!framesWithSelections.has(sel.frameIndex)) {
+                    framesWithSelections.set(sel.frameIndex, []);
+                }
+                framesWithSelections.get(sel.frameIndex).push(sel);
+            });
+
+            // Process each frame
+            framesWithSelections.forEach((selections, frameIndex) => {
+                const frame = frames[frameIndex];
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(frame.html, 'text/html');
+
+                // Sort selections by path depth (deepest first) to avoid duplication issues
+                selections.sort((a, b) => b.path.split('>').length - a.path.split('>').length);
+
+                selections.forEach(sel => {
+                    // Find the element by tag and text content
+                    const elements = doc.querySelectorAll(sel.tag);
+
+                    elements.forEach(el => {
+                        if (el.textContent.trim() === sel.text.trim()) {
+                            // Clone the element
+                            const clone = el.cloneNode(true);
+
+                            // Insert the clone right after the original
+                            if (el.parentNode) {
+                                if (el.nextSibling) {
+                                    el.parentNode.insertBefore(clone, el.nextSibling);
+                                } else {
+                                    el.parentNode.appendChild(clone);
+                                }
+                                totalDuplicated++;
+                            }
+                        }
+                    });
+                });
+
+                // Update the frame with modified HTML
+                frames[frameIndex].html = doc.documentElement.outerHTML;
+            });
+
+            // Refresh current frame display
+            if (currentFrameIndex >= 0 && currentFrameIndex < frames.length) {
+                displayFrame(currentFrameIndex);
+            }
+
+            // Refresh multi-frame preview if we're on one of the modified frames
+            if (framesWithSelections.has(multiFrameCurrentIndex)) {
+                renderMultiFramePreview();
+            }
+
+            // Show feedback
+            const btn = document.getElementById('duplicateElementsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = `✓ Duplicated ${totalDuplicated} element${totalDuplicated !== 1 ? 's' : ''}!`;
+            btn.style.background = '#27ae60';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 2000);
+
+            // Clear selections
+            multiFrameSelections = [];
+            updateMultiFrameUI();
         });
 
         // Group elements
