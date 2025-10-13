@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Frame Editor</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .editor-header h2 {
+            color: white;
+            margin: 0;
+            flex: 1;
+            font-size: 24px;
+        }
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .editor-panel {
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .nav-section {
+            background: #1a1a1a;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .frame-preview-section {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 16px;
+            border-radius: 8px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-container {
+            background: #fff;
+            border-radius: 6px;
+            padding: 16px;
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+
+        .selections-section {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-y: auto;
+        }
+
+        .actions-section {
+            background: #1a1a1a;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .grouping-panel {
+            margin-top: 20px;
+            background: #2d2d2d;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-primary:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #444;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-success:disabled {
+            background: #444;
+            color: #888;
+            cursor: not-allowed;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            color: #9b59b6;
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .section-count {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .nav-info {
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .selection-item {
+            background: #252525;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #444;
+            margin-bottom: 8px;
+        }
+
+        .selection-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 6px;
+        }
+
+        .selection-tag {
+            color: #667eea;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .selection-frame {
+            color: #999;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .selection-text {
+            color: #ccc;
+            font-size: 12px;
+            margin-top: 4px;
+            max-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .group-item {
+            background: #252525;
+            padding: 16px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            margin-bottom: 12px;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .group-title {
+            color: #667eea;
+            margin: 0 0 4px 0;
+            font-size: 14px;
+        }
+
+        .group-info {
+            color: #999;
+            font-size: 11px;
+            margin: 0;
+        }
+
+        .group-frames {
+            color: #666;
+            font-size: 11px;
+            margin: 4px 0 0 0;
+        }
+
+        .group-textarea {
+            width: 100%;
+            padding: 8px;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 12px;
+            min-height: 60px;
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 8px;
+        }
+
+        .group-elements {
+            font-size: 11px;
+            color: #666;
+            max-height: 100px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .group-element-item {
+            margin-bottom: 4px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .empty-message {
+            color: #666;
+            font-size: 13px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .close-btn {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-header">
+        <h2>🎯 Multi-Frame Editor</h2>
+        <button class="close-btn" onclick="window.close()">✕ Close Window</button>
+    </div>
+
+    <div class="editor-main">
+        <!-- Left Panel: Frame Navigation & Preview -->
+        <div class="left-panel">
+            <div class="nav-section">
+                <div class="section-header">
+                    <h4 class="section-title">🎬 Frame Navigation</h4>
+                    <span class="section-count" id="multiFrameProgress">0 / 0</span>
+                </div>
+                <div class="nav-buttons">
+                    <button id="multiFramePrevBtn" class="btn btn-secondary" style="flex: 1;">← Previous</button>
+                    <button id="multiFrameNextBtn" class="btn btn-secondary" style="flex: 1;">Next →</button>
+                </div>
+                <p class="nav-info">Click elements in the preview below to select them across frames.</p>
+            </div>
+
+            <div class="frame-preview-section">
+                <h4 class="section-title" style="margin-bottom: 12px;">🖼️ Frame Preview</h4>
+                <div id="multiFramePreviewContainer" class="preview-container"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Selected Elements & Groups -->
+        <div class="right-panel">
+            <div class="selections-section">
+                <div class="section-header">
+                    <h4 class="section-title">📦 Selected Elements (<span id="selectedElementsCount">0</span>)</h4>
+                    <button id="clearSelectionsBtn" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;" disabled>Clear All</button>
+                </div>
+                <div id="selectedElementsList">
+                    <p class="empty-message">Navigate through frames and click elements to select them...</p>
+                </div>
+            </div>
+
+            <div class="actions-section">
+                <h4 class="section-title" style="margin-bottom: 12px;">🔧 Group & Edit</h4>
+                <div class="btn-group">
+                    <button id="groupElementsBtn" class="btn btn-primary" style="flex: 1;" disabled>📊 Group Similar Elements</button>
+                    <button id="applyMultiFrameEditsBtn" class="btn btn-success" style="flex: 1;" disabled>✓ Apply to All Frames</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grouping Results Panel -->
+    <div id="groupingPanel" style="display: none;" class="grouping-panel">
+        <h4 class="section-title" style="margin-bottom: 12px;">📊 Grouped Elements</h4>
+        <div id="groupedElementsList"></div>
+    </div>
+
+    <script>
+        // Get frames data from opener window
+        let frames = [];
+        let multiFrameCurrentIndex = 0;
+        let multiFrameSelections = [];
+        let elementGroups = [];
+
+        // Load frames from opener
+        if (window.opener && window.opener.getFramesForMultiFrameEditor) {
+            frames = window.opener.getFramesForMultiFrameEditor();
+            if (frames && frames.length > 0) {
+                initMultiFrameMode();
+            } else {
+                alert('No frames available to edit.');
+            }
+        } else {
+            alert('Unable to load frames from parent window. Please make sure the animator window is still open.');
+        }
+
+        function initMultiFrameMode() {
+            if (frames.length === 0) {
+                alert('No frames available.');
+                return;
+            }
+
+            multiFrameCurrentIndex = 0;
+            multiFrameSelections = [];
+            elementGroups = [];
+            document.getElementById('groupingPanel').style.display = 'none';
+            renderMultiFramePreview();
+            updateMultiFrameUI();
+        }
+
+        function renderMultiFramePreview() {
+            const container = document.getElementById('multiFramePreviewContainer');
+            if (!container || frames.length === 0) return;
+
+            const frame = frames[multiFrameCurrentIndex];
+            container.innerHTML = frame.html;
+
+            // Make all text-containing elements clickable
+            const allElements = container.querySelectorAll('*');
+            allElements.forEach((el, index) => {
+                // Only make clickable if has direct text content
+                const hasText = Array.from(el.childNodes).some(
+                    node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                );
+
+                if (hasText) {
+                    el.style.cursor = 'pointer';
+                    el.style.transition = 'all 0.2s';
+
+                    // Check if this element is already selected
+                    const isSelected = multiFrameSelections.some(
+                        sel => sel.frameIndex === multiFrameCurrentIndex &&
+                               sel.path === getElementPath(el)
+                    );
+
+                    if (isSelected) {
+                        el.style.outline = '3px solid #27ae60';
+                        el.style.background = 'rgba(39, 174, 96, 0.1)';
+                    }
+
+                    el.addEventListener('mouseenter', () => {
+                        if (!isSelected) {
+                            el.style.outline = '2px solid #667eea';
+                            el.style.background = 'rgba(102, 126, 234, 0.1)';
+                        }
+                    });
+
+                    el.addEventListener('mouseleave', () => {
+                        if (!isSelected) {
+                            el.style.outline = '';
+                            el.style.background = '';
+                        }
+                    });
+
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleElementSelection(el);
+                    });
+                }
+            });
+        }
+
+        function getElementPath(element) {
+            const path = [];
+            let current = element;
+            while (current && current.tagName) {
+                let selector = current.tagName.toLowerCase();
+                if (current.id) {
+                    selector += '#' + current.id;
+                } else if (current.className) {
+                    selector += '.' + Array.from(current.classList).join('.');
+                }
+                // Add index among siblings
+                const siblings = Array.from(current.parentNode?.children || []);
+                const index = siblings.indexOf(current);
+                selector += `[${index}]`;
+                path.unshift(selector);
+                current = current.parentNode;
+            }
+            return path.join(' > ');
+        }
+
+        function handleElementSelection(element) {
+            const path = getElementPath(element);
+            const text = element.textContent.trim();
+            const tag = element.tagName.toLowerCase();
+            const classes = Array.from(element.classList).join(' ');
+            const id = element.id;
+
+            // Check if already selected
+            const existingIndex = multiFrameSelections.findIndex(
+                sel => sel.frameIndex === multiFrameCurrentIndex && sel.path === path
+            );
+
+            if (existingIndex > -1) {
+                // Deselect
+                multiFrameSelections.splice(existingIndex, 1);
+                element.style.outline = '';
+                element.style.background = '';
+            } else {
+                // Select
+                multiFrameSelections.push({
+                    frameIndex: multiFrameCurrentIndex,
+                    frameName: frames[multiFrameCurrentIndex].name,
+                    element: tag,
+                    text: text,
+                    path: path,
+                    tag: tag,
+                    classes: classes,
+                    id: id
+                });
+                element.style.outline = '3px solid #27ae60';
+                element.style.background = 'rgba(39, 174, 96, 0.1)';
+            }
+
+            updateMultiFrameUI();
+        }
+
+        function updateMultiFrameUI() {
+            // Update progress
+            document.getElementById('multiFrameProgress').textContent =
+                `${multiFrameCurrentIndex + 1} / ${frames.length}`;
+
+            // Update selections count
+            document.getElementById('selectedElementsCount').textContent =
+                multiFrameSelections.length;
+
+            // Update selections list
+            const list = document.getElementById('selectedElementsList');
+            if (multiFrameSelections.length === 0) {
+                list.innerHTML = '<p class="empty-message">Navigate through frames and click elements to select them...</p>';
+            } else {
+                list.innerHTML = '';
+                multiFrameSelections.forEach((sel, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'selection-item';
+                    div.innerHTML = `
+                        <div class="selection-header">
+                            <div style="flex: 1;">
+                                <div class="selection-tag">&lt;${sel.tag}&gt;</div>
+                                <div class="selection-frame">Frame: ${sel.frameName}</div>
+                            </div>
+                            <button class="remove-selection-btn btn btn-danger" data-index="${index}" style="padding: 4px 8px; font-size: 11px;">Remove</button>
+                        </div>
+                        <div class="selection-text">${sel.text.substring(0, 100)}${sel.text.length > 100 ? '...' : ''}</div>
+                    `;
+                    list.appendChild(div);
+                });
+
+                // Add remove button handlers
+                document.querySelectorAll('.remove-selection-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index);
+                        multiFrameSelections.splice(index, 1);
+                        renderMultiFramePreview();
+                        updateMultiFrameUI();
+                    });
+                });
+            }
+
+            // Enable/disable buttons
+            document.getElementById('groupElementsBtn').disabled = multiFrameSelections.length < 2;
+            document.getElementById('clearSelectionsBtn').disabled = multiFrameSelections.length === 0;
+        }
+
+        // Navigation
+        document.getElementById('multiFramePrevBtn').addEventListener('click', () => {
+            if (multiFrameCurrentIndex > 0) {
+                multiFrameCurrentIndex--;
+                renderMultiFramePreview();
+                updateMultiFrameUI();
+            }
+        });
+
+        document.getElementById('multiFrameNextBtn').addEventListener('click', () => {
+            if (multiFrameCurrentIndex < frames.length - 1) {
+                multiFrameCurrentIndex++;
+                renderMultiFramePreview();
+                updateMultiFrameUI();
+            }
+        });
+
+        // Clear selections
+        document.getElementById('clearSelectionsBtn').addEventListener('click', () => {
+            if (confirm('Clear all selected elements?')) {
+                multiFrameSelections = [];
+                elementGroups = [];
+                document.getElementById('groupingPanel').style.display = 'none';
+                renderMultiFramePreview();
+                updateMultiFrameUI();
+            }
+        });
+
+        // Group elements
+        document.getElementById('groupElementsBtn').addEventListener('click', () => {
+            groupElements();
+        });
+
+        function groupElements() {
+            // Group by tag, classes, and similar text patterns
+            const groups = {};
+
+            multiFrameSelections.forEach(sel => {
+                // Create a key based on tag and classes
+                const key = `${sel.tag}|${sel.classes}`;
+
+                if (!groups[key]) {
+                    groups[key] = {
+                        groupId: key,
+                        tag: sel.tag,
+                        classes: sel.classes,
+                        elements: [],
+                        frames: new Set()
+                    };
+                }
+
+                groups[key].elements.push(sel);
+                groups[key].frames.add(sel.frameIndex);
+            });
+
+            // Convert to array and filter groups with at least 2 elements
+            elementGroups = Object.values(groups).filter(g => g.elements.length >= 2);
+
+            if (elementGroups.length === 0) {
+                alert('No similar elements found to group. Try selecting more elements with the same tag and classes across different frames.');
+                return;
+            }
+
+            renderGroupedElements();
+            document.getElementById('groupingPanel').style.display = 'block';
+        }
+
+        function renderGroupedElements() {
+            const container = document.getElementById('groupedElementsList');
+            container.innerHTML = '';
+
+            if (elementGroups.length === 0) {
+                container.innerHTML = '<p class="empty-message">No groups created yet.</p>';
+                return;
+            }
+
+            elementGroups.forEach((group, groupIndex) => {
+                const div = document.createElement('div');
+                div.className = 'group-item';
+
+                const framesList = Array.from(group.frames).sort((a, b) => a - b).map(idx => frames[idx].name).join(', ');
+
+                div.innerHTML = `
+                    <div class="group-header">
+                        <div>
+                            <h5 class="group-title">Group ${groupIndex + 1}: &lt;${group.tag}&gt;${group.classes ? '.' + group.classes.replace(/ /g, '.') : ''}</h5>
+                            <p class="group-info">${group.elements.length} elements across ${group.frames.size} frames</p>
+                            <p class="group-frames">Frames: ${framesList}</p>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label style="color: #ccc; font-size: 12px; display: block; margin-bottom: 4px;">New Text for All:</label>
+                        <textarea class="group-text-input group-textarea" data-group-index="${groupIndex}">${group.elements[0].text}</textarea>
+                    </div>
+                    <div class="group-elements">
+                        ${group.elements.map((el, i) => `<div class="group-element-item"><strong>${el.frameName}:</strong> ${el.text.substring(0, 50)}${el.text.length > 50 ? '...' : ''}</div>`).join('')}
+                    </div>
+                `;
+
+                container.appendChild(div);
+            });
+
+            // Store references to text inputs
+            document.querySelectorAll('.group-text-input').forEach(input => {
+                input.addEventListener('input', () => {
+                    const groupIndex = parseInt(input.dataset.groupIndex);
+                    elementGroups[groupIndex].newText = input.value;
+                    document.getElementById('applyMultiFrameEditsBtn').disabled = false;
+                });
+            });
+        }
+
+        // Apply multi-frame edits
+        document.getElementById('applyMultiFrameEditsBtn').addEventListener('click', () => {
+            if (elementGroups.length === 0) {
+                alert('No groups to apply edits to.');
+                return;
+            }
+
+            let totalEdits = 0;
+
+            elementGroups.forEach(group => {
+                if (!group.newText) return;
+
+                group.elements.forEach(sel => {
+                    const frameIndex = sel.frameIndex;
+                    const frame = frames[frameIndex];
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(frame.html, 'text/html');
+
+                    // Find the element by path (simplified - find by tag and text)
+                    const elements = doc.querySelectorAll(sel.tag);
+                    elements.forEach(el => {
+                        if (el.textContent.trim() === sel.text.trim()) {
+                            el.textContent = group.newText;
+                            totalEdits++;
+                        }
+                    });
+
+                    frames[frameIndex].html = doc.documentElement.outerHTML;
+                });
+            });
+
+            // Send updated frames back to parent window
+            if (window.opener && window.opener.updateFramesFromMultiFrameEditor) {
+                window.opener.updateFramesFromMultiFrameEditor(frames);
+            }
+
+            // Show feedback
+            const btn = document.getElementById('applyMultiFrameEditsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = `✓ Applied ${totalEdits} edits across ${elementGroups.length} groups!`;
+            btn.style.background = '#27ae60';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.disabled = true;
+            }, 2000);
+
+            // Clear everything
+            multiFrameSelections = [];
+            elementGroups = [];
+            document.getElementById('groupingPanel').style.display = 'none';
+            renderMultiFramePreview();
+            updateMultiFrameUI();
+        });
+    </script>
+</body>
+</html>

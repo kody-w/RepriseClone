@@ -1114,8 +1114,8 @@
                 </div>
             </div>
 
-            <!-- Multi-Frame Edit Mode -->
-            <div id="multiFrameEditMode" style="display: none;">
+            <!-- Multi-Frame Edit Mode (Now opens in separate window) -->
+            <div id="multiFrameEditMode" style="display: none; visibility: hidden;">
                 <div style="display: flex; gap: 16px; min-height: 500px;">
                     <!-- Frame Navigator & Preview -->
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
@@ -2740,18 +2740,22 @@
         });
 
         document.getElementById('multiFrameEditModeBtn').addEventListener('click', () => {
-            currentEditorMode = 'multiframe';
-            document.getElementById('htmlEditMode').style.display = 'none';
-            document.getElementById('textEditMode').style.display = 'none';
-            document.getElementById('multiFrameEditMode').style.display = 'block';
-            document.getElementById('multiFrameEditModeBtn').style.background = '#667eea';
-            document.getElementById('multiFrameEditModeBtn').style.color = 'white';
-            document.getElementById('htmlEditModeBtn').style.background = '';
-            document.getElementById('htmlEditModeBtn').style.color = '';
-            document.getElementById('textEditModeBtn').style.background = '';
-            document.getElementById('textEditModeBtn').style.color = '';
-            document.getElementById('editorModeDesc').textContent = 'Select similar elements across multiple frames and edit them as groups.';
-            initMultiFrameMode();
+            if (frames.length === 0) {
+                alert('No frames loaded. Please load frames first.');
+                return;
+            }
+
+            // Open multi-frame editor in a new window
+            const width = 1600;
+            const height = 900;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+
+            window.open(
+                'multiframe-editor.html',
+                'multiFrameEditor',
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+            );
         });
 
         // Set initial mode
@@ -3181,6 +3185,29 @@
             // Apply the changes
             document.getElementById('applyTextEditsBtn').click();
         });
+
+        // Function to provide frames data to multi-frame editor window
+        function getFramesForMultiFrameEditor() {
+            // Return a deep copy of frames so editor has its own copy
+            return JSON.parse(JSON.stringify(frames));
+        }
+
+        // Function called by multi-frame editor window to update frames
+        function updateFramesFromMultiFrameEditor(updatedFrames) {
+            // Update frames array with edited data
+            updatedFrames.forEach((updatedFrame, index) => {
+                if (frames[index]) {
+                    frames[index].html = updatedFrame.html;
+                }
+            });
+
+            // Refresh current frame display
+            if (currentFrameIndex >= 0 && currentFrameIndex < frames.length) {
+                displayFrame(currentFrameIndex);
+            }
+
+            console.log('Frames updated from multi-frame editor');
+        }
 
         // MULTI-FRAME EDIT MODE FUNCTIONS
         function initMultiFrameMode() {
