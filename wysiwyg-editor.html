@@ -32,77 +32,73 @@
             flex: 1;
         }
 
-        .editor-toolbar {
-            background: #2d2d2d;
-            border-bottom: 2px solid #444;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .toolbar-group {
-            display: flex;
-            gap: 5px;
-            padding: 5px;
-            border-right: 2px solid #444;
-        }
-
-        .toolbar-group:last-child {
-            border-right: none;
-        }
-
-        .toolbar-btn {
-            padding: 8px 12px;
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid #444;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            font-weight: bold;
-        }
-
-        .toolbar-btn:hover:not(:disabled) {
-            background: #667eea;
-            border-color: #667eea;
-        }
-
-        .toolbar-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .toolbar-btn.active {
-            background: #667eea;
-            border-color: #667eea;
-        }
-
         .editor-main {
             flex: 1;
             display: flex;
             overflow: hidden;
         }
 
+        .frame-preview {
+            flex: 1;
+            background: #1a1a1a;
+            padding: 20px;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .preview-container {
+            width: 100%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            min-height: 600px;
+            overflow: hidden;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            min-height: 600px;
+            border: none;
+            background: white;
+        }
+
+        .placeholder {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
+        }
+
+        .placeholder-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .placeholder h2 {
+            color: #888;
+            margin-bottom: 10px;
+        }
+
         .editor-sidebar {
-            width: 300px;
+            width: 400px;
             background: #2d2d2d;
-            border-right: 2px solid #444;
+            border-left: 2px solid #444;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
-        .sidebar-section {
+        .sidebar-header {
             padding: 20px;
             border-bottom: 2px solid #444;
         }
 
-        .sidebar-section h3 {
+        .sidebar-header h3 {
             color: white;
-            margin: 0 0 15px 0;
+            margin: 0 0 10px 0;
             font-size: 16px;
         }
 
@@ -110,7 +106,7 @@
             background: #1a1a1a;
             border: 2px dashed #667eea;
             border-radius: 8px;
-            padding: 40px 20px;
+            padding: 20px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -136,82 +132,87 @@
             color: #27ae60;
         }
 
-        .editor-content {
+        .html-editor-container {
             flex: 1;
-            background: #1a1a1a;
-            padding: 20px;
-            overflow: auto;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
         }
 
-        .editable-frame {
+        .html-editor {
+            flex: 1;
             width: 100%;
-            max-width: 1200px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            min-height: 600px;
-        }
-
-        .editable-frame [contenteditable="true"] {
-            outline: 2px dashed transparent;
-            transition: all 0.3s;
-            cursor: text;
-            padding: 2px;
-        }
-
-        .editable-frame [contenteditable="true"]:hover {
-            outline-color: #3498db;
-            background: rgba(52, 152, 219, 0.05);
-        }
-
-        .editable-frame [contenteditable="true"]:focus {
-            outline-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-        }
-
-        .placeholder {
-            text-align: center;
-            color: #666;
-            padding: 60px 20px;
-        }
-
-        .placeholder-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .placeholder h2 {
-            color: #888;
-            margin-bottom: 10px;
-        }
-
-        .element-info {
-            padding: 15px;
             background: #1a1a1a;
+            color: #e0e0e0;
+            border: 2px solid #444;
             border-radius: 6px;
-            margin-bottom: 15px;
-        }
-
-        .element-info p {
-            color: #999;
-            margin: 5px 0;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
             font-size: 13px;
+            resize: none;
+            line-height: 1.5;
         }
 
-        .element-info strong {
+        .html-editor:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .editor-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: #27ae60;
             color: white;
         }
 
-        .color-input {
-            width: 100%;
-            height: 40px;
-            border: 2px solid #444;
-            border-radius: 6px;
-            cursor: pointer;
+        .btn-success:hover:not(:disabled) {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #7f8c8d;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #764ba2;
         }
 
         .back-link {
@@ -247,27 +248,22 @@
             color: white;
         }
 
-        .export-btn {
-            padding: 10px 20px;
-            background: #27ae60;
-            color: white;
-            border: none;
+        .info-box {
+            background: #1a1a1a;
             border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s;
+            padding: 15px;
+            margin-top: 15px;
         }
 
-        .export-btn:hover {
-            background: #229954;
-            transform: translateY(-2px);
+        .info-box p {
+            color: #999;
+            margin: 5px 0;
+            font-size: 12px;
+            line-height: 1.6;
         }
 
-        .export-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .info-box strong {
+            color: white;
         }
     </style>
 </head>
@@ -276,95 +272,68 @@
         <a href="animator.html" class="back-link">← Back to Animator</a>
         <h1>✏️ WYSIWYG Frame Editor</h1>
         <span id="statusBadge" class="status-badge waiting">No frame loaded</span>
-        <button id="exportBtn" class="export-btn" disabled>💾 Export Frame</button>
-    </div>
-
-    <div class="editor-toolbar" id="toolbar" style="display: none;">
-        <div class="toolbar-group">
-            <button class="toolbar-btn" onclick="execCmd('bold')" title="Bold"><b>B</b></button>
-            <button class="toolbar-btn" onclick="execCmd('italic')" title="Italic"><i>I</i></button>
-            <button class="toolbar-btn" onclick="execCmd('underline')" title="Underline"><u>U</u></button>
-            <button class="toolbar-btn" onclick="execCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
-        </div>
-        <div class="toolbar-group">
-            <button class="toolbar-btn" onclick="execCmd('justifyLeft')" title="Align Left">≡</button>
-            <button class="toolbar-btn" onclick="execCmd('justifyCenter')" title="Align Center">≣</button>
-            <button class="toolbar-btn" onclick="execCmd('justifyRight')" title="Align Right">≡</button>
-        </div>
-        <div class="toolbar-group">
-            <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')" title="Bullet List">• List</button>
-            <button class="toolbar-btn" onclick="execCmd('insertOrderedList')" title="Numbered List">1. List</button>
-        </div>
-        <div class="toolbar-group">
-            <button class="toolbar-btn" onclick="changeFontSize('larger')" title="Increase Font Size">A+</button>
-            <button class="toolbar-btn" onclick="changeFontSize('smaller')" title="Decrease Font Size">A-</button>
-        </div>
-        <div class="toolbar-group">
-            <button class="toolbar-btn" onclick="execCmd('removeFormat')" title="Clear Formatting">🗑️ Clear</button>
-            <button class="toolbar-btn" onclick="execCmd('undo')" title="Undo">↶</button>
-            <button class="toolbar-btn" onclick="execCmd('redo')" title="Redo">↷</button>
-        </div>
     </div>
 
     <div class="editor-main">
-        <div class="editor-sidebar">
-            <div class="sidebar-section">
-                <h3>📁 Load Frame</h3>
-                <div id="uploadArea" class="upload-area">
-                    <p>📄 Click to upload HTML frame</p>
-                    <p style="font-size: 11px;">Upload a frame to edit</p>
-                </div>
-                <input type="file" id="fileInput" accept=".html" style="display: none;">
+        <div class="frame-preview">
+            <div id="placeholder" class="placeholder">
+                <div class="placeholder-icon">✏️</div>
+                <h2>Frame Editor</h2>
+                <p>Upload an HTML frame to start editing</p>
+                <p style="font-size: 12px; color: #666;">The frame will appear here for preview</p>
             </div>
-
-            <div class="sidebar-section">
-                <h3>ℹ️ Instructions</h3>
-                <div class="element-info">
-                    <p><strong>How to use:</strong></p>
-                    <p>1. Upload an HTML frame</p>
-                    <p>2. Click on any text to edit it</p>
-                    <p>3. Use toolbar for formatting</p>
-                    <p>4. Export when done</p>
-                    <p>5. Replace in animator</p>
-                </div>
-            </div>
-
-            <div class="sidebar-section" id="editingSection" style="display: none;">
-                <h3>🎨 Current Element</h3>
-                <div class="element-info">
-                    <p><strong>Tag:</strong> <span id="currentTag">-</span></p>
-                    <p><strong>Classes:</strong> <span id="currentClasses">-</span></p>
-                </div>
-                <div style="margin-top: 15px;">
-                    <label style="color: white; font-size: 13px; display: block; margin-bottom: 5px;">Text Color:</label>
-                    <input type="color" id="textColor" class="color-input" onchange="changeTextColor()">
-                </div>
-                <div style="margin-top: 15px;">
-                    <label style="color: white; font-size: 13px; display: block; margin-bottom: 5px;">Background:</label>
-                    <input type="color" id="bgColor" class="color-input" onchange="changeBgColor()">
-                </div>
+            <div id="previewContainer" class="preview-container" style="display: none;">
+                <iframe id="previewIframe" class="preview-iframe" sandbox="allow-same-origin"></iframe>
             </div>
         </div>
 
-        <div class="editor-content">
-            <div id="placeholder" class="placeholder">
-                <div class="placeholder-icon">✏️</div>
-                <h2>WYSIWYG Frame Editor</h2>
-                <p>Upload an HTML frame to start editing</p>
+        <div class="editor-sidebar">
+            <div class="sidebar-header">
+                <h3>📁 Load Frame</h3>
+                <div id="uploadArea" class="upload-area">
+                    <p>📄 Click to upload HTML frame</p>
+                    <p style="font-size: 11px;">or drag and drop here</p>
+                </div>
+                <input type="file" id="fileInput" accept=".html" style="display: none;">
+
+                <div class="info-box">
+                    <p><strong>Instructions:</strong></p>
+                    <p>1. Upload an HTML frame</p>
+                    <p>2. Edit the HTML in the editor</p>
+                    <p>3. Click "Apply Changes" to preview</p>
+                    <p>4. Export when done</p>
+                </div>
             </div>
-            <div id="editableFrame" class="editable-frame" style="display: none;"></div>
+
+            <div class="html-editor-container">
+                <textarea id="htmlEditor" class="html-editor" placeholder="Upload a frame to start editing..."></textarea>
+
+                <div class="editor-actions">
+                    <button id="applyBtn" class="btn btn-success" disabled>Apply Changes</button>
+                    <button id="refreshBtn" class="btn btn-secondary" disabled>Refresh HTML</button>
+                    <button id="exportBtn" class="btn btn-primary" disabled>💾 Export Frame</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         let originalHTML = '';
         let originalFilename = '';
-        let currentEditingElement = null;
+        let currentHTML = '';
 
-        // Upload handling
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
+        const htmlEditor = document.getElementById('htmlEditor');
+        const previewIframe = document.getElementById('previewIframe');
+        const previewContainer = document.getElementById('previewContainer');
+        const placeholder = document.getElementById('placeholder');
+        const statusBadge = document.getElementById('statusBadge');
+        const applyBtn = document.getElementById('applyBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const exportBtn = document.getElementById('exportBtn');
 
+        // Upload handling
         uploadArea.addEventListener('click', () => {
             fileInput.click();
         });
@@ -401,6 +370,7 @@
 
             originalFilename = file.name;
             originalHTML = await file.text();
+            currentHTML = originalHTML;
 
             // Update UI
             uploadArea.classList.add('loaded');
@@ -411,155 +381,104 @@
         }
 
         function loadFrame() {
-            const editableFrame = document.getElementById('editableFrame');
-            const placeholder = document.getElementById('placeholder');
+            // Format and show HTML in editor
+            htmlEditor.value = formatHtml(originalHTML);
 
-            // Parse HTML
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(originalHTML, 'text/html');
+            // Load into preview iframe
+            try {
+                const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(originalHTML);
+                iframeDoc.close();
 
-            // Make all text elements editable
-            makeElementsEditable(doc.body);
+                // Show preview
+                previewContainer.style.display = 'block';
+                placeholder.style.display = 'none';
 
-            // Load into editor
-            editableFrame.innerHTML = doc.body.innerHTML;
-            editableFrame.style.display = 'block';
-            placeholder.style.display = 'none';
+                // Update status and enable buttons
+                statusBadge.textContent = 'Ready to edit';
+                statusBadge.className = 'status-badge ready';
+                applyBtn.disabled = false;
+                refreshBtn.disabled = false;
+                exportBtn.disabled = false;
 
-            // Show toolbar
-            document.getElementById('toolbar').style.display = 'flex';
+                // Auto-resize iframe
+                setTimeout(() => {
+                    resizeIframe();
+                }, 100);
+            } catch (error) {
+                console.error('Error loading frame:', error);
+                alert('⚠️ Cannot load frame preview.\n\nPlease open this page through a web server (e.g., http://127.0.0.1:5500/wysiwyg-editor.html) instead of opening the file directly.\n\nYou can still edit the HTML in the editor and export it.');
 
-            // Update status
-            document.getElementById('statusBadge').textContent = 'Ready to edit';
-            document.getElementById('statusBadge').className = 'status-badge ready';
-            document.getElementById('exportBtn').disabled = false;
+                // Show preview container anyway (just won't load)
+                previewContainer.style.display = 'block';
+                placeholder.style.display = 'none';
 
-            // Add click listeners to editable elements
-            setupEditableElements();
-        }
-
-        function makeElementsEditable(element) {
-            // Text elements that should be editable
-            const editableSelectors = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'div', 'a', 'li', 'td', 'th', 'label', 'button'];
-
-            editableSelectors.forEach(selector => {
-                const elements = element.querySelectorAll(selector);
-                elements.forEach(el => {
-                    // Only make it editable if it has direct text content
-                    if (hasDirectTextContent(el)) {
-                        el.setAttribute('contenteditable', 'true');
-                    }
-                });
-            });
-        }
-
-        function hasDirectTextContent(element) {
-            // Check if element has text nodes as direct children
-            for (let node of element.childNodes) {
-                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim().length > 0) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        function setupEditableElements() {
-            const editableFrame = document.getElementById('editableFrame');
-            const editableElements = editableFrame.querySelectorAll('[contenteditable="true"]');
-
-            editableElements.forEach(el => {
-                el.addEventListener('focus', () => {
-                    currentEditingElement = el;
-                    updateElementInfo(el);
-                    document.getElementById('editingSection').style.display = 'block';
-                });
-
-                el.addEventListener('blur', () => {
-                    // Keep the info visible even after blur
-                });
-            });
-        }
-
-        function updateElementInfo(element) {
-            document.getElementById('currentTag').textContent = element.tagName.toLowerCase();
-            document.getElementById('currentClasses').textContent = element.className || 'none';
-
-            // Get current colors
-            const computedStyle = window.getComputedStyle(element);
-            const textColor = rgbToHex(computedStyle.color);
-            const bgColor = rgbToHex(computedStyle.backgroundColor);
-
-            document.getElementById('textColor').value = textColor;
-            document.getElementById('bgColor').value = bgColor;
-        }
-
-        function rgbToHex(rgb) {
-            // Convert rgb(r, g, b) to #rrggbb
-            if (rgb.startsWith('rgb')) {
-                const matches = rgb.match(/\d+/g);
-                if (matches && matches.length >= 3) {
-                    const r = parseInt(matches[0]).toString(16).padStart(2, '0');
-                    const g = parseInt(matches[1]).toString(16).padStart(2, '0');
-                    const b = parseInt(matches[2]).toString(16).padStart(2, '0');
-                    return '#' + r + g + b;
-                }
-            }
-            return '#000000';
-        }
-
-        // Toolbar commands
-        function execCmd(command, value = null) {
-            document.execCommand(command, false, value);
-        }
-
-        function changeFontSize(direction) {
-            if (direction === 'larger') {
-                execCmd('fontSize', 7);
-            } else {
-                execCmd('fontSize', 1);
+                // Enable buttons anyway so user can still edit
+                statusBadge.textContent = 'HTML loaded (no preview)';
+                statusBadge.className = 'status-badge ready';
+                applyBtn.disabled = false;
+                refreshBtn.disabled = false;
+                exportBtn.disabled = false;
             }
         }
 
-        function changeTextColor() {
-            const color = document.getElementById('textColor').value;
-            if (currentEditingElement) {
-                currentEditingElement.style.color = color;
+        function resizeIframe() {
+            try {
+                const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                const height = Math.max(600, iframeDoc.body.scrollHeight);
+                previewIframe.style.height = height + 'px';
+            } catch (e) {
+                previewIframe.style.height = '600px';
             }
         }
 
-        function changeBgColor() {
-            const color = document.getElementById('bgColor').value;
-            if (currentEditingElement) {
-                currentEditingElement.style.backgroundColor = color;
+        // Apply HTML changes
+        applyBtn.addEventListener('click', () => {
+            const newHtml = htmlEditor.value;
+
+            try {
+                const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(newHtml);
+                iframeDoc.close();
+
+                currentHTML = newHtml;
+
+                // Resize iframe
+                setTimeout(() => {
+                    resizeIframe();
+                }, 100);
+
+                // Show success feedback
+                const originalText = applyBtn.textContent;
+                applyBtn.textContent = '✓ Applied!';
+                setTimeout(() => {
+                    applyBtn.textContent = originalText;
+                }, 1500);
+            } catch (error) {
+                alert('Error applying HTML: ' + error.message);
             }
-        }
+        });
+
+        // Refresh HTML from iframe
+        refreshBtn.addEventListener('click', () => {
+            try {
+                const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                const currentHtml = iframeDoc.documentElement.outerHTML;
+                htmlEditor.value = formatHtml(currentHtml);
+                currentHTML = currentHtml;
+            } catch (error) {
+                alert('Error refreshing HTML: ' + error.message);
+            }
+        });
 
         // Export function
-        document.getElementById('exportBtn').addEventListener('click', () => {
-            const editableFrame = document.getElementById('editableFrame');
-
-            // Clone the content
-            const clone = editableFrame.cloneNode(true);
-
-            // Remove contenteditable attributes
-            const editableElements = clone.querySelectorAll('[contenteditable]');
-            editableElements.forEach(el => {
-                el.removeAttribute('contenteditable');
-            });
-
-            // Create full HTML document
-            const parser = new DOMParser();
-            const originalDoc = parser.parseFromString(originalHTML, 'text/html');
-
-            // Replace body content
-            originalDoc.body.innerHTML = clone.innerHTML;
-
-            // Generate HTML string
-            const htmlContent = '<!DOCTYPE html>\n' + originalDoc.documentElement.outerHTML;
-
-            // Download
+        exportBtn.addEventListener('click', () => {
+            const htmlToExport = htmlEditor.value;
             const filename = originalFilename.replace('.html', '') + '-edited.html';
-            const blob = new Blob([htmlContent], { type: 'text/html' });
+
+            const blob = new Blob([htmlToExport], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -570,29 +489,116 @@
             URL.revokeObjectURL(url);
 
             // Show success message
-            const originalBtnText = document.getElementById('exportBtn').textContent;
-            document.getElementById('exportBtn').textContent = '✓ Exported!';
+            const originalBtnText = exportBtn.textContent;
+            exportBtn.textContent = '✓ Exported!';
             setTimeout(() => {
-                document.getElementById('exportBtn').textContent = originalBtnText;
+                exportBtn.textContent = originalBtnText;
             }, 2000);
         });
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey || e.metaKey) {
-                switch(e.key.toLowerCase()) {
-                    case 'b':
-                        e.preventDefault();
-                        execCmd('bold');
-                        break;
-                    case 'i':
-                        e.preventDefault();
-                        execCmd('italic');
-                        break;
-                    case 'u':
-                        e.preventDefault();
-                        execCmd('underline');
-                        break;
+        // Format HTML for better readability
+        function formatHtml(html) {
+            try {
+                // Basic formatting - add newlines and indentation
+                let formatted = html;
+
+                // Add newlines after closing tags
+                formatted = formatted.replace(/></g, '>\n<');
+
+                // Add indentation (basic)
+                const lines = formatted.split('\n');
+                let indent = 0;
+                const indentStr = '  ';
+
+                const formattedLines = lines.map(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return '';
+
+                    // Decrease indent for closing tags
+                    if (trimmed.startsWith('</')) {
+                        indent = Math.max(0, indent - 1);
+                    }
+
+                    const indented = indentStr.repeat(indent) + trimmed;
+
+                    // Increase indent for opening tags (but not self-closing)
+                    if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>')) {
+                        // Check if it's not a self-closing tag
+                        const tagName = trimmed.match(/<(\w+)/);
+                        if (tagName && !['br', 'hr', 'img', 'input', 'meta', 'link'].includes(tagName[1].toLowerCase())) {
+                            indent++;
+                        }
+                    }
+
+                    return indented;
+                }).join('\n');
+
+                return formattedLines;
+            } catch (e) {
+                return html;
+            }
+        }
+
+        // Auto-resize iframe when content changes
+        const resizeObserver = new ResizeObserver(() => {
+            resizeIframe();
+        });
+
+        previewIframe.addEventListener('load', () => {
+            try {
+                const iframeDoc = previewIframe.contentDocument || previewIframe.contentWindow.document;
+                resizeObserver.observe(iframeDoc.body);
+            } catch (e) {
+                // Ignore if can't access iframe content
+            }
+        });
+
+        // Check for frame data from animator on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check if we came from the animator
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromAnimator = urlParams.get('from') === 'animator';
+
+            if (fromAnimator) {
+                try {
+                    // Load metadata
+                    const metaStr = localStorage.getItem('editorFrameData_meta');
+                    if (metaStr) {
+                        const meta = JSON.parse(metaStr);
+
+                        // Reconstruct HTML from chunks
+                        let html = '';
+                        for (let i = 0; i < meta.chunks; i++) {
+                            const chunk = localStorage.getItem(`editorFrameData_chunk_${i}`);
+                            if (chunk) {
+                                html += chunk;
+                            }
+                        }
+
+                        if (html) {
+                            originalFilename = meta.name;
+                            originalHTML = html;
+                            currentHTML = originalHTML;
+
+                            // Update UI
+                            uploadArea.classList.add('loaded');
+                            uploadArea.querySelector('p').textContent = `✓ ${meta.name} (Frame ${meta.index}/${meta.total})`;
+
+                            // Load into editor
+                            loadFrame();
+                        }
+
+                        // Clean up localStorage
+                        localStorage.removeItem('editorFrameData_meta');
+                        for (let i = 0; i < meta.chunks; i++) {
+                            localStorage.removeItem(`editorFrameData_chunk_${i}`);
+                        }
+
+                        // Remove query parameter from URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                } catch (error) {
+                    console.error('Error loading frame from animator:', error);
                 }
             }
         });

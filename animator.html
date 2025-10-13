@@ -757,7 +757,7 @@
             <a href="index.html" class="back-link">← Home</a>
             <a href="player.html" class="back-link">▶️ Player</a>
             <a href="tutorial.html" class="back-link" style="background: #667eea;">📚 Tutorial</a>
-            <a href="wysiwyg-editor.html" class="back-link" style="background: #e67e22;">✏️ Editor</a>
+            <a href="#" class="back-link" style="background: #e67e22;" onclick="openEditor(event)">✏️ Editor</a>
             <a href="git-visualizer.html" class="back-link" style="background: #e74c3c;">📊 Git Viz</a>
         </div>
         <div class="mode-switch">
@@ -1039,6 +1039,130 @@
             <div class="btn-group" style="margin-top: 24px;">
                 <button id="copyDebugResultsBtn" class="btn btn-primary">📋 Copy Results</button>
                 <button id="downloadDebugResultsBtn" class="btn btn-secondary">💾 Download Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FRAME EDITOR MODAL -->
+    <div class="diff-panel-overlay" id="frameEditorOverlay" style="display: none;">
+        <div class="diff-panel" style="max-width: 1400px; max-height: 95vh;">
+            <div class="diff-panel-header">
+                <h3 class="diff-panel-title">✏️ Frame Editor</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="editorFrameInfo" style="color: #999; font-size: 14px; font-weight: normal;"></span>
+                    <button class="diff-close-btn" id="closeEditorBtn">✕ Close</button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 16px; display: flex; gap: 10px; align-items: center;">
+                <button id="htmlEditModeBtn" class="btn btn-secondary" style="padding: 8px 16px;">📝 HTML Edit</button>
+                <button id="textEditModeBtn" class="btn btn-secondary" style="padding: 8px 16px;">✏️ Text Edit</button>
+                <button id="multiFrameEditModeBtn" class="btn btn-secondary" style="padding: 8px 16px;">🎯 Multi-Frame Edit</button>
+                <p id="editorModeDesc" style="color: #ccc; font-size: 13px; margin: 0; flex: 1;">Edit the HTML directly. Changes will be applied to the frame in the animator.</p>
+            </div>
+
+            <!-- HTML Edit Mode -->
+            <div id="htmlEditMode" style="display: block;">
+                <textarea class="diff-output" id="frameEditorTextarea" placeholder="Frame HTML will appear here..." style="min-height: 500px; font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5;"></textarea>
+
+                <div class="btn-group" style="margin-top: 16px;">
+                    <button id="applyFrameEditsBtn" class="btn btn-primary">✓ Apply Changes</button>
+                    <button id="refreshFrameEditorBtn" class="btn btn-secondary">↻ Refresh</button>
+                    <button id="exportEditedFrameBtn" class="btn" style="background: #667eea; color: white;">💾 Export Frame</button>
+                    <button id="copyFrameHtmlBtn" class="btn" style="background: #95a5a6; color: white;">📋 Copy HTML</button>
+                </div>
+            </div>
+
+            <!-- Text Edit Mode -->
+            <div id="textEditMode" style="display: none;">
+                <div style="display: flex; gap: 16px; min-height: 500px;">
+                    <!-- Search & Replace Panel -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+                        <div style="background: #1a1a1a; padding: 16px; border-radius: 8px;">
+                            <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">🔍 Find Text</h4>
+                            <input type="text" id="textSearchInput" placeholder="Search for text..." style="width: 100%; padding: 10px; background: #252525; border: 2px solid #444; border-radius: 6px; color: #fff; font-size: 14px; margin-bottom: 8px;">
+                            <div style="display: flex; gap: 8px;">
+                                <button id="findTextBtn" class="btn btn-primary" style="flex: 1;">Find</button>
+                                <button id="clearSearchBtn" class="btn btn-secondary">Clear</button>
+                            </div>
+                            <div id="searchResults" style="margin-top: 12px; color: #999; font-size: 13px;"></div>
+                        </div>
+
+                        <div style="background: #1a1a1a; padding: 16px; border-radius: 8px; flex: 1; overflow-y: auto;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                <h4 style="color: #9b59b6; margin: 0; font-size: 14px;">✏️ Found Text (<span id="foundCount">0</span>)</h4>
+                                <button id="showEditedOnlyBtn" class="btn" style="padding: 4px 8px; font-size: 11px; background: transparent; border: 1px solid #27ae60; color: #27ae60;">✓ Edited Only</button>
+                            </div>
+                            <div id="foundTextList" style="display: flex; flex-direction: column; gap: 8px;">
+                                <p style="color: #666; font-size: 13px;">Search for text to find editable elements...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Panel -->
+                    <div style="flex: 1; background: #1a1a1a; padding: 16px; border-radius: 8px; display: flex; flex-direction: column;">
+                        <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">📝 Edit Text</h4>
+                        <div id="textEditContent" style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                            <div style="background: #252525; border: 2px solid #444; border-radius: 6px; padding: 16px; text-align: center; color: #666;">
+                                <p style="margin: 0;">Select a text element to edit</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; display: flex; gap: 8px;">
+                            <button id="applyTextEditsBtn" class="btn btn-primary" style="flex: 1;" disabled>✓ Apply Changes</button>
+                            <button id="replaceAllBtn" class="btn" style="background: #9b59b6; color: white; flex: 1;" disabled>🔄 Replace All</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Multi-Frame Edit Mode -->
+            <div id="multiFrameEditMode" style="display: none;">
+                <div style="display: flex; gap: 16px; min-height: 500px;">
+                    <!-- Frame Navigator & Preview -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="background: #1a1a1a; padding: 16px; border-radius: 8px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                <h4 style="color: #9b59b6; margin: 0; font-size: 14px;">🎬 Frame Navigation</h4>
+                                <span id="multiFrameProgress" style="color: #999; font-size: 12px;">0 / 0</span>
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                <button id="multiFramePrevBtn" class="btn btn-secondary" style="flex: 1;">← Previous</button>
+                                <button id="multiFrameNextBtn" class="btn btn-secondary" style="flex: 1;">Next →</button>
+                            </div>
+                            <p style="color: #ccc; font-size: 12px; margin: 0;">Click elements in the preview below to select them across frames.</p>
+                        </div>
+
+                        <div style="background: #1a1a1a; padding: 16px; border-radius: 8px; flex: 1; overflow: auto;">
+                            <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">🖼️ Frame Preview</h4>
+                            <div id="multiFramePreviewContainer" style="background: #fff; border-radius: 6px; padding: 16px; min-height: 400px; position: relative; overflow: auto;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Elements & Groups -->
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                        <div style="background: #1a1a1a; padding: 16px; border-radius: 8px; flex: 1; overflow-y: auto;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                                <h4 style="color: #9b59b6; margin: 0; font-size: 14px;">📦 Selected Elements (<span id="selectedElementsCount">0</span>)</h4>
+                                <button id="clearSelectionsBtn" class="btn" style="padding: 4px 8px; font-size: 11px; background: #e74c3c; color: white;">Clear All</button>
+                            </div>
+                            <div id="selectedElementsList" style="display: flex; flex-direction: column; gap: 8px;">
+                                <p style="color: #666; font-size: 13px;">Navigate through frames and click elements to select them...</p>
+                            </div>
+                        </div>
+
+                        <div style="background: #1a1a1a; padding: 16px; border-radius: 8px;">
+                            <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">🔧 Group & Edit</h4>
+                            <button id="groupElementsBtn" class="btn btn-primary" style="width: 100%; margin-bottom: 8px;" disabled>📊 Group Similar Elements</button>
+                            <button id="applyMultiFrameEditsBtn" class="btn" style="width: 100%; background: #27ae60; color: white;" disabled>✓ Apply to All Frames</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grouping Results Panel (hidden by default) -->
+                <div id="groupingPanel" style="display: none; margin-top: 16px; background: #1a1a1a; padding: 16px; border-radius: 8px;">
+                    <h4 style="color: #9b59b6; margin: 0 0 12px 0; font-size: 14px;">📊 Grouped Elements</h4>
+                    <div id="groupedElementsList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -2100,6 +2224,19 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts if user is typing in an input/textarea
+            const activeElement = document.activeElement;
+            const isTyping = activeElement && (
+                activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable
+            );
+
+            // Allow Escape even when typing
+            if (isTyping && e.key !== 'Escape' && !(e.ctrlKey || e.metaKey)) {
+                return;
+            }
+
             // Fullscreen mode shortcuts
             if (isFullscreen) {
                 if (e.key === 'Escape') {
@@ -2129,6 +2266,21 @@
                 return;
             }
 
+            // Check if frame editor is open
+            const frameEditorOpen = document.getElementById('frameEditorOverlay').style.display === 'flex';
+            if (frameEditorOpen) {
+                if (e.key === 'Escape') {
+                    closeFrameEditor();
+                    return;
+                }
+                // Cmd/Ctrl+S to apply changes
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    document.getElementById('applyFrameEditsBtn').click();
+                    return;
+                }
+            }
+
             // Normal mode shortcuts
             if (currentMode !== 'animation' || frames.length === 0) return;
 
@@ -2146,7 +2298,15 @@
                     playAnimation();
                 }
             } else if (e.key === 'Escape') {
-                hideDiffPanel();
+                if (document.getElementById('diffPanelOverlay').style.display === 'flex') {
+                    hideDiffPanel();
+                }
+                if (document.getElementById('debugBookmarkletOverlay').style.display === 'flex') {
+                    document.getElementById('debugBookmarkletOverlay').style.display = 'none';
+                }
+                if (document.getElementById('debugResultsOverlay').style.display === 'flex') {
+                    document.getElementById('debugResultsOverlay').style.display = 'none';
+                }
             }
         });
 
@@ -2386,6 +2546,978 @@
 
         // Initialize
         switchMode('animation');
+
+        // Format HTML for better readability
+        function formatHtml(html) {
+            try {
+                // Basic formatting - add newlines and indentation
+                let formatted = html;
+
+                // Add newlines after closing tags
+                formatted = formatted.replace(/></g, '>\n<');
+
+                // Add indentation (basic)
+                const lines = formatted.split('\n');
+                let indent = 0;
+                const indentStr = '  ';
+
+                const formattedLines = lines.map(line => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return '';
+
+                    // Decrease indent for closing tags
+                    if (trimmed.startsWith('</')) {
+                        indent = Math.max(0, indent - 1);
+                    }
+
+                    const indented = indentStr.repeat(indent) + trimmed;
+
+                    // Increase indent for opening tags (but not self-closing)
+                    if (trimmed.startsWith('<') && !trimmed.startsWith('</') && !trimmed.endsWith('/>')) {
+                        // Check if it's not a self-closing tag
+                        const tagName = trimmed.match(/<(\w+)/);
+                        if (tagName && !['br', 'hr', 'img', 'input', 'meta', 'link'].includes(tagName[1].toLowerCase())) {
+                            indent++;
+                        }
+                    }
+
+                    return indented;
+                }).join('\n');
+
+                return formattedLines;
+            } catch (e) {
+                return html;
+            }
+        }
+
+        // FRAME EDITOR FUNCTIONALITY
+        function openEditor(event) {
+            event.preventDefault();
+
+            // Check if there's a current frame loaded
+            if (frames.length === 0 || currentFrameIndex < 0) {
+                alert('No frame loaded. Please load frames first.');
+                return;
+            }
+
+            const currentFrame = frames[currentFrameIndex];
+
+            // Load frame into editor
+            document.getElementById('frameEditorTextarea').value = formatHtml(currentFrame.html);
+            document.getElementById('editorFrameInfo').textContent = `${currentFrame.name} (Frame ${currentFrameIndex + 1}/${frames.length})`;
+
+            // Show editor overlay
+            document.getElementById('frameEditorOverlay').style.display = 'flex';
+        }
+
+        function closeFrameEditor() {
+            document.getElementById('frameEditorOverlay').style.display = 'none';
+        }
+
+        document.getElementById('closeEditorBtn').addEventListener('click', closeFrameEditor);
+
+        document.getElementById('frameEditorOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('frameEditorOverlay')) {
+                closeFrameEditor();
+            }
+        });
+
+        document.getElementById('applyFrameEditsBtn').addEventListener('click', () => {
+            if (frames.length === 0 || currentFrameIndex < 0) return;
+
+            const editedHTML = document.getElementById('frameEditorTextarea').value;
+
+            // Update the frame
+            frames[currentFrameIndex].html = editedHTML;
+
+            // Refresh the display
+            displayFrame(currentFrameIndex);
+
+            // Show success feedback
+            const btn = document.getElementById('applyFrameEditsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Applied!';
+            btn.style.background = '#27ae60';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 1500);
+        });
+
+        document.getElementById('refreshFrameEditorBtn').addEventListener('click', () => {
+            if (frames.length === 0 || currentFrameIndex < 0) return;
+
+            const currentFrame = frames[currentFrameIndex];
+            document.getElementById('frameEditorTextarea').value = formatHtml(currentFrame.html);
+
+            // Show feedback
+            const btn = document.getElementById('refreshFrameEditorBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '↻ Refreshed';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 1000);
+        });
+
+        document.getElementById('exportEditedFrameBtn').addEventListener('click', () => {
+            if (frames.length === 0 || currentFrameIndex < 0) return;
+
+            const editedHTML = document.getElementById('frameEditorTextarea').value;
+            const currentFrame = frames[currentFrameIndex];
+
+            const blob = new Blob([editedHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = currentFrame.name.replace('.html', '') + '-edited.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Show success feedback
+            const btn = document.getElementById('exportEditedFrameBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Exported!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        });
+
+        document.getElementById('copyFrameHtmlBtn').addEventListener('click', () => {
+            const textarea = document.getElementById('frameEditorTextarea');
+            textarea.select();
+            document.execCommand('copy');
+
+            // Show success feedback
+            const btn = document.getElementById('copyFrameHtmlBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 1500);
+        });
+
+        // TEXT EDIT MODE FUNCTIONALITY
+        let currentEditorMode = 'html';
+        let foundTextElements = [];
+        let selectedTextElements = [];
+        let textEditChanges = {};
+        let editedElements = new Set(); // Track which elements have been edited in current search
+        let allEditHistory = []; // Track ALL edits made to the frame
+
+        // MULTI-FRAME EDIT MODE FUNCTIONALITY
+        let multiFrameCurrentIndex = 0;
+        let multiFrameSelections = []; // Array of {frameIndex, element, text, path, tag, classes, id}
+        let elementGroups = []; // Array of grouped elements {groupId, elements[], newText}
+
+        // Mode switching
+        document.getElementById('htmlEditModeBtn').addEventListener('click', () => {
+            currentEditorMode = 'html';
+            document.getElementById('htmlEditMode').style.display = 'block';
+            document.getElementById('textEditMode').style.display = 'none';
+            document.getElementById('multiFrameEditMode').style.display = 'none';
+            document.getElementById('htmlEditModeBtn').style.background = '#667eea';
+            document.getElementById('htmlEditModeBtn').style.color = 'white';
+            document.getElementById('textEditModeBtn').style.background = '';
+            document.getElementById('textEditModeBtn').style.color = '';
+            document.getElementById('multiFrameEditModeBtn').style.background = '';
+            document.getElementById('multiFrameEditModeBtn').style.color = '';
+            document.getElementById('editorModeDesc').textContent = 'Edit the HTML directly. Changes will be applied to the frame in the animator.';
+        });
+
+        document.getElementById('textEditModeBtn').addEventListener('click', () => {
+            currentEditorMode = 'text';
+            document.getElementById('htmlEditMode').style.display = 'none';
+            document.getElementById('textEditMode').style.display = 'block';
+            document.getElementById('multiFrameEditMode').style.display = 'none';
+            document.getElementById('textEditModeBtn').style.background = '#667eea';
+            document.getElementById('textEditModeBtn').style.color = 'white';
+            document.getElementById('htmlEditModeBtn').style.background = '';
+            document.getElementById('htmlEditModeBtn').style.color = '';
+            document.getElementById('multiFrameEditModeBtn').style.background = '';
+            document.getElementById('multiFrameEditModeBtn').style.color = '';
+            document.getElementById('editorModeDesc').textContent = 'Search and edit specific text elements in the frame.';
+        });
+
+        document.getElementById('multiFrameEditModeBtn').addEventListener('click', () => {
+            currentEditorMode = 'multiframe';
+            document.getElementById('htmlEditMode').style.display = 'none';
+            document.getElementById('textEditMode').style.display = 'none';
+            document.getElementById('multiFrameEditMode').style.display = 'block';
+            document.getElementById('multiFrameEditModeBtn').style.background = '#667eea';
+            document.getElementById('multiFrameEditModeBtn').style.color = 'white';
+            document.getElementById('htmlEditModeBtn').style.background = '';
+            document.getElementById('htmlEditModeBtn').style.color = '';
+            document.getElementById('textEditModeBtn').style.background = '';
+            document.getElementById('textEditModeBtn').style.color = '';
+            document.getElementById('editorModeDesc').textContent = 'Select similar elements across multiple frames and edit them as groups.';
+            initMultiFrameMode();
+        });
+
+        // Set initial mode
+        document.getElementById('htmlEditModeBtn').click();
+
+        // Find text functionality
+        document.getElementById('findTextBtn').addEventListener('click', findTextInFrame);
+        document.getElementById('textSearchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                findTextInFrame();
+            }
+        });
+
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            if (allEditHistory.length > 0) {
+                if (!confirm(`Clear all search results and ${allEditHistory.length} edit${allEditHistory.length !== 1 ? 's' : ''} history?`)) {
+                    return;
+                }
+            }
+
+            document.getElementById('textSearchInput').value = '';
+            foundTextElements = [];
+            selectedTextElements = [];
+            textEditChanges = {};
+            editedElements.clear(); // Clear edit markers
+            allEditHistory = []; // Clear all edit history
+            showEditedOnly = false; // Reset filter
+            document.getElementById('showEditedOnlyBtn').style.background = 'transparent';
+            document.getElementById('showEditedOnlyBtn').style.color = '#27ae60';
+            updateFoundTextList();
+            updateTextEditContent();
+            document.getElementById('searchResults').textContent = '';
+        });
+
+        function findTextInFrame() {
+            if (frames.length === 0 || currentFrameIndex < 0) return;
+
+            const searchTerm = document.getElementById('textSearchInput').value.trim();
+            if (!searchTerm) {
+                document.getElementById('searchResults').textContent = 'Please enter search text';
+                return;
+            }
+
+            const currentFrame = frames[currentFrameIndex];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(currentFrame.html, 'text/html');
+
+            // Store previous edited elements by path
+            const previousEdits = new Map();
+            foundTextElements.forEach((item, index) => {
+                if (editedElements.has(index)) {
+                    previousEdits.set(item.path, true);
+                }
+            });
+
+            foundTextElements = [];
+            const newEditedElements = new Set();
+
+            // Find all text nodes containing the search term
+            const walker = document.createTreeWalker(
+                doc.body,
+                NodeFilter.SHOW_TEXT,
+                null
+            );
+
+            let node;
+            let currentIndex = 0;
+            while (node = walker.nextNode()) {
+                const text = node.textContent;
+                if (text.toLowerCase().includes(searchTerm.toLowerCase())) {
+                    const parentElement = node.parentElement;
+                    if (parentElement && !['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parentElement.tagName)) {
+                        // Get element path for identification
+                        const path = getElementPath(parentElement, doc.body);
+                        foundTextElements.push({
+                            text: text,
+                            originalText: text,
+                            element: parentElement.tagName.toLowerCase(),
+                            classes: parentElement.className,
+                            id: parentElement.id,
+                            path: path
+                        });
+
+                        // Restore edited marker if this element was previously edited
+                        if (previousEdits.has(path)) {
+                            newEditedElements.add(currentIndex);
+                        }
+                        currentIndex++;
+                    }
+                }
+            }
+
+            // Update edited elements
+            editedElements = newEditedElements;
+
+            document.getElementById('searchResults').textContent =
+                `Found ${foundTextElements.length} element${foundTextElements.length !== 1 ? 's' : ''} containing "${searchTerm}"`;
+
+            updateFoundTextList();
+        }
+
+        function getElementPath(element, root) {
+            const path = [];
+            let current = element;
+            while (current && current !== root) {
+                let selector = current.tagName.toLowerCase();
+                if (current.id) {
+                    selector += '#' + current.id;
+                } else if (current.className) {
+                    selector += '.' + current.className.split(' ').join('.');
+                }
+                path.unshift(selector);
+                current = current.parentElement;
+            }
+            return path.join(' > ');
+        }
+
+        let showEditedOnly = false;
+
+        document.getElementById('showEditedOnlyBtn').addEventListener('click', () => {
+            showEditedOnly = !showEditedOnly;
+            const btn = document.getElementById('showEditedOnlyBtn');
+            if (showEditedOnly) {
+                btn.style.background = '#27ae60';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#27ae60';
+                btn.textContent = '✓ Edited Only';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.color = '#27ae60';
+                btn.style.borderColor = '#27ae60';
+                btn.textContent = '✓ Edited Only';
+            }
+
+            // When showing edited only, display all edit history
+            if (showEditedOnly) {
+                displayEditHistory();
+            } else {
+                updateFoundTextList();
+            }
+        });
+
+        function displayEditHistory() {
+            const list = document.getElementById('foundTextList');
+            document.getElementById('foundCount').textContent = allEditHistory.length;
+
+            if (allEditHistory.length === 0) {
+                list.innerHTML = '<p style="color: #666; font-size: 13px;">No edits made yet</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            allEditHistory.forEach((edit, index) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'background: rgba(39, 174, 96, 0.1); padding: 10px; border-radius: 6px; cursor: pointer; border: 2px solid #27ae60; transition: all 0.2s;';
+
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <div style="color: #9b59b6; font-size: 11px;">${edit.element}${edit.id ? '#' + edit.id : ''}${edit.classes ? '.' + edit.classes.split(' ')[0] : ''}</div>
+                        <div style="background: #27ae60; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold;">✓ EDITED</div>
+                    </div>
+                    <div style="color: #666; font-size: 11px; margin-bottom: 4px;">Original: <span style="color: #999;">${edit.originalText.substring(0, 30)}${edit.originalText.length > 30 ? '...' : ''}</span></div>
+                    <div style="color: #27ae60; font-size: 13px; font-weight: bold;">New: ${edit.newText.substring(0, 30)}${edit.newText.length > 30 ? '...' : ''}</div>
+                `;
+
+                div.addEventListener('click', () => {
+                    // Search for the new text to find and re-edit this element
+                    document.getElementById('textSearchInput').value = edit.newText;
+                    showEditedOnly = false;
+                    document.getElementById('showEditedOnlyBtn').style.background = 'transparent';
+                    document.getElementById('showEditedOnlyBtn').style.color = '#27ae60';
+                    findTextInFrame();
+                });
+
+                list.appendChild(div);
+            });
+        }
+
+        function updateFoundTextList() {
+            const list = document.getElementById('foundTextList');
+
+            // Filter elements if "Edited Only" is active
+            const elementsToShow = showEditedOnly
+                ? foundTextElements.filter((_, index) => editedElements.has(index))
+                : foundTextElements;
+
+            document.getElementById('foundCount').textContent = elementsToShow.length;
+
+            if (foundTextElements.length === 0) {
+                list.innerHTML = '<p style="color: #666; font-size: 13px;">Search for text to find editable elements...</p>';
+                return;
+            }
+
+            if (elementsToShow.length === 0) {
+                list.innerHTML = '<p style="color: #666; font-size: 13px;">No edited elements found</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            foundTextElements.forEach((item, index) => {
+                // Skip if filtered
+                if (showEditedOnly && !editedElements.has(index)) {
+                    return;
+                }
+
+                const div = document.createElement('div');
+                const isEdited = editedElements.has(index);
+
+                div.style.cssText = 'background: #252525; padding: 10px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; position: relative;';
+
+                if (selectedTextElements.includes(index)) {
+                    div.style.borderColor = '#667eea';
+                    div.style.background = '#2d2d4d';
+                } else if (isEdited) {
+                    div.style.borderColor = '#27ae60';
+                    div.style.background = 'rgba(39, 174, 96, 0.1)';
+                }
+
+                const text = item.text.trim();
+                const preview = text.length > 50 ? text.substring(0, 50) + '...' : text;
+
+                div.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                        <div style="color: #9b59b6; font-size: 11px;">${item.element}${item.id ? '#' + item.id : ''}${item.classes ? '.' + item.classes.split(' ')[0] : ''}</div>
+                        ${isEdited ? '<div style="background: #27ae60; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; font-weight: bold;">✓ EDITED</div>' : ''}
+                    </div>
+                    <div style="color: #ccc; font-size: 13px;">${preview}</div>
+                `;
+
+                div.addEventListener('click', () => {
+                    const idx = selectedTextElements.indexOf(index);
+                    if (idx > -1) {
+                        selectedTextElements.splice(idx, 1);
+                    } else {
+                        selectedTextElements.push(index);
+                    }
+                    updateFoundTextList();
+                    updateTextEditContent();
+                });
+
+                list.appendChild(div);
+            });
+        }
+
+        function updateTextEditContent() {
+            const content = document.getElementById('textEditContent');
+            const applyBtn = document.getElementById('applyTextEditsBtn');
+            const replaceAllBtn = document.getElementById('replaceAllBtn');
+
+            if (selectedTextElements.length === 0) {
+                content.innerHTML = `
+                    <div style="background: #252525; border: 2px solid #444; border-radius: 6px; padding: 16px; text-align: center; color: #666;">
+                        <p style="margin: 0;">Click on text elements to select them for editing</p>
+                    </div>
+                `;
+                applyBtn.disabled = true;
+                replaceAllBtn.disabled = true;
+                return;
+            }
+
+            applyBtn.disabled = false;
+            replaceAllBtn.disabled = selectedTextElements.length < 2;
+
+            content.innerHTML = '';
+
+            if (selectedTextElements.length === 1) {
+                // Single edit mode
+                const index = selectedTextElements[0];
+                const item = foundTextElements[index];
+                const currentText = textEditChanges[index] !== undefined ? textEditChanges[index] : item.text;
+
+                const div = document.createElement('div');
+                div.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+                div.innerHTML = `
+                    <div style="color: #9b59b6; font-size: 12px;">
+                        ${item.element}${item.id ? '#' + item.id : ''}${item.classes ? '.' + item.classes.split(' ')[0] : ''}
+                    </div>
+                    <div style="color: #666; font-size: 11px;">Original:</div>
+                    <div style="background: #252525; padding: 10px; border-radius: 6px; color: #999; font-size: 13px;">${item.originalText}</div>
+                    <div style="color: #666; font-size: 11px;">New:</div>
+                    <textarea id="singleEditTextarea" style="flex: 1; background: #252525; border: 2px solid #667eea; border-radius: 6px; color: #fff; padding: 10px; font-size: 13px; resize: vertical; min-height: 100px;">${currentText}</textarea>
+                `;
+                content.appendChild(div);
+
+                // Update changes on input
+                const textarea = div.querySelector('#singleEditTextarea');
+                textarea.addEventListener('input', () => {
+                    textEditChanges[index] = textarea.value;
+                });
+
+            } else {
+                // Multiple edit mode
+                const div = document.createElement('div');
+                div.style.cssText = 'display: flex; flex-direction: column; gap: 12px;';
+
+                const header = document.createElement('div');
+                header.style.cssText = 'color: #9b59b6; font-size: 13px; font-weight: bold;';
+                header.textContent = `Editing ${selectedTextElements.length} elements`;
+                div.appendChild(header);
+
+                const info = document.createElement('div');
+                info.style.cssText = 'color: #999; font-size: 12px; background: #252525; padding: 10px; border-radius: 6px;';
+                info.textContent = 'Enter replacement text below. Click "Replace All" to update all selected elements at once.';
+                div.appendChild(info);
+
+                const label = document.createElement('div');
+                label.style.cssText = 'color: #666; font-size: 11px;';
+                label.textContent = 'Replacement text:';
+                div.appendChild(label);
+
+                const textarea = document.createElement('textarea');
+                textarea.id = 'multiEditTextarea';
+                textarea.style.cssText = 'flex: 1; background: #252525; border: 2px solid #9b59b6; border-radius: 6px; color: #fff; padding: 10px; font-size: 13px; resize: vertical; min-height: 150px;';
+                textarea.placeholder = 'Enter text to replace in all selected elements...';
+                div.appendChild(textarea);
+
+                const preview = document.createElement('div');
+                preview.style.cssText = 'color: #666; font-size: 11px; margin-top: 8px;';
+                preview.innerHTML = '<strong>Selected elements:</strong>';
+                div.appendChild(preview);
+
+                const listDiv = document.createElement('div');
+                listDiv.style.cssText = 'display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;';
+                selectedTextElements.forEach(index => {
+                    const item = foundTextElements[index];
+                    const itemDiv = document.createElement('div');
+                    itemDiv.style.cssText = 'background: #252525; padding: 6px 10px; border-radius: 4px; font-size: 12px; color: #999;';
+                    const preview = item.text.trim().substring(0, 40);
+                    itemDiv.textContent = `${item.element}: ${preview}${item.text.length > 40 ? '...' : ''}`;
+                    listDiv.appendChild(itemDiv);
+                });
+                div.appendChild(listDiv);
+
+                content.appendChild(div);
+            }
+        }
+
+        // Apply text edits
+        document.getElementById('applyTextEditsBtn').addEventListener('click', () => {
+            if (frames.length === 0 || currentFrameIndex < 0) return;
+
+            const currentFrame = frames[currentFrameIndex];
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(currentFrame.html, 'text/html');
+
+            // Apply changes
+            selectedTextElements.forEach(index => {
+                if (textEditChanges[index] !== undefined) {
+                    const item = foundTextElements[index];
+                    const elements = doc.querySelectorAll(item.element);
+
+                    // Find matching element by path
+                    elements.forEach(el => {
+                        if (el.textContent.trim() === item.text.trim()) {
+                            el.textContent = textEditChanges[index];
+
+                            // Save to edit history
+                            const existingEditIndex = allEditHistory.findIndex(
+                                edit => edit.path === item.path
+                            );
+
+                            const editRecord = {
+                                element: item.element,
+                                classes: item.classes,
+                                id: item.id,
+                                path: item.path,
+                                originalText: item.originalText,
+                                newText: textEditChanges[index],
+                                timestamp: new Date().toISOString()
+                            };
+
+                            if (existingEditIndex > -1) {
+                                // Update existing edit
+                                allEditHistory[existingEditIndex] = editRecord;
+                            } else {
+                                // Add new edit
+                                allEditHistory.push(editRecord);
+                            }
+
+                            // Update the item's current text
+                            foundTextElements[index].text = textEditChanges[index];
+                        }
+                    });
+
+                    // Mark as edited
+                    editedElements.add(index);
+                }
+            });
+
+            // Update frame
+            frames[currentFrameIndex].html = doc.documentElement.outerHTML;
+            displayFrame(currentFrameIndex);
+
+            // Show feedback
+            const btn = document.getElementById('applyTextEditsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = `✓ Applied ${selectedTextElements.length} edit${selectedTextElements.length !== 1 ? 's' : ''}!`;
+            btn.style.background = '#27ae60';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+            }, 1500);
+
+            // Clear selections but keep edit history
+            selectedTextElements = [];
+            textEditChanges = {};
+            updateFoundTextList();
+            updateTextEditContent();
+        });
+
+        // Replace all
+        document.getElementById('replaceAllBtn').addEventListener('click', () => {
+            const textarea = document.getElementById('multiEditTextarea');
+            if (!textarea) return;
+
+            const replacementText = textarea.value;
+            if (!replacementText.trim()) {
+                alert('Please enter replacement text');
+                return;
+            }
+
+            // Apply replacement to all selected elements
+            selectedTextElements.forEach(index => {
+                textEditChanges[index] = replacementText;
+            });
+
+            // Apply the changes
+            document.getElementById('applyTextEditsBtn').click();
+        });
+
+        // MULTI-FRAME EDIT MODE FUNCTIONS
+        function initMultiFrameMode() {
+            if (frames.length === 0) {
+                alert('No frames loaded. Please load frames first.');
+                return;
+            }
+
+            multiFrameCurrentIndex = 0;
+            multiFrameSelections = [];
+            elementGroups = [];
+            document.getElementById('groupingPanel').style.display = 'none';
+            renderMultiFramePreview();
+            updateMultiFrameUI();
+        }
+
+        function renderMultiFramePreview() {
+            const container = document.getElementById('multiFramePreviewContainer');
+            if (!container || frames.length === 0) return;
+
+            const frame = frames[multiFrameCurrentIndex];
+            container.innerHTML = frame.html;
+
+            // Make all text-containing elements clickable
+            const allElements = container.querySelectorAll('*');
+            allElements.forEach((el, index) => {
+                // Only make clickable if has direct text content
+                const hasText = Array.from(el.childNodes).some(
+                    node => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+                );
+
+                if (hasText) {
+                    el.style.cursor = 'pointer';
+                    el.style.transition = 'all 0.2s';
+
+                    // Check if this element is already selected
+                    const isSelected = multiFrameSelections.some(
+                        sel => sel.frameIndex === multiFrameCurrentIndex &&
+                               sel.path === getElementPath(el)
+                    );
+
+                    if (isSelected) {
+                        el.style.outline = '3px solid #27ae60';
+                        el.style.background = 'rgba(39, 174, 96, 0.1)';
+                    }
+
+                    el.addEventListener('mouseenter', () => {
+                        if (!isSelected) {
+                            el.style.outline = '2px solid #667eea';
+                            el.style.background = 'rgba(102, 126, 234, 0.1)';
+                        }
+                    });
+
+                    el.addEventListener('mouseleave', () => {
+                        if (!isSelected) {
+                            el.style.outline = '';
+                            el.style.background = '';
+                        }
+                    });
+
+                    el.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleElementSelection(el);
+                    });
+                }
+            });
+        }
+
+        function getElementPath(element) {
+            const path = [];
+            let current = element;
+            while (current && current.tagName) {
+                let selector = current.tagName.toLowerCase();
+                if (current.id) {
+                    selector += '#' + current.id;
+                } else if (current.className) {
+                    selector += '.' + Array.from(current.classList).join('.');
+                }
+                // Add index among siblings
+                const siblings = Array.from(current.parentNode?.children || []);
+                const index = siblings.indexOf(current);
+                selector += `[${index}]`;
+                path.unshift(selector);
+                current = current.parentNode;
+            }
+            return path.join(' > ');
+        }
+
+        function handleElementSelection(element) {
+            const path = getElementPath(element);
+            const text = element.textContent.trim();
+            const tag = element.tagName.toLowerCase();
+            const classes = Array.from(element.classList).join(' ');
+            const id = element.id;
+
+            // Check if already selected
+            const existingIndex = multiFrameSelections.findIndex(
+                sel => sel.frameIndex === multiFrameCurrentIndex && sel.path === path
+            );
+
+            if (existingIndex > -1) {
+                // Deselect
+                multiFrameSelections.splice(existingIndex, 1);
+                element.style.outline = '';
+                element.style.background = '';
+            } else {
+                // Select
+                multiFrameSelections.push({
+                    frameIndex: multiFrameCurrentIndex,
+                    frameName: frames[multiFrameCurrentIndex].name,
+                    element: tag,
+                    text: text,
+                    path: path,
+                    tag: tag,
+                    classes: classes,
+                    id: id
+                });
+                element.style.outline = '3px solid #27ae60';
+                element.style.background = 'rgba(39, 174, 96, 0.1)';
+            }
+
+            updateMultiFrameUI();
+        }
+
+        function updateMultiFrameUI() {
+            // Update progress
+            document.getElementById('multiFrameProgress').textContent =
+                `${multiFrameCurrentIndex + 1} / ${frames.length}`;
+
+            // Update selections count
+            document.getElementById('selectedElementsCount').textContent =
+                multiFrameSelections.length;
+
+            // Update selections list
+            const list = document.getElementById('selectedElementsList');
+            if (multiFrameSelections.length === 0) {
+                list.innerHTML = '<p style="color: #666; font-size: 13px;">Navigate through frames and click elements to select them...</p>';
+            } else {
+                list.innerHTML = '';
+                multiFrameSelections.forEach((sel, index) => {
+                    const div = document.createElement('div');
+                    div.style.cssText = 'background: #252525; padding: 10px; border-radius: 6px; border: 2px solid #444;';
+                    div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                            <div style="flex: 1;">
+                                <div style="color: #667eea; font-size: 12px; font-weight: bold;">&lt;${sel.tag}&gt;</div>
+                                <div style="color: #999; font-size: 11px; margin-top: 2px;">Frame: ${sel.frameName}</div>
+                            </div>
+                            <button class="remove-selection-btn" data-index="${index}" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Remove</button>
+                        </div>
+                        <div style="color: #ccc; font-size: 12px; margin-top: 4px; max-height: 40px; overflow: hidden; text-overflow: ellipsis;">${sel.text.substring(0, 100)}${sel.text.length > 100 ? '...' : ''}</div>
+                    `;
+                    list.appendChild(div);
+                });
+
+                // Add remove button handlers
+                document.querySelectorAll('.remove-selection-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const index = parseInt(btn.dataset.index);
+                        multiFrameSelections.splice(index, 1);
+                        renderMultiFramePreview();
+                        updateMultiFrameUI();
+                    });
+                });
+            }
+
+            // Enable/disable buttons
+            document.getElementById('groupElementsBtn').disabled = multiFrameSelections.length < 2;
+            document.getElementById('clearSelectionsBtn').disabled = multiFrameSelections.length === 0;
+        }
+
+        // Navigation
+        document.getElementById('multiFramePrevBtn').addEventListener('click', () => {
+            if (multiFrameCurrentIndex > 0) {
+                multiFrameCurrentIndex--;
+                renderMultiFramePreview();
+                updateMultiFrameUI();
+            }
+        });
+
+        document.getElementById('multiFrameNextBtn').addEventListener('click', () => {
+            if (multiFrameCurrentIndex < frames.length - 1) {
+                multiFrameCurrentIndex++;
+                renderMultiFramePreview();
+                updateMultiFrameUI();
+            }
+        });
+
+        // Clear selections
+        document.getElementById('clearSelectionsBtn').addEventListener('click', () => {
+            if (confirm('Clear all selected elements?')) {
+                multiFrameSelections = [];
+                elementGroups = [];
+                document.getElementById('groupingPanel').style.display = 'none';
+                renderMultiFramePreview();
+                updateMultiFrameUI();
+            }
+        });
+
+        // Group elements
+        document.getElementById('groupElementsBtn').addEventListener('click', () => {
+            groupElements();
+        });
+
+        function groupElements() {
+            // Group by tag, classes, and similar text patterns
+            const groups = {};
+
+            multiFrameSelections.forEach(sel => {
+                // Create a key based on tag and classes
+                const key = `${sel.tag}|${sel.classes}`;
+
+                if (!groups[key]) {
+                    groups[key] = {
+                        groupId: key,
+                        tag: sel.tag,
+                        classes: sel.classes,
+                        elements: [],
+                        frames: new Set()
+                    };
+                }
+
+                groups[key].elements.push(sel);
+                groups[key].frames.add(sel.frameIndex);
+            });
+
+            // Convert to array and filter groups with at least 2 elements
+            elementGroups = Object.values(groups).filter(g => g.elements.length >= 2);
+
+            if (elementGroups.length === 0) {
+                alert('No similar elements found to group. Try selecting more elements with the same tag and classes across different frames.');
+                return;
+            }
+
+            renderGroupedElements();
+            document.getElementById('groupingPanel').style.display = 'block';
+        }
+
+        function renderGroupedElements() {
+            const container = document.getElementById('groupedElementsList');
+            container.innerHTML = '';
+
+            if (elementGroups.length === 0) {
+                container.innerHTML = '<p style="color: #666;">No groups created yet.</p>';
+                return;
+            }
+
+            elementGroups.forEach((group, groupIndex) => {
+                const div = document.createElement('div');
+                div.style.cssText = 'background: #252525; padding: 16px; border-radius: 8px; border: 2px solid #667eea;';
+
+                const framesList = Array.from(group.frames).sort((a, b) => a - b).map(idx => frames[idx].name).join(', ');
+
+                div.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                        <div>
+                            <h5 style="color: #667eea; margin: 0 0 4px 0; font-size: 14px;">Group ${groupIndex + 1}: &lt;${group.tag}&gt;${group.classes ? '.' + group.classes.replace(/ /g, '.') : ''}</h5>
+                            <p style="color: #999; font-size: 11px; margin: 0;">${group.elements.length} elements across ${group.frames.size} frames</p>
+                            <p style="color: #666; font-size: 11px; margin: 4px 0 0 0;">Frames: ${framesList}</p>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 8px;">
+                        <label style="color: #ccc; font-size: 12px; display: block; margin-bottom: 4px;">New Text for All:</label>
+                        <textarea class="group-text-input" data-group-index="${groupIndex}" style="width: 100%; padding: 8px; background: #1a1a1a; border: 2px solid #444; border-radius: 6px; color: #fff; font-size: 12px; min-height: 60px; resize: vertical;">${group.elements[0].text}</textarea>
+                    </div>
+                    <div style="font-size: 11px; color: #666; max-height: 100px; overflow-y: auto; background: #1a1a1a; padding: 8px; border-radius: 4px;">
+                        ${group.elements.map((el, i) => `<div style="margin-bottom: 4px;"><strong>${el.frameName}:</strong> ${el.text.substring(0, 50)}${el.text.length > 50 ? '...' : ''}</div>`).join('')}
+                    </div>
+                `;
+
+                container.appendChild(div);
+            });
+
+            // Store references to text inputs
+            document.querySelectorAll('.group-text-input').forEach(input => {
+                input.addEventListener('input', () => {
+                    const groupIndex = parseInt(input.dataset.groupIndex);
+                    elementGroups[groupIndex].newText = input.value;
+                    document.getElementById('applyMultiFrameEditsBtn').disabled = false;
+                });
+            });
+        }
+
+        // Apply multi-frame edits
+        document.getElementById('applyMultiFrameEditsBtn').addEventListener('click', () => {
+            if (elementGroups.length === 0) {
+                alert('No groups to apply edits to.');
+                return;
+            }
+
+            let totalEdits = 0;
+
+            elementGroups.forEach(group => {
+                if (!group.newText) return;
+
+                group.elements.forEach(sel => {
+                    const frameIndex = sel.frameIndex;
+                    const frame = frames[frameIndex];
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(frame.html, 'text/html');
+
+                    // Find the element by path (simplified - find by tag and text)
+                    const elements = doc.querySelectorAll(sel.tag);
+                    elements.forEach(el => {
+                        if (el.textContent.trim() === sel.text.trim()) {
+                            el.textContent = group.newText;
+                            totalEdits++;
+                        }
+                    });
+
+                    frames[frameIndex].html = doc.documentElement.outerHTML;
+                });
+            });
+
+            // Refresh current frame display
+            displayFrame(currentFrameIndex);
+
+            // Show feedback
+            const btn = document.getElementById('applyMultiFrameEditsBtn');
+            const originalText = btn.textContent;
+            btn.textContent = `✓ Applied ${totalEdits} edits across ${elementGroups.length} groups!`;
+            btn.style.background = '#27ae60';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+                btn.disabled = true;
+            }, 2000);
+
+            // Clear everything
+            multiFrameSelections = [];
+            elementGroups = [];
+            document.getElementById('groupingPanel').style.display = 'none';
+            renderMultiFramePreview();
+            updateMultiFrameUI();
+        });
     </script>
 </body>
 </html>
