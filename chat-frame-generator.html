@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Frame Generator - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .generator-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .top-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .selector-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .selector-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .upload-area.drag-over {
+            background: #e7e9fc;
+            border-color: #764ba2;
+        }
+
+        .message-input-container {
+            margin-top: 20px;
+        }
+
+        .message-input-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-input-group.agent {
+            border-left-color: #667eea;
+        }
+
+        .message-input-group.customer {
+            border-left-color: #764ba2;
+        }
+
+        .message-input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .message-input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 60px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+        }
+
+        .message-input-group .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .message-input-group .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .preview-area {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .preview-frame {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-frame-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .preview-frame-title {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .preview-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preview-message {
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .preview-message.agent {
+            background: #e7e9fc;
+            color: #333;
+            align-self: flex-start;
+            max-width: 75%;
+        }
+
+        .preview-message.customer {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+            max-width: 75%;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        /* HTML Tree Navigator */
+        .tree-navigator {
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 20px;
+            height: 600px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .tree-navigator.active {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tree-node {
+            margin-left: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .tree-node-header {
+            padding: 6px 10px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tree-node-header:hover {
+            background: #e7e9fc;
+        }
+
+        .tree-node-header.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .tree-toggle {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            text-align: center;
+            line-height: 16px;
+            font-size: 10px;
+            user-select: none;
+        }
+
+        .tree-tag {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .tree-node-header.selected .tree-tag {
+            color: white;
+        }
+
+        .tree-id {
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        .tree-node-header.selected .tree-id {
+            color: #d4edda;
+        }
+
+        .tree-class {
+            color: #3498db;
+        }
+
+        .tree-node-header.selected .tree-class {
+            color: #cfe2ff;
+        }
+
+        .tree-children {
+            display: none;
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        .browse-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .browse-btn:hover {
+            background: #764ba2;
+            transform: translateY(-1px);
+        }
+
+        .selected-path {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            display: none;
+        }
+
+        .selected-path.active {
+            display: block;
+        }
+
+        /* Visual Preview */
+        .visual-preview {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            margin-top: 15px;
+            overflow: hidden;
+            display: none;
+            position: relative;
+        }
+
+        .visual-preview.active {
+            display: block;
+        }
+
+        .visual-preview-header {
+            background: #667eea;
+            color: white;
+            padding: 10px 15px;
+            font-weight: 600;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .visual-preview-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            display: block;
+            pointer-events: all;
+            position: relative;
+        }
+
+        /* Highlight overlay for selected element in iframe */
+        .highlight-overlay {
+            position: absolute;
+            border: 3px solid #667eea;
+            background: rgba(102, 126, 234, 0.2);
+            pointer-events: none;
+            z-index: 999999;
+            transition: all 0.2s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Chat Frame Generator</h1>
+            <p class="subtitle">Generate progressive chat frames for step-by-step animation</p>
+            <a href="index.html" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to Home</a>
+        </header>
+
+        <main class="generator-container">
+            <div class="instructions">
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Upload your base HTML frame (the static page with chat container)</li>
+                    <li>Add chat messages in sequence (agent or customer)</li>
+                    <li>Preview the generated frames</li>
+                    <li>Generate and download all frames as individual HTML files</li>
+                    <li>Load frames into the animator to step through them</li>
+                </ol>
+            </div>
+
+            <div class="split-view">
+                <div class="panel">
+                    <h2>1. Upload Base Frame</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
+                        <p style="font-weight: 600; margin-bottom: 10px;">Drop HTML file here or click to browse</p>
+                        <p style="font-size: 13px; color: #666;">Upload the base frame with chat container</p>
+                        <input type="file" id="fileInput" accept=".html" style="display: none;">
+                    </div>
+                    <div id="fileStatus"></div>
+
+                    <h2 style="margin-top: 30px;">2. Chat Container Selector</h2>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">CSS selector for the chat messages container (e.g., #chatMessages, .chat-container)</p>
+                    <input type="text" id="containerSelector" placeholder="#chatMessages"
+                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;">
+                    <button class="browse-btn" onclick="toggleTreeNavigator()" id="browseBtn" style="display: none;">
+                        🔍 Browse HTML Structure
+                    </button>
+                    <div class="selected-path" id="selectedPath"></div>
+
+                    <!-- Visual Preview -->
+                    <div class="visual-preview" id="visualPreview">
+                        <div class="visual-preview-header">
+                            <span>📱 Visual Preview - Click on elements to select</span>
+                            <span style="font-size: 11px; opacity: 0.9;">Synced with tree navigator</span>
+                        </div>
+                        <iframe id="previewIframe" class="visual-preview-iframe" sandbox="allow-same-origin"></iframe>
+                    </div>
+
+                    <div class="tree-navigator" id="treeNavigator"></div>
+
+                    <h2 style="margin-top: 30px;">3. Add Messages</h2>
+                    <div class="message-input-container" id="messageInputs">
+                        <!-- Messages will be added here -->
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="addMessageInput()">+ Add Message</button>
+                        <button class="btn btn-secondary" onclick="clearMessages()">Clear All</button>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">4. Generate Frames</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generateFrames()">🎬 Generate Frames</button>
+                        <button class="btn btn-success" onclick="downloadAllFrames()" id="downloadBtn" style="display: none;">📥 Download All Frames</button>
+                    </div>
+                    <div id="statusMessage"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Frame Preview</h2>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Preview of generated frames (each frame adds one message)</p>
+                    <div class="preview-area" id="previewArea">
+                        <p style="text-align: center; color: #999; padding: 40px;">Add messages to see preview</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let baseHTML = null;
+        let messages = [];
+        let generatedFrames = [];
+
+        // File upload handlers
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.html')) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        let parsedDoc = null;
+        let selectedElement = null;
+        let elementMap = new WeakMap(); // Maps DOM elements to their tree headers
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                baseHTML = e.target.result;
+
+                // Parse the HTML for tree navigation
+                const parser = new DOMParser();
+                parsedDoc = parser.parseFromString(baseHTML, 'text/html');
+
+                document.getElementById('fileStatus').innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-top: 10px;">
+                        ✓ Loaded: ${file.name} (${(file.size / 1024).toFixed(2)} KB)
+                    </div>
+                `;
+
+                // Show browse button and visual preview
+                document.getElementById('browseBtn').style.display = 'inline-block';
+                loadVisualPreview();
+            };
+            reader.readAsText(file);
+        }
+
+        function loadVisualPreview() {
+            const iframe = document.getElementById('previewIframe');
+            const visualPreview = document.getElementById('visualPreview');
+
+            // Show visual preview
+            visualPreview.classList.add('active');
+
+            // Load HTML into iframe
+            iframe.srcdoc = baseHTML;
+
+            // Wait for iframe to load, then add click handlers
+            iframe.onload = () => {
+                setupIframeClickHandlers();
+            };
+        }
+
+        function setupIframeClickHandlers() {
+            const iframe = document.getElementById('previewIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Add click handler to all elements in iframe
+            iframeDoc.body.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const clickedElement = e.target;
+                handleIframeElementClick(clickedElement);
+            }, true);
+
+            // Add hover effect
+            iframeDoc.body.addEventListener('mouseover', (e) => {
+                e.stopPropagation();
+                const element = e.target;
+                element.style.outline = '2px solid rgba(102, 126, 234, 0.5)';
+                element.style.outlineOffset = '2px';
+                element.style.cursor = 'pointer';
+            }, true);
+
+            iframeDoc.body.addEventListener('mouseout', (e) => {
+                e.stopPropagation();
+                const element = e.target;
+                element.style.outline = '';
+                element.style.outlineOffset = '';
+                element.style.cursor = '';
+            }, true);
+        }
+
+        function handleIframeElementClick(iframeElement) {
+            // Find corresponding element in parsedDoc
+            const selector = getElementPath(iframeElement);
+
+            try {
+                const correspondingElement = parsedDoc.querySelector(selector);
+                if (correspondingElement) {
+                    // Find the tree header for this element
+                    const treeHeader = elementMap.get(correspondingElement);
+                    if (treeHeader) {
+                        selectElement(correspondingElement, treeHeader);
+
+                        // Scroll tree into view
+                        treeHeader.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                        // Expand tree to show selection
+                        expandTreeToElement(treeHeader);
+                    }
+
+                    highlightElementInIframe(iframeElement);
+                }
+            } catch (e) {
+                console.warn('Could not find element in tree:', e);
+            }
+        }
+
+        function getElementPath(element) {
+            const path = [];
+            let current = element;
+
+            while (current && current !== current.ownerDocument.body) {
+                let selector = current.tagName.toLowerCase();
+
+                if (current.id) {
+                    return `#${current.id}`;
+                }
+
+                if (current.className && typeof current.className === 'string') {
+                    const classes = current.className.split(' ').filter(c => c.trim());
+                    if (classes.length > 0) {
+                        selector += `.${classes[0]}`;
+                    }
+                }
+
+                // Add nth-child if needed
+                if (current.parentElement) {
+                    const siblings = Array.from(current.parentElement.children);
+                    const sameTagSiblings = siblings.filter(s => s.tagName === current.tagName);
+                    if (sameTagSiblings.length > 1) {
+                        const index = siblings.indexOf(current) + 1;
+                        selector += `:nth-child(${index})`;
+                    }
+                }
+
+                path.unshift(selector);
+                current = current.parentElement;
+            }
+
+            return path.join(' > ');
+        }
+
+        function expandTreeToElement(headerElement) {
+            let parent = headerElement.closest('.tree-node');
+            while (parent) {
+                const childrenDiv = parent.querySelector(':scope > .tree-children');
+                const toggle = parent.querySelector(':scope > .tree-node-header > .tree-toggle');
+
+                if (childrenDiv && !childrenDiv.classList.contains('expanded')) {
+                    childrenDiv.classList.add('expanded');
+                    if (toggle) toggle.textContent = '▼';
+                }
+
+                parent = parent.parentElement.closest('.tree-node');
+            }
+        }
+
+        function highlightElementInIframe(element) {
+            const iframe = document.getElementById('previewIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            // Remove existing highlights
+            const existingHighlights = iframeDoc.querySelectorAll('.chat-gen-highlight');
+            existingHighlights.forEach(h => h.remove());
+
+            // Remove inline styles from previously highlighted elements
+            const previouslyStyled = iframeDoc.querySelectorAll('[data-chat-gen-highlight]');
+            previouslyStyled.forEach(el => {
+                el.style.outline = '';
+                el.style.outlineOffset = '';
+                el.removeAttribute('data-chat-gen-highlight');
+            });
+
+            // Highlight current element
+            element.style.outline = '3px solid #667eea';
+            element.style.outlineOffset = '2px';
+            element.setAttribute('data-chat-gen-highlight', 'true');
+
+            // Scroll into view
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function toggleTreeNavigator() {
+            const treeNav = document.getElementById('treeNavigator');
+
+            if (treeNav.classList.contains('active')) {
+                treeNav.classList.remove('active');
+            } else {
+                buildTreeNavigator();
+                treeNav.classList.add('active');
+            }
+        }
+
+        function buildTreeNavigator() {
+            if (!parsedDoc) return;
+
+            const treeNav = document.getElementById('treeNavigator');
+            treeNav.innerHTML = '<div style="font-weight: 600; margin-bottom: 15px; color: #667eea;">Click on an element to select it as the chat container:</div>';
+
+            const bodyElement = parsedDoc.body;
+            if (bodyElement) {
+                treeNav.appendChild(buildTreeNode(bodyElement, []));
+            }
+        }
+
+        function buildTreeNode(element, path) {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'tree-node';
+
+            const hasChildren = element.children && element.children.length > 0;
+            const nodeId = 'tree-' + Math.random().toString(36).substr(2, 9);
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'tree-node-header';
+
+            // Store mapping for syncing with iframe
+            elementMap.set(element, headerDiv);
+
+            // Toggle for expanding/collapsing
+            const toggle = document.createElement('span');
+            toggle.className = 'tree-toggle';
+            toggle.textContent = hasChildren ? '▶' : '·';
+
+            // Build element label
+            let label = `<span class="tree-tag">&lt;${element.tagName.toLowerCase()}&gt;</span>`;
+
+            if (element.id) {
+                label += ` <span class="tree-id">#${element.id}</span>`;
+            }
+
+            if (element.className && typeof element.className === 'string') {
+                const classes = element.className.split(' ').filter(c => c.trim());
+                if (classes.length > 0) {
+                    label += ` <span class="tree-class">.${classes.join('.')}</span>`;
+                }
+            }
+
+            headerDiv.innerHTML = `<span class="tree-toggle">${hasChildren ? '▶' : '·'}</span>` + label;
+
+            // Click handler for selecting element
+            headerDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(element, headerDiv);
+                highlightCorrespondingIframeElement(element);
+            });
+
+            // Hover effect to preview in iframe
+            headerDiv.addEventListener('mouseenter', (e) => {
+                if (!headerDiv.classList.contains('selected')) {
+                    previewHoverInIframe(element);
+                }
+            });
+
+            headerDiv.addEventListener('mouseleave', (e) => {
+                if (!headerDiv.classList.contains('selected')) {
+                    clearHoverPreview();
+                }
+            });
+
+            // Click handler for toggle
+            if (hasChildren) {
+                const toggleSpan = headerDiv.querySelector('.tree-toggle');
+                toggleSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const childrenDiv = nodeDiv.querySelector('.tree-children');
+                    if (childrenDiv) {
+                        childrenDiv.classList.toggle('expanded');
+                        toggleSpan.textContent = childrenDiv.classList.contains('expanded') ? '▼' : '▶';
+                    }
+                });
+            }
+
+            nodeDiv.appendChild(headerDiv);
+
+            // Add children
+            if (hasChildren) {
+                const childrenDiv = document.createElement('div');
+                childrenDiv.className = 'tree-children';
+
+                Array.from(element.children).forEach(child => {
+                    if (child.nodeType === 1) { // Element node
+                        childrenDiv.appendChild(buildTreeNode(child, [...path, element]));
+                    }
+                });
+
+                nodeDiv.appendChild(childrenDiv);
+            }
+
+            return nodeDiv;
+        }
+
+        function highlightCorrespondingIframeElement(parsedElement) {
+            const iframe = document.getElementById('previewIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            if (!iframeDoc) return;
+
+            // Generate selector for the parsed element
+            const selector = generateSelector(parsedElement);
+
+            try {
+                const iframeElement = iframeDoc.querySelector(selector);
+                if (iframeElement) {
+                    highlightElementInIframe(iframeElement);
+                }
+            } catch (e) {
+                console.warn('Could not highlight in iframe:', e);
+            }
+        }
+
+        function previewHoverInIframe(parsedElement) {
+            const iframe = document.getElementById('previewIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            if (!iframeDoc) return;
+
+            // Generate selector for the parsed element
+            const selector = generateSelector(parsedElement);
+
+            try {
+                const iframeElement = iframeDoc.querySelector(selector);
+                if (iframeElement) {
+                    // Use dashed outline for hover preview (lighter than selection)
+                    iframeElement.style.outline = '2px dashed #667eea';
+                    iframeElement.style.outlineOffset = '2px';
+                    iframeElement.setAttribute('data-chat-gen-hover', 'true');
+
+                    // Optionally scroll into view if not visible
+                    const rect = iframeElement.getBoundingClientRect();
+                    const iframeRect = iframe.getBoundingClientRect();
+                    if (rect.top < 0 || rect.bottom > iframe.clientHeight) {
+                        iframeElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    }
+                }
+            } catch (e) {
+                console.warn('Could not preview hover in iframe:', e);
+            }
+        }
+
+        function clearHoverPreview() {
+            const iframe = document.getElementById('previewIframe');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+            if (!iframeDoc) return;
+
+            // Remove hover preview from all elements
+            const hoveredElements = iframeDoc.querySelectorAll('[data-chat-gen-hover]');
+            hoveredElements.forEach(el => {
+                // Don't clear if this is the selected element
+                if (!el.hasAttribute('data-chat-gen-highlight')) {
+                    el.style.outline = '';
+                    el.style.outlineOffset = '';
+                    el.removeAttribute('data-chat-gen-hover');
+                }
+            });
+        }
+
+        function selectElement(element, headerElement) {
+            // Remove previous selection
+            document.querySelectorAll('.tree-node-header.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Add selection to clicked element
+            headerElement.classList.add('selected');
+
+            // Generate CSS selector
+            const selector = generateSelector(element);
+
+            // Update input field
+            document.getElementById('containerSelector').value = selector;
+
+            // Show selected path
+            const pathDiv = document.getElementById('selectedPath');
+            pathDiv.textContent = `✓ Selected: ${selector}`;
+            pathDiv.classList.add('active');
+        }
+
+        function generateSelector(element) {
+            // If element has an ID, use that
+            if (element.id) {
+                return `#${element.id}`;
+            }
+
+            // If element has unique classes, use those
+            if (element.className && typeof element.className === 'string') {
+                const classes = element.className.split(' ').filter(c => c.trim());
+                if (classes.length > 0) {
+                    // Try class selector
+                    const classSelector = `.${classes.join('.')}`;
+                    const matches = parsedDoc.querySelectorAll(classSelector);
+                    if (matches.length === 1) {
+                        return classSelector;
+                    }
+                }
+            }
+
+            // Build a path-based selector
+            const path = [];
+            let current = element;
+
+            while (current && current !== parsedDoc.body) {
+                let selector = current.tagName.toLowerCase();
+
+                if (current.id) {
+                    path.unshift(`#${current.id}`);
+                    break;
+                } else if (current.className && typeof current.className === 'string') {
+                    const classes = current.className.split(' ').filter(c => c.trim());
+                    if (classes.length > 0) {
+                        selector += `.${classes[0]}`;
+                    }
+                }
+
+                // Add nth-child if needed for uniqueness
+                if (current.parentElement) {
+                    const siblings = Array.from(current.parentElement.children);
+                    const index = siblings.indexOf(current);
+                    if (siblings.filter(s => s.tagName === current.tagName).length > 1) {
+                        selector += `:nth-child(${index + 1})`;
+                    }
+                }
+
+                path.unshift(selector);
+                current = current.parentElement;
+            }
+
+            return path.join(' > ');
+        }
+
+        function addMessageInput() {
+            const container = document.getElementById('messageInputs');
+            const id = Date.now();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-input-group agent';
+            messageDiv.setAttribute('data-message-id', id);
+            messageDiv.innerHTML = `
+                <select onchange="updateMessageType(${id}, this.value)">
+                    <option value="agent">Agent Message</option>
+                    <option value="customer">Customer Message</option>
+                    <option value="system">System Message</option>
+                </select>
+                <textarea placeholder="Enter message text..." oninput="updatePreview()"></textarea>
+                <button class="remove-btn" onclick="removeMessage(${id})">Remove</button>
+            `;
+            container.appendChild(messageDiv);
+            updatePreview();
+        }
+
+        function updateMessageType(id, type) {
+            const messageDiv = document.querySelector(`[data-message-id="${id}"]`);
+            messageDiv.className = `message-input-group ${type}`;
+            updatePreview();
+        }
+
+        function removeMessage(id) {
+            const messageDiv = document.querySelector(`[data-message-id="${id}"]`);
+            messageDiv.remove();
+            updatePreview();
+        }
+
+        function clearMessages() {
+            document.getElementById('messageInputs').innerHTML = '';
+            updatePreview();
+        }
+
+        function collectMessages() {
+            const inputs = document.querySelectorAll('.message-input-group');
+            messages = [];
+            inputs.forEach(input => {
+                const type = input.querySelector('select').value;
+                const text = input.querySelector('textarea').value.trim();
+                if (text) {
+                    messages.push({ type, text });
+                }
+            });
+            return messages;
+        }
+
+        function updatePreview() {
+            collectMessages();
+            const previewArea = document.getElementById('previewArea');
+
+            if (messages.length === 0) {
+                previewArea.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Add messages to see preview</p>';
+                return;
+            }
+
+            let previewHTML = '';
+            for (let i = 0; i < messages.length; i++) {
+                previewHTML += `
+                    <div class="preview-frame">
+                        <div class="preview-frame-header">
+                            <span class="preview-frame-title">Frame ${i + 1}</span>
+                            <span style="color: #999; font-size: 12px;">${i + 1} message${i > 0 ? 's' : ''}</span>
+                        </div>
+                        <div class="preview-messages">
+                            ${messages.slice(0, i + 1).map(msg => `
+                                <div class="preview-message ${msg.type}">
+                                    <strong>${msg.type === 'agent' ? 'Agent' : msg.type === 'customer' ? 'Customer' : 'System'}:</strong> ${msg.text}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            previewArea.innerHTML = previewHTML;
+        }
+
+        function generateMessageHTML(messages) {
+            return messages.map((msg, index) => {
+                const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+                if (msg.type === 'system') {
+                    return `
+                        <div class="message system">
+                            <div class="message-bubble">${msg.text}</div>
+                        </div>
+                    `;
+                } else {
+                    const avatar = msg.type === 'agent' ? 'A' : 'C';
+                    const author = msg.type === 'agent' ? 'Agent' : 'Customer';
+                    return `
+                        <div class="message ${msg.type}">
+                            <div class="message-container">
+                                <div class="message-header">
+                                    <div class="message-avatar">${avatar}</div>
+                                    <span class="message-author">${author}</span>
+                                    <span class="message-time">${time}</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <div class="message-text">${msg.text}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('\n');
+        }
+
+        function generateFrames() {
+            if (!baseHTML) {
+                showStatus('Please upload a base HTML frame first', 'error');
+                return;
+            }
+
+            collectMessages();
+
+            if (messages.length === 0) {
+                showStatus('Please add at least one message', 'error');
+                return;
+            }
+
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+            generatedFrames = [];
+
+            // Create a frame for each message count (1 to N)
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+                const messagesHTML = generateMessageHTML(frameMessages);
+
+                // Parse the base HTML and inject messages
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(baseHTML, 'text/html');
+
+                const chatContainer = doc.querySelector(containerSelector);
+                if (!chatContainer) {
+                    showStatus(`Chat container not found with selector: ${containerSelector}`, 'error');
+                    return;
+                }
+
+                // Clear existing messages and add new ones
+                chatContainer.innerHTML = messagesHTML;
+
+                // Serialize back to HTML
+                const frameHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+
+                generatedFrames.push({
+                    number: i + 1,
+                    html: frameHTML,
+                    filename: `chat-frame-${String(i + 1).padStart(2, '0')}.html`
+                });
+            }
+
+            showStatus(`Successfully generated ${generatedFrames.length} frames!`, 'success');
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+        }
+
+        function downloadAllFrames() {
+            if (generatedFrames.length === 0) {
+                showStatus('No frames to download. Generate frames first.', 'error');
+                return;
+            }
+
+            generatedFrames.forEach(frame => {
+                const blob = new Blob([frame.html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = frame.filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            showStatus(`Downloaded ${generatedFrames.length} frames. Load them in the animator!`, 'success');
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Add initial message input
+        addMessageInput();
+    </script>
+</body>
+</html>

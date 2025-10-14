@@ -1,0 +1,647 @@
+{
+  "name": "Voice-First Insurance Demo - Ignite 2025",
+  "headerTitle": "Insurance Application",
+  "azureTTS": {
+    "key": "YOUR_AZURE_TTS_KEY_HERE",
+    "region": "eastus2",
+    "voiceName": "en-US-AriaNeural"
+  },
+  "demoSteps": [
+    {
+      "id": "welcome",
+      "name": "Welcome",
+      "duration": 6000,
+      "voiceText": "Welcome to the voice-first insurance application demo. Watch as a customer applies for insurance entirely through natural conversation. No typing, no forms - just a phone call.",
+      "voiceSpeaker": "narrator",
+      "narrator": {
+        "title": "Voice-First Insurance",
+        "text": "Customer calls the insurance company. Agent answers. Application completes through conversation.",
+        "subtitle": "Zero friction onboarding",
+        "position": "center"
+      },
+      "action": "showCallInitiation"
+    },
+    {
+      "id": "call_initiate",
+      "name": "Customer Calls",
+      "duration": 4000,
+      "voiceText": "Michael opens the Tilt Insurance app and taps the Call Now button to speak with an agent.",
+      "voiceSpeaker": "narrator",
+      "action": "initiateCall"
+    },
+    {
+      "id": "call_dialing",
+      "name": "Dialing",
+      "duration": 3000,
+      "voiceText": "The phone dials out. Connecting to the first available insurance agent.",
+      "voiceSpeaker": "narrator"
+    },
+    {
+      "id": "agent_answers",
+      "name": "Agent Picks Up",
+      "duration": 4000,
+      "voiceText": "Sarah, an insurance agent, answers the call.",
+      "voiceSpeaker": "narrator",
+      "action": "agentAnswers"
+    },
+    {
+      "id": "agent_greeting",
+      "name": "Agent Greeting",
+      "duration": 5000,
+      "voiceText": "Hello! Thanks for calling Tilt Insurance. I'm Sarah. How can I help you today?",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "customer_intro",
+      "name": "Customer Introduction",
+      "duration": 5000,
+      "voiceText": "Hi Sarah, I need insurance for my consulting business. My name is Michael Torres.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "agent_response",
+      "name": "Agent Instructs",
+      "duration": 7000,
+      "voiceText": "Perfect, Michael! I can help with that. Just say 'open the application' and I'll pull up the form on your screen as we talk.",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "customer_opens_app",
+      "name": "Michael Opens App",
+      "duration": 4000,
+      "voiceText": "Okay, open the application.",
+      "voiceSpeaker": "customer",
+      "action": "triggerAppOpen"
+    },
+    {
+      "id": "personal_details",
+      "name": "Personal Information",
+      "duration": 8000,
+      "voiceText": "My date of birth is May 12th, 1985, and my business is called Torres Consulting LLC.",
+      "voiceSpeaker": "customer",
+      "action": "fillPersonalDetails"
+    },
+    {
+      "id": "agent_confirms",
+      "name": "Agent Confirms Details",
+      "duration": 5000,
+      "voiceText": "Great! I've got all that down. Now, what type of consulting do you do?",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "business_type",
+      "name": "Business Details",
+      "duration": 5000,
+      "voiceText": "I'm a business strategy consultant, working mostly with tech companies.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "coverage_intro",
+      "name": "Coverage Discussion",
+      "duration": 6000,
+      "voiceText": "Perfect. Based on what you do, I'd definitely recommend Professional Indemnity and Cyber Insurance. Does that sound good?",
+      "voiceSpeaker": "agent",
+      "action": "showCoverageOptions"
+    },
+    {
+      "id": "coverage_accept",
+      "name": "Customer Accepts",
+      "duration": 5000,
+      "voiceText": "Yes, that makes sense. I definitely want both of those. What about Public Liability?",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "coverage_complete",
+      "name": "Coverage Finalized",
+      "duration": 5000,
+      "voiceText": "Public Liability is great for client meetings. I'll add that too. All three coverages are now selected.",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "package_present",
+      "name": "Package Options",
+      "duration": 6000,
+      "voiceText": "The Recommended package gives you solid coverage at great value. It's what most consultants choose.",
+      "voiceSpeaker": "agent",
+      "action": "showPackagePresentation"
+    },
+    {
+      "id": "package_select",
+      "name": "Package Selection",
+      "duration": 5000,
+      "voiceText": "The recommended package looks perfect. Let's go with that one.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "payment_discuss",
+      "name": "Payment Options",
+      "duration": 5000,
+      "voiceText": "Excellent choice! You can pay yearly or monthly. Any preference?",
+      "voiceSpeaker": "agent",
+      "action": "showPricePresentation"
+    },
+    {
+      "id": "payment_choose",
+      "name": "Payment Decision",
+      "duration": 5000,
+      "voiceText": "I'd prefer to pay annually if there's a discount for that.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "payment_confirm",
+      "name": "Payment Confirmed",
+      "duration": 5000,
+      "voiceText": "There is! You'll save sixty two pounds paying annually. Your new total is one thousand one hundred seventy eight pounds.",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "review_details",
+      "name": "Review Application",
+      "duration": 6000,
+      "voiceText": "Let me confirm everything. You're Michael Torres, Torres Consulting LLC, with Professional Indemnity, Cyber, and Public Liability coverage at one thousand one hundred seventy eight pounds annually. Is that all correct?",
+      "voiceSpeaker": "agent",
+      "action": "showReviewConfirm"
+    },
+    {
+      "id": "customer_confirm",
+      "name": "Customer Confirms",
+      "duration": 4000,
+      "voiceText": "Yes, that's all correct. Let's proceed with that.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "payment_setup",
+      "name": "Payment Setup",
+      "duration": 5000,
+      "voiceText": "Perfect! You can either speak your bank details securely, or enter them on your phone while we're on the call. Which do you prefer?",
+      "voiceSpeaker": "agent",
+      "action": "showPaymentSetup"
+    },
+    {
+      "id": "payment_method",
+      "name": "Payment Method Choice",
+      "duration": 4000,
+      "voiceText": "I'll enter it on my phone.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "payment_processing",
+      "name": "Processing Payment",
+      "duration": 5000,
+      "voiceText": "No problem. I can't see your details for security. Just let me know when you're done.",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "payment_complete",
+      "name": "Payment Complete",
+      "duration": 4000,
+      "voiceText": "Okay, I've entered everything.",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "policy_issued",
+      "name": "Policy Issued",
+      "duration": 6000,
+      "voiceText": "Great! Your payment is set up. Processing your policy now. Congratulations, Michael! Your policy is active right now. Everything we discussed is confirmed, and you're fully covered.",
+      "voiceSpeaker": "agent",
+      "action": "showConfirmation"
+    },
+    {
+      "id": "customer_thanks",
+      "name": "Customer Satisfaction",
+      "duration": 5000,
+      "voiceText": "Wow, that was so easy! I didn't have to fill out anything. Thank you, Sarah!",
+      "voiceSpeaker": "customer"
+    },
+    {
+      "id": "agent_closing",
+      "name": "Call Complete",
+      "duration": 5000,
+      "voiceText": "You're very welcome! That's exactly what we're here for. Have a great day!",
+      "voiceSpeaker": "agent"
+    },
+    {
+      "id": "impact",
+      "name": "Business Impact",
+      "duration": 7000,
+      "voiceText": "Voice-first onboarding eliminates all typing friction. Customers speak naturally, applications auto-complete, and agents guide seamless conversations that convert.",
+      "voiceSpeaker": "narrator",
+      "narrator": {
+        "title": "Voice Transforms Insurance",
+        "text": "No forms to fill. No typing required. Just natural conversation that captures everything.",
+        "subtitle": "The future of onboarding",
+        "position": "center"
+      }
+    }
+  ],
+  "chatInteractions": [
+    {
+      "stepId": "welcome",
+      "messages": [
+        {
+          "type": "system",
+          "text": "📱 Voice-First Insurance Demo Starting"
+        }
+      ]
+    },
+    {
+      "stepId": "call_initiate",
+      "messages": [
+        {
+          "type": "system",
+          "text": "📞 Customer Initiating Call"
+        },
+        {
+          "type": "customer",
+          "text": "*Taps Call Now button*"
+        }
+      ]
+    },
+    {
+      "stepId": "call_dialing",
+      "messages": [
+        {
+          "type": "system",
+          "text": "⏳ Dialing Tilt Insurance..."
+        }
+      ]
+    },
+    {
+      "stepId": "agent_answers",
+      "messages": [
+        {
+          "type": "system",
+          "text": "✅ Agent Connected"
+        }
+      ]
+    },
+    {
+      "stepId": "agent_greeting",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Hello! Thanks for calling Tilt Insurance. I'm Sarah. How can I help you today?"
+        }
+      ]
+    },
+    {
+      "stepId": "customer_intro",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "Hi Sarah, I need insurance for my consulting business. My name is Michael Torres."
+        }
+      ]
+    },
+    {
+      "stepId": "agent_response",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Perfect, Michael! I can help with that. Just say 'open the application' and I'll pull up the form on your screen as we talk."
+        }
+      ]
+    },
+    {
+      "stepId": "customer_opens_app",
+      "messages": [
+        {
+          "type": "system",
+          "text": "🎤 Voice Command Detected: 'Open the application'"
+        },
+        {
+          "type": "customer",
+          "text": "Okay, open the application."
+        }
+      ]
+    },
+    {
+      "stepId": "personal_details",
+      "messages": [
+        {
+          "type": "system",
+          "text": "🎤 Voice Capture Active - Personal Information"
+        },
+        {
+          "type": "customer",
+          "text": "My date of birth is May 12th, 1985, and my business is called Torres Consulting LLC."
+        }
+      ]
+    },
+    {
+      "stepId": "agent_confirms",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Great! I've got all that down. Now, what type of consulting do you do?"
+        }
+      ]
+    },
+    {
+      "stepId": "business_type",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "I'm a business strategy consultant, working mostly with tech companies."
+        }
+      ]
+    },
+    {
+      "stepId": "coverage_intro",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Perfect. Based on what you do, I'd definitely recommend Professional Indemnity and Cyber Insurance. Does that sound good?"
+        }
+      ]
+    },
+    {
+      "stepId": "coverage_accept",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "Yes, that makes sense. I definitely want both of those. What about Public Liability?"
+        }
+      ]
+    },
+    {
+      "stepId": "coverage_complete",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Public Liability is great for client meetings. I'll add that too. All three coverages are now selected."
+        }
+      ]
+    },
+    {
+      "stepId": "package_present",
+      "messages": [
+        {
+          "type": "system",
+          "text": "📦 Voice-Activated Package Selection"
+        },
+        {
+          "type": "agent",
+          "text": "The Recommended package gives you solid coverage at great value. It's what most consultants choose."
+        }
+      ]
+    },
+    {
+      "stepId": "package_select",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "The recommended package looks perfect. Let's go with that one."
+        }
+      ]
+    },
+    {
+      "stepId": "payment_discuss",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Excellent choice! You can pay yearly or monthly. Any preference?"
+        }
+      ]
+    },
+    {
+      "stepId": "payment_choose",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "I'd prefer to pay annually if there's a discount for that."
+        }
+      ]
+    },
+    {
+      "stepId": "payment_confirm",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "There is! You'll save £62 paying annually. Your new total is £1,178."
+        }
+      ]
+    },
+    {
+      "stepId": "review_details",
+      "messages": [
+        {
+          "type": "system",
+          "text": "✅ Voice Confirmation"
+        },
+        {
+          "type": "agent",
+          "text": "Let me confirm everything. You're Michael Torres, Torres Consulting LLC, with Professional Indemnity, Cyber, and Public Liability coverage at £1,178 annually. Is that all correct?"
+        }
+      ]
+    },
+    {
+      "stepId": "customer_confirm",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "Yes, that's all correct. Let's proceed with that."
+        }
+      ]
+    },
+    {
+      "stepId": "payment_setup",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "Perfect! You can either speak your bank details securely, or enter them on your phone while we're on the call. Which do you prefer?"
+        }
+      ]
+    },
+    {
+      "stepId": "payment_method",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "I'll enter it on my phone."
+        }
+      ]
+    },
+    {
+      "stepId": "payment_processing",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "No problem. I can't see your details for security. Just let me know when you're done."
+        }
+      ]
+    },
+    {
+      "stepId": "payment_complete",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "Okay, I've entered everything."
+        }
+      ]
+    },
+    {
+      "stepId": "policy_issued",
+      "messages": [
+        {
+          "type": "system",
+          "text": "🎉 Policy Issued via Voice Application"
+        },
+        {
+          "type": "agent",
+          "text": "Great! Your payment is set up. Congratulations, Michael! Your policy is active right now."
+        }
+      ]
+    },
+    {
+      "stepId": "customer_thanks",
+      "messages": [
+        {
+          "type": "customer",
+          "text": "Wow, that was so easy! I didn't have to fill out anything. Thank you, Sarah!"
+        }
+      ]
+    },
+    {
+      "stepId": "agent_closing",
+      "messages": [
+        {
+          "type": "agent",
+          "text": "You're very welcome! That's exactly what we're here for. Have a great day!"
+        }
+      ]
+    },
+    {
+      "stepId": "impact",
+      "messages": [
+        {
+          "type": "system",
+          "text": "📊 Voice-First Performance Summary"
+        },
+        {
+          "type": "agent",
+          "text": "Complete application in 8 minutes. Zero typing required. Natural conversation captured everything perfectly."
+        }
+      ]
+    }
+  ],
+  "agentCards": [
+    {
+      "stepId": "welcome",
+      "card": {
+        "title": "📱 Voice-First System",
+        "status": "READY",
+        "details": {
+          "Mode": "Customer-initiated",
+          "Interface": "Voice call",
+          "Form filling": "Automatic",
+          "Typing required": "Zero"
+        }
+      }
+    },
+    {
+      "stepId": "call_initiate",
+      "card": {
+        "title": "📞 Call System",
+        "status": "DIALING",
+        "details": {
+          "Direction": "Outbound",
+          "Target": "Tilt Insurance",
+          "Routing": "First available agent",
+          "Status": "Connecting"
+        }
+      }
+    },
+    {
+      "stepId": "call_dialing",
+      "card": {
+        "title": "⏳ Connection Status",
+        "status": "RINGING",
+        "details": {
+          "State": "Waiting for answer",
+          "Ring tone": "Active",
+          "Queue position": "Next available",
+          "Est. wait": "< 5 seconds"
+        }
+      }
+    },
+    {
+      "stepId": "agent_answers",
+      "card": {
+        "title": "✅ Call Connected",
+        "status": "ACTIVE",
+        "details": {
+          "Agent": "Sarah",
+          "Connection": "Established",
+          "Call quality": "Excellent",
+          "AI assist": "Enabled"
+        }
+      }
+    },
+    {
+      "stepId": "agent_greeting",
+      "card": {
+        "title": "🎙️ Voice AI Engine",
+        "status": "LISTENING",
+        "details": {
+          "Voice Recognition": "Active",
+          "Intent Detection": "Real-time",
+          "Form Population": "Automatic",
+          "Processing": "Natural conversation"
+        }
+      }
+    },
+    {
+      "stepId": "customer_opens_app",
+      "card": {
+        "title": "📱 App Navigation",
+        "status": "OPENING",
+        "details": {
+          "Action": "Opening form",
+          "Trigger": "Voice instruction",
+          "Transition": "Smooth animation",
+          "Call status": "Active in background"
+        }
+      }
+    },
+    {
+      "stepId": "personal_details",
+      "card": {
+        "title": "📝 Voice Data Capture",
+        "status": "EXTRACTING",
+        "details": {
+          "Input Method": "Voice only",
+          "Form Filling": "Automated",
+          "Customer Typing": "Zero required",
+          "Accuracy": "High confidence"
+        }
+      }
+    },
+    {
+      "stepId": "coverage_complete",
+      "card": {
+        "title": "✨ Voice Selection Engine",
+        "status": "ACTIVE",
+        "details": {
+          "Selection Method": "Conversational",
+          "Updates": "Real-time sync",
+          "Confirmation": "Verbal",
+          "UI Updates": "Instant"
+        }
+      }
+    },
+    {
+      "stepId": "policy_issued",
+      "card": {
+        "title": "✅ Application Complete",
+        "status": "ISSUED",
+        "details": {
+          "Method": "Pure conversation",
+          "Typing Required": "None",
+          "Processing Time": "8 minutes",
+          "Policy Status": "Active"
+        }
+      }
+    }
+  ]
+}

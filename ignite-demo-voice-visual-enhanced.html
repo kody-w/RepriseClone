@@ -1,0 +1,3201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-First Insurance Demo - Ignite 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #1a1a1a;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            color: #323130;
+        }
+
+        .video-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #000;
+            padding: 20px;
+        }
+
+        .screen-frame {
+            width: 100%;
+            max-width: 1600px;
+            height: calc(100vh - 140px);
+            max-height: 900px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .admin-button {
+            position: fixed;
+            left: 30px;
+            top: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 102;
+            transition: all 0.2s;
+        }
+
+        .admin-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .step-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 102;
+            font-weight: 600;
+        }
+
+        .narrator-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            max-width: 90%;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .narrator-overlay.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        .narrator-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #8b9aff;
+        }
+
+        .narrator-text {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .narrator-subtitle {
+            font-size: 14px;
+            color: #a0a0a0;
+            margin-top: 16px;
+            font-style: italic;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .narrator-continue {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .narrator-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .dual-view-container {
+            display: flex;
+            flex: 1;
+            gap: 0;
+        }
+
+        .customer-view {
+            flex: 0 0 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #2a2a2a;
+            padding: 20px;
+            position: relative;
+        }
+
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background: #1a1a1a;
+            border-radius: 42px;
+            padding: 12px;
+            box-shadow: 0 0 0 2px #333, 0 20px 60px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .mobile-notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 28px;
+            background: #1a1a1a;
+            border-radius: 0 0 20px 20px;
+            z-index: 10;
+        }
+
+        .mobile-screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .customer-label {
+            margin-top: 16px;
+            text-align: center;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+
+        .mobile-content {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInContent 0.5s ease forwards;
+        }
+
+        @keyframes slideInContent {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .mobile-content.instant {
+            animation: none;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* iPhone-style call indicator bar at top */
+        .call-indicator-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .call-indicator-top.active {
+            display: flex;
+            animation: slideDownTop 0.3s ease;
+        }
+
+        @keyframes slideDownTop {
+            from {
+                transform: translateY(-100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .call-indicator-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .call-pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: callPulse 2s infinite;
+        }
+
+        @keyframes callPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .call-indicator-text {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .call-timer-top {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .return-to-call-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .return-to-call-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* iPhone-style audio visualizer at bottom during call */
+        .call-audio-visualizer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to top, rgba(16, 185, 129, 0.95), rgba(16, 185, 129, 0.85));
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99;
+            box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .call-audio-visualizer.active {
+            display: flex;
+            animation: slideUpBottom 0.3s ease;
+        }
+
+        @keyframes slideUpBottom {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .audio-viz-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 6px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .audio-viz-bars {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 24px;
+        }
+
+        .audio-viz-bar {
+            width: 3px;
+            background: white;
+            border-radius: 2px;
+            transition: height 0.1s ease;
+        }
+
+        /* Call Initiation Screen */
+        .call-initiation-screen {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .call-prompt-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .call-icon-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin-bottom: 24px;
+            color: white;
+        }
+
+        .call-prompt-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+        }
+
+        .call-prompt-subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        .call-now-button {
+            width: 200px;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 32px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s;
+            animation: callButtonPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes callButtonPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
+            }
+        }
+
+        .call-now-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Dialing Screen */
+        .dialing-screen {
+            height: 100%;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 60px 20px 40px;
+            color: white;
+        }
+
+        .dialing-info {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dialing-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            animation: dialingPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes dialingPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        .dialing-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .dialing-subtitle {
+            font-size: 18px;
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+
+        .dialing-status {
+            font-size: 16px;
+            opacity: 0.6;
+            animation: statusBlink 1.5s ease-in-out infinite;
+        }
+
+        @keyframes statusBlink {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .dial-tones {
+            display: flex;
+            gap: 8px;
+            margin-top: 24px;
+        }
+
+        .dial-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.5);
+            animation: dialDotWave 1.5s ease-in-out infinite;
+        }
+
+        .dial-dot:nth-child(1) { animation-delay: 0s; }
+        .dial-dot:nth-child(2) { animation-delay: 0.2s; }
+        .dial-dot:nth-child(3) { animation-delay: 0.4s; }
+        .dial-dot:nth-child(4) { animation-delay: 0.6s; }
+
+        @keyframes dialDotWave {
+            0%, 100% { 
+                transform: scale(1);
+                background: rgba(102, 126, 234, 0.5);
+            }
+            50% { 
+                transform: scale(1.5);
+                background: rgba(102, 126, 234, 1);
+            }
+        }
+
+        .cancel-call-button {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #ef4444;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .cancel-call-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Incoming Call Screen */
+        .incoming-call-screen {
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 60px 20px 40px;
+            color: white;
+        }
+
+        .caller-info {
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .caller-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            animation: avatarConnected 0.5s ease;
+        }
+
+        @keyframes avatarConnected {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .caller-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .caller-subtitle {
+            font-size: 18px;
+            opacity: 0.7;
+            margin-bottom: 12px;
+        }
+
+        .call-status {
+            font-size: 16px;
+            color: #10b981;
+        }
+
+        .connected-message {
+            font-size: 18px;
+            color: #10b981;
+            font-weight: 600;
+            margin-top: 16px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Active Call Screen */
+        .active-call-screen {
+            height: 100%;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            display: flex;
+            flex-direction: column;
+            color: white;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .active-call-screen.transitioning-out {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .call-header {
+            padding: 48px 20px 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .call-timer {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .active-caller-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .call-type {
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        .call-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .active-caller-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .active-caller-avatar.speaking::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            bottom: -6px;
+            border-radius: 50%;
+            border: 3px solid #10b981;
+            animation: speakingRing 1.5s ease-out infinite;
+        }
+
+        @keyframes speakingRing {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+
+        .audio-wave {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            height: 40px;
+            margin-top: 20px;
+        }
+
+        .audio-bar {
+            width: 4px;
+            background: #667eea;
+            border-radius: 2px;
+            animation: audioWave 1.2s ease-in-out infinite;
+        }
+
+        .audio-bar:nth-child(1) { animation-delay: 0s; height: 20px; }
+        .audio-bar:nth-child(2) { animation-delay: 0.1s; height: 30px; }
+        .audio-bar:nth-child(3) { animation-delay: 0.2s; height: 40px; }
+        .audio-bar:nth-child(4) { animation-delay: 0.3s; height: 30px; }
+        .audio-bar:nth-child(5) { animation-delay: 0.4s; height: 35px; }
+        .audio-bar:nth-child(6) { animation-delay: 0.5s; height: 25px; }
+        .audio-bar:nth-child(7) { animation-delay: 0.6s; height: 38px; }
+
+        @keyframes audioWave {
+            0%, 100% { transform: scaleY(0.5); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+
+        .call-actions-bottom {
+            padding: 30px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .call-control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .call-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .call-control-btn.end-call {
+            background: #ef4444;
+            width: 70px;
+            height: 70px;
+        }
+
+        .call-control-btn.end-call:hover {
+            background: #dc2626;
+        }
+
+        .app-transition-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+            animation: buttonGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes buttonGlow {
+            0%, 100% { box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 4px 24px rgba(102, 126, 234, 0.6); }
+        }
+
+        .app-transition-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mobile-header {
+            padding: 48px 20px 20px;
+            background: linear-gradient(135deg, #4D5FFF 0%, #5B6FFF 100%);
+            color: white;
+        }
+
+        .tilt-logo {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .mobile-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .mobile-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .progress-dots {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            padding: 16px 0;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #E0E0E0;
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: #4D5FFF;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #323130;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d2d0ce;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .form-group.voice-filling {
+            animation: fieldPulse 0.6s ease-in-out;
+        }
+
+        .form-group.voice-filling .form-label {
+            color: #4D5FFF;
+            font-weight: 600;
+        }
+
+        .form-group.voice-filling .form-input {
+            border-color: #4D5FFF;
+            box-shadow: 0 0 0 3px rgba(77, 95, 255, 0.1);
+            background: linear-gradient(135deg, rgba(77, 95, 255, 0.05), rgba(91, 111, 255, 0.05));
+        }
+
+        .form-group.voice-complete .form-input {
+            border-color: #10b981;
+            animation: fieldComplete 0.4s ease;
+        }
+
+        @keyframes fieldPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        @keyframes fieldComplete {
+            0% { background: rgba(16, 185, 129, 0.1); }
+            100% { background: white; }
+        }
+
+        .voice-listening-indicator {
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(77, 95, 255, 0.95);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            z-index: 20;
+            box-shadow: 0 4px 12px rgba(77, 95, 255, 0.4);
+        }
+
+        .voice-listening-indicator.active {
+            display: flex;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -10px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+
+        .voice-wave {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+        }
+
+        .voice-bar {
+            width: 3px;
+            height: 12px;
+            background: white;
+            border-radius: 2px;
+            animation: waveAnimation 1s ease-in-out infinite;
+        }
+
+        .voice-bar:nth-child(1) { animation-delay: 0s; }
+        .voice-bar:nth-child(2) { animation-delay: 0.1s; }
+        .voice-bar:nth-child(3) { animation-delay: 0.2s; }
+        .voice-bar:nth-child(4) { animation-delay: 0.3s; }
+        .voice-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes waveAnimation {
+            0%, 100% { height: 8px; }
+            50% { height: 16px; }
+        }
+
+        .coverage-card {
+            border: 2px solid #E0E0E0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .coverage-card.selected {
+            border-color: #4D5FFF;
+            background: #F0F2FF;
+        }
+
+        .coverage-card.voice-selecting {
+            animation: cardSelect 0.6s ease;
+            border-color: #4D5FFF;
+            background: #F0F2FF;
+        }
+
+        @keyframes cardSelect {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); box-shadow: 0 8px 24px rgba(77, 95, 255, 0.3); }
+            100% { transform: scale(1); }
+        }
+
+        .package-card {
+            border: 2px solid #E0E0E0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .package-card.recommended {
+            border-color: #4D5FFF;
+            background: linear-gradient(135deg, #4D5FFF 0%, #5B6FFF 100%);
+            color: white;
+        }
+
+        .package-card.voice-selecting {
+            animation: packageSelect 0.8s ease;
+        }
+
+        @keyframes packageSelect {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); box-shadow: 0 12px 32px rgba(77, 95, 255, 0.4); }
+        }
+
+        .mobile-button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4D5FFF, #5B6FFF);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Chat Interface */
+        .chat-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        .chat-header {
+            height: 70px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .chat-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #fff3e0;
+            color: #f57c00;
+            animation: statusPulse 2s infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+        }
+
+        .message {
+            display: flex;
+            opacity: 0;
+            animation: messageSlide 0.4s forwards;
+        }
+
+        @keyframes messageSlide {
+            to { 
+                opacity: 1;
+            }
+        }
+
+        .message.agent {
+            justify-content: flex-start;
+        }
+
+        .message.customer {
+            justify-content: flex-end;
+        }
+
+        .message.system {
+            justify-content: center;
+        }
+
+        .message-container {
+            max-width: 75%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .message.customer .message-container {
+            align-items: flex-end;
+        }
+
+        .message-bubble {
+            padding: 16px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .message.agent .message-bubble {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message.customer .message-bubble {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.system .message-bubble {
+            background: #f0f0f0;
+            color: #666;
+            font-size: 13px;
+            padding: 10px 16px;
+            border-radius: 16px;
+        }
+
+        .message-bubble.speaking {
+            animation: speakingPulse 1.5s ease-in-out infinite;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .message.agent .message-bubble.speaking {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+
+        .message.customer .message-bubble.speaking {
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        @keyframes speakingPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 15px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .message.agent .message-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .message.customer .message-avatar {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .message-avatar.speaking::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 50%;
+            border: 3px solid currentColor;
+            opacity: 0.6;
+            animation: avatarPulse 1.5s ease-out infinite;
+        }
+
+        @keyframes avatarPulse {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(1.25);
+                opacity: 0;
+            }
+        }
+
+        .message-author {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1a1a1a;
+        }
+
+        .message.customer .message-author {
+            color: #667eea;
+        }
+
+        .message-time {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-left: auto;
+        }
+
+        .speaking-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .speaking-indicator.active {
+            display: flex;
+        }
+
+        .speaking-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .speaking-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: dotWave 1.4s ease-in-out infinite;
+        }
+
+        .speaking-dot:nth-child(1) { animation-delay: 0s; }
+        .speaking-dot:nth-child(2) { animation-delay: 0.2s; }
+        .speaking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotWave {
+            0%, 60%, 100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            30% {
+                transform: scale(1.5);
+                opacity: 1;
+            }
+        }
+
+        .message-text {
+            font-size: 15px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .agent-card {
+            margin-top: 12px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            animation: cardAppear 0.5s ease;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .agent-card-header {
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .agent-card-title {
+            font-weight: 600;
+            font-size: 15px;
+            color: #1a1a1a;
+        }
+
+        .agent-card-status {
+            padding: 4px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .agent-card-body {
+            padding: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            font-size: 14px;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            min-width: 140px;
+            color: #666;
+        }
+
+        .detail-value {
+            flex: 1;
+            color: #1a1a1a;
+        }
+
+        /* Video Controls */
+        .video-controls {
+            height: 100px;
+            background: linear-gradient(to bottom, #2a2a2a, #1a1a1a);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            border-top: 1px solid #333;
+        }
+
+        .controls-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #333;
+            border: 2px solid #444;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover:not(:disabled) {
+            background: #444;
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .control-btn.play {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            width: 56px;
+            height: 56px;
+        }
+
+        .control-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .progress-container {
+            flex: 1;
+            margin: 0 40px;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .controls-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: #333;
+            border-radius: 20px;
+            padding: 4px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            border-radius: 16px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .mode-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .audio-toggle, .fullscreen-btn {
+            padding: 8px 14px;
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .audio-toggle.active {
+            background: #667eea;
+            border-color: #667eea;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 10001;
+        }
+
+        .toast.show {
+            display: flex;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-icon {
+            font-size: 20px;
+        }
+
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: #323130;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="narrator-overlay" id="narratorOverlay">
+        <div class="narrator-title" id="narratorTitle">Welcome</div>
+        <div class="narrator-text" id="narratorText">
+            Load a demo script to begin your interactive presentation.
+        </div>
+        <div class="narrator-subtitle" id="narratorSubtitle">Demo narration</div>
+        <button class="narrator-continue" id="narratorContinue" onclick="continueDemo()">Continue</button>
+    </div>
+
+    <button class="admin-button" onclick="openSettings()">Configure</button>
+
+    <div class="step-indicator" id="stepIndicator">
+        Step <span id="currentStep">1</span> of <span id="totalSteps">1</span>
+    </div>
+
+    <div class="video-container">
+        <div class="screen-frame">
+            <div class="dual-view-container">
+                <div class="customer-view">
+                    <div class="mobile-frame">
+                        <div class="mobile-notch"></div>
+                        <div class="mobile-screen" id="mobileScreen">
+                            <div class="voice-listening-indicator" id="voiceIndicator">
+                                <div class="voice-wave">
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                    <div class="voice-bar"></div>
+                                </div>
+                                <span>Listening...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="customer-label">Customer View</div>
+                </div>
+
+                <div class="chat-view">
+                    <div class="chat-header">
+                        <div class="chat-title" id="chatTitle">Insurance Application</div>
+                        <div class="status-badge" id="statusBadge">Ready</div>
+                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="video-controls">
+        <div class="controls-left">
+            <button class="control-btn play" id="playBtn" onclick="togglePlayPause()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
+            <button class="control-btn" id="prevBtn" onclick="previousStep()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+                </svg>
+            </button>
+            <button class="control-btn" id="nextBtn" onclick="nextStep()">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-info">
+                <span id="currentTime">0:00</span>
+                <span id="currentStepName">Introduction</span>
+                <span id="duration">5:30</span>
+            </div>
+            <div class="progress-bar" onclick="seekToPosition(event)">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="controls-right">
+            <div class="mode-toggle">
+                <button class="mode-btn" onclick="setMode('auto')">Auto Play</button>
+                <button class="mode-btn active" onclick="setMode('manual')">Presenter</button>
+            </div>
+            <button class="audio-toggle active" id="audioToggle" onclick="toggleAudio()">Audio</button>
+            <button class="fullscreen-btn" onclick="toggleFullscreen()">Fullscreen</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toastIcon">✓</span>
+        <span class="toast-message" id="toastMessage">Configuration loaded</span>
+    </div>
+
+    <audio id="dialTone" loop></audio>
+    <audio id="ringTone" loop></audio>
+
+    <script src="https://aka.ms/csspeech/jsbrowserpackageraw"></script>
+    <script>
+        let demoState = {
+            currentStep: 0,
+            isPlaying: false,
+            mode: 'manual',
+            timer: null,
+            allMessages: [],
+            callState: 'idle',
+            callTimer: 0,
+            callTimerInterval: null,
+            audioVizInterval: null
+        };
+
+        let demoSteps = [];
+        let demoConfig = {};
+        let audioEnabled = true;
+        let speechSynthesizer = null;
+        let currentSpeaking = false;
+        let currentSpeakingMessageId = null;
+        let audioContext = null;
+        let ringToneOscillator = null;
+
+        const voiceProfiles = {
+            agent: {
+                name: 'Agent',
+                initials: 'A',
+                voiceName: 'en-US-AriaNeural',
+                type: 'agent'
+            },
+            customer: {
+                name: 'Customer',
+                initials: 'C',
+                voiceName: 'en-US-GuyNeural',
+                type: 'customer'
+            },
+            narrator: {
+                name: 'Narrator',
+                initials: 'N',
+                voiceName: 'en-US-JennyNeural',
+                type: 'narrator'
+            }
+        };
+
+        function initializeAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playOutboundDialTone() {
+            if (!audioContext) initializeAudio();
+            
+            function playDialBeep() {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 480;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.08, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            }
+            
+            playDialBeep();
+            setTimeout(playDialBeep, 200);
+            setTimeout(playDialBeep, 400);
+        }
+
+        function startOutboundRingTone() {
+            if (!audioContext) initializeAudio();
+            stopRingTone();
+            
+            function playRingPattern() {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = 440;
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+                osc.start(audioContext.currentTime);
+                osc.stop(audioContext.currentTime + 1.5);
+            }
+            
+            playRingPattern();
+            ringToneOscillator = setInterval(playRingPattern, 3000);
+        }
+
+        function playConnectionTone() {
+            if (!audioContext) initializeAudio();
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(660, audioContext.currentTime + 0.2);
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function stopRingTone() {
+            if (ringToneOscillator) {
+                clearInterval(ringToneOscillator);
+                ringToneOscillator = null;
+            }
+        }
+
+        function startCallTimer() {
+            demoState.callTimer = 0;
+            demoState.callTimerInterval = setInterval(() => {
+                demoState.callTimer++;
+                updateCallTimer();
+            }, 1000);
+        }
+
+        function stopCallTimer() {
+            if (demoState.callTimerInterval) {
+                clearInterval(demoState.callTimerInterval);
+                demoState.callTimerInterval = null;
+            }
+        }
+
+        function updateCallTimer() {
+            const minutes = Math.floor(demoState.callTimer / 60);
+            const seconds = demoState.callTimer % 60;
+            const timerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            const timerElements = document.querySelectorAll('.call-timer, .call-timer-top');
+            timerElements.forEach(el => {
+                el.textContent = timerText;
+            });
+        }
+
+        function startAudioVisualizer() {
+            const visualizer = document.querySelector('.call-audio-visualizer');
+            if (!visualizer) return;
+            
+            visualizer.classList.add('active');
+            
+            const bars = visualizer.querySelectorAll('.audio-viz-bar');
+            
+            if (demoState.audioVizInterval) {
+                clearInterval(demoState.audioVizInterval);
+            }
+            
+            demoState.audioVizInterval = setInterval(() => {
+                bars.forEach(bar => {
+                    const height = Math.random() * 20 + 4;
+                    bar.style.height = height + 'px';
+                });
+            }, 100);
+        }
+
+        function stopAudioVisualizer() {
+            const visualizer = document.querySelector('.call-audio-visualizer');
+            if (visualizer) {
+                visualizer.classList.remove('active');
+            }
+            
+            if (demoState.audioVizInterval) {
+                clearInterval(demoState.audioVizInterval);
+                demoState.audioVizInterval = null;
+            }
+        }
+
+        function addCallIndicators(container) {
+            if (!container) return;
+            
+            // Remove any existing indicators first
+            const existingTop = container.querySelector('.call-indicator-top');
+            const existingBottom = container.querySelector('.call-audio-visualizer');
+            if (existingTop) existingTop.remove();
+            if (existingBottom) existingBottom.remove();
+            
+            // Add call indicator at top
+            const callIndicatorTop = document.createElement('div');
+            callIndicatorTop.className = 'call-indicator-top';
+            callIndicatorTop.innerHTML = `
+                <div class="call-indicator-info">
+                    <div class="call-pulse-dot"></div>
+                    <span class="call-indicator-text">On call with Sarah</span>
+                    <span class="call-timer-top">0:00</span>
+                </div>
+                <button class="return-to-call-btn" onclick="returnToCall()">Return to call</button>
+            `;
+            
+            // Add audio visualizer at bottom
+            const audioVisualizer = document.createElement('div');
+            audioVisualizer.className = 'call-audio-visualizer';
+            audioVisualizer.innerHTML = `
+                <div class="audio-viz-label">CALL IN PROGRESS</div>
+                <div class="audio-viz-bars">
+                    <div class="audio-viz-bar" style="height: 8px;"></div>
+                    <div class="audio-viz-bar" style="height: 12px;"></div>
+                    <div class="audio-viz-bar" style="height: 16px;"></div>
+                    <div class="audio-viz-bar" style="height: 14px;"></div>
+                    <div class="audio-viz-bar" style="height: 10px;"></div>
+                    <div class="audio-viz-bar" style="height: 18px;"></div>
+                    <div class="audio-viz-bar" style="height: 12px;"></div>
+                    <div class="audio-viz-bar" style="height: 16px;"></div>
+                    <div class="audio-viz-bar" style="height: 14px;"></div>
+                    <div class="audio-viz-bar" style="height: 10px;"></div>
+                    <div class="audio-viz-bar" style="height: 20px;"></div>
+                    <div class="audio-viz-bar" style="height: 15px;"></div>
+                    <div class="audio-viz-bar" style="height: 11px;"></div>
+                    <div class="audio-viz-bar" style="height: 17px;"></div>
+                    <div class="audio-viz-bar" style="height: 13px;"></div>
+                    <div class="audio-viz-bar" style="height: 9px;"></div>
+                    <div class="audio-viz-bar" style="height: 19px;"></div>
+                    <div class="audio-viz-bar" style="height: 14px;"></div>
+                    <div class="audio-viz-bar" style="height: 12px;"></div>
+                    <div class="audio-viz-bar" style="height: 16px;"></div>
+                </div>
+            `;
+            
+            container.prepend(callIndicatorTop);
+            container.appendChild(audioVisualizer);
+            
+            // Trigger animations after elements are in DOM
+            setTimeout(() => {
+                callIndicatorTop.classList.add('active');
+                audioVisualizer.classList.add('active');
+                updateCallTimer();
+                startAudioVisualizer();
+            }, 50);
+        }
+
+        function removeCallIndicators(container) {
+            if (!container) return;
+            
+            const topIndicator = container.querySelector('.call-indicator-top');
+            const bottomViz = container.querySelector('.call-audio-visualizer');
+            
+            if (topIndicator) topIndicator.remove();
+            if (bottomViz) bottomViz.remove();
+            
+            stopAudioVisualizer();
+        }
+
+        function showCallInitiation() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            demoState.callState = 'idle';
+            
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="call-initiation-screen">
+                    <div class="mobile-header">
+                        <div class="tilt-logo">Tilt</div>
+                        <div class="mobile-subtitle">Insurance Application</div>
+                    </div>
+                    <div class="call-prompt-section">
+                        <div class="call-icon-large">📞</div>
+                        <div class="call-prompt-title">Need Insurance?</div>
+                        <div class="call-prompt-subtitle">Our agents are ready to help you find the perfect coverage. No forms, no hassle - just tell us what you need.</div>
+                        <button class="call-now-button" onclick="initiateCall()">
+                            <span>📞</span>
+                            <span>Call Now</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function initiateCall() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            demoState.callState = 'dialing';
+            
+            if (audioEnabled) {
+                playOutboundDialTone();
+            }
+            
+            mobileScreen.innerHTML = `
+                <div class="dialing-screen">
+                    <div class="dialing-info">
+                        <div class="dialing-avatar">S</div>
+                        <div class="dialing-name">Tilt Insurance</div>
+                        <div class="dialing-subtitle">Connecting to agent...</div>
+                        <div class="dialing-status">Dialing...</div>
+                        <div class="dial-tones">
+                            <div class="dial-dot"></div>
+                            <div class="dial-dot"></div>
+                            <div class="dial-dot"></div>
+                            <div class="dial-dot"></div>
+                        </div>
+                    </div>
+                    <div class="call-actions">
+                        <button class="cancel-call-button" onclick="cancelCall()">✕</button>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                showRinging();
+            }, 1500);
+        }
+
+        function showRinging() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            demoState.callState = 'ringing';
+            
+            if (audioEnabled) {
+                startOutboundRingTone();
+            }
+            
+            mobileScreen.innerHTML = `
+                <div class="dialing-screen">
+                    <div class="dialing-info">
+                        <div class="dialing-avatar">S</div>
+                        <div class="dialing-name">Tilt Insurance</div>
+                        <div class="dialing-subtitle">Calling agent...</div>
+                        <div class="dialing-status">Ringing...</div>
+                        <div class="dial-tones">
+                            <div class="dial-dot"></div>
+                            <div class="dial-dot"></div>
+                            <div class="dial-dot"></div>
+                            <div class="dial-dot"></div>
+                        </div>
+                    </div>
+                    <div class="call-actions">
+                        <button class="cancel-call-button" onclick="cancelCall()">✕</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function agentAnswers() {
+            stopRingTone();
+            
+            if (audioEnabled) {
+                playConnectionTone();
+            }
+            
+            demoState.callState = 'active';
+            startCallTimer();
+            
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="incoming-call-screen">
+                    <div class="caller-info">
+                        <div class="caller-avatar">S</div>
+                        <div class="caller-name">Sarah</div>
+                        <div class="caller-subtitle">Tilt Insurance Agent</div>
+                        <div class="call-status">Connected</div>
+                        <div class="connected-message">Agent has answered</div>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                showActiveCall();
+            }, 1500);
+        }
+
+        function showActiveCall() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            
+            mobileScreen.innerHTML = `
+                <div class="active-call-screen">
+                    <div class="call-header">
+                        <div class="call-timer">0:00</div>
+                        <div class="active-caller-name">Sarah - Tilt Insurance</div>
+                        <div class="call-type">Voice Call</div>
+                    </div>
+                    <div class="call-content">
+                        <div class="active-caller-avatar speaking">S</div>
+                        <div class="audio-wave">
+                            <div class="audio-bar"></div>
+                            <div class="audio-bar"></div>
+                            <div class="audio-bar"></div>
+                            <div class="audio-bar"></div>
+                            <div class="audio-bar"></div>
+                            <div class="audio-bar"></div>
+                            <div class="audio-bar"></div>
+                        </div>
+                        <button class="app-transition-btn" onclick="openAppDuringCall()">
+                            Open Application Form
+                        </button>
+                    </div>
+                    <div class="call-actions-bottom">
+                        <button class="call-control-btn">🔇</button>
+                        <button class="call-control-btn end-call" onclick="endCall()">📵</button>
+                        <button class="call-control-btn">🔊</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function cancelCall() {
+            stopRingTone();
+            demoState.callState = 'idle';
+            showCallInitiation();
+        }
+
+        function endCall() {
+            stopCallTimer();
+            stopRingTone();
+            stopAudioVisualizer();
+            demoState.callState = 'idle';
+            showWelcomeScreen();
+        }
+
+        function openAppDuringCall() {
+            const callScreen = document.querySelector('.active-call-screen');
+            if (callScreen) {
+                callScreen.classList.add('transitioning-out');
+            }
+            
+            setTimeout(() => {
+                demoState.callState = 'on-app';
+                showPersonalInfoScreen();
+                
+                const mobileScreen = document.getElementById('mobileScreen');
+                const mobileContent = mobileScreen.querySelector('.mobile-content');
+                
+                if (mobileContent) {
+                    addCallIndicators(mobileContent);
+                }
+            }, 400);
+        }
+
+        function returnToCall() {
+            const mobileContent = document.querySelector('.mobile-content');
+            if (mobileContent) {
+                mobileContent.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                mobileContent.style.opacity = '0';
+                mobileContent.style.transform = 'translateY(20px)';
+            }
+            
+            stopAudioVisualizer();
+            
+            setTimeout(() => {
+                demoState.callState = 'active';
+                showActiveCall();
+            }, 300);
+        }
+
+        function updateSpeakingAvatar(speaker) {
+            const avatar = document.querySelector('.active-caller-avatar');
+            if (avatar) {
+                if (speaker === 'agent') {
+                    avatar.classList.add('speaking');
+                } else {
+                    avatar.classList.remove('speaking');
+                }
+            }
+        }
+
+        window.initiateCall = initiateCall;
+        window.cancelCall = cancelCall;
+        window.agentAnswers = agentAnswers;
+        window.endCall = endCall;
+        window.openAppDuringCall = openAppDuringCall;
+        window.returnToCall = returnToCall;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDemoConfig();
+            updateStepIndicator();
+            showWelcomeScreen();
+        });
+
+        function loadDemoConfig() {
+            const stored = localStorage.getItem('tiltDemoConfig');
+            if (stored) {
+                try {
+                    demoConfig = JSON.parse(stored);
+                    demoSteps = demoConfig.demoSteps || [];
+                    window.demoData = {
+                        chatInteractions: demoConfig.chatInteractions || [],
+                        agentCards: demoConfig.agentCards || []
+                    };
+                    initializeTTS();
+                    showToast('Demo configuration loaded', 'success');
+                    return;
+                } catch (e) {
+                    console.error('Error loading stored config:', e);
+                }
+            }
+            showToast('Load your demo configuration', 'info');
+        }
+
+        function initializeTTS() {
+            if (demoConfig.azureTTS && window.SpeechSDK) {
+                const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(
+                    demoConfig.azureTTS.key,
+                    demoConfig.azureTTS.region
+                );
+                const audioConfig = window.SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+                speechSynthesizer = new window.SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+            }
+        }
+
+        function showVoiceIndicator() {
+            const indicator = document.getElementById('voiceIndicator');
+            if (indicator) {
+                indicator.classList.add('active');
+            }
+        }
+
+        function hideVoiceIndicator() {
+            const indicator = document.getElementById('voiceIndicator');
+            if (indicator) {
+                indicator.classList.remove('active');
+            }
+        }
+
+        function addSpeakingAnimation(messageId) {
+            currentSpeakingMessageId = messageId;
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                const bubble = messageElement.querySelector('.message-bubble');
+                const avatar = messageElement.querySelector('.message-avatar');
+                const indicator = messageElement.querySelector('.speaking-indicator');
+                
+                if (bubble) bubble.classList.add('speaking');
+                if (avatar) avatar.classList.add('speaking');
+                if (indicator) indicator.classList.add('active');
+            }
+            
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = 'On Call';
+            statusBadge.className = 'status-badge active';
+        }
+
+        function removeSpeakingAnimation() {
+            if (currentSpeakingMessageId) {
+                const messageElement = document.querySelector(`[data-message-id="${currentSpeakingMessageId}"]`);
+                if (messageElement) {
+                    const bubble = messageElement.querySelector('.message-bubble');
+                    const avatar = messageElement.querySelector('.message-avatar');
+                    const indicator = messageElement.querySelector('.speaking-indicator');
+                    
+                    if (bubble) bubble.classList.remove('speaking');
+                    if (avatar) avatar.classList.remove('speaking');
+                    if (indicator) indicator.classList.remove('active');
+                }
+            }
+            currentSpeakingMessageId = null;
+            
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = 'Ready';
+            statusBadge.className = 'status-badge';
+        }
+
+        function animateFieldFilling(fieldId, value, delay = 0) {
+            setTimeout(() => {
+                const fieldGroup = document.querySelector(`[data-field-id="${fieldId}"]`);
+                const input = fieldGroup?.querySelector('.form-input');
+                
+                if (!fieldGroup || !input) return;
+                
+                showVoiceIndicator();
+                
+                fieldGroup.classList.add('voice-filling');
+                
+                let currentIndex = 0;
+                const typingInterval = setInterval(() => {
+                    if (currentIndex <= value.length) {
+                        input.value = value.substring(0, currentIndex);
+                        currentIndex++;
+                    } else {
+                        clearInterval(typingInterval);
+                        fieldGroup.classList.remove('voice-filling');
+                        fieldGroup.classList.add('voice-complete');
+                        
+                        setTimeout(() => {
+                            fieldGroup.classList.remove('voice-complete');
+                            hideVoiceIndicator();
+                        }, 500);
+                    }
+                }, 50);
+            }, delay);
+        }
+
+        function animateCoverageSelection(coverageId, delay = 0) {
+            setTimeout(() => {
+                showVoiceIndicator();
+                const card = document.querySelector(`[data-coverage-id="${coverageId}"]`);
+                if (card) {
+                    card.classList.add('voice-selecting');
+                    setTimeout(() => {
+                        card.classList.remove('voice-selecting');
+                        card.classList.add('selected');
+                        hideVoiceIndicator();
+                    }, 600);
+                }
+            }, delay);
+        }
+
+        function animatePackageSelection(packageId, delay = 0) {
+            setTimeout(() => {
+                showVoiceIndicator();
+                const card = document.querySelector(`[data-package-id="${packageId}"]`);
+                if (card) {
+                    card.classList.add('voice-selecting');
+                    setTimeout(() => {
+                        card.classList.remove('voice-selecting');
+                        hideVoiceIndicator();
+                    }, 800);
+                }
+            }, delay);
+        }
+
+        function animatePaymentEntry() {
+            setTimeout(() => {
+                const cardField = document.querySelector('[data-field-id="cardNumber"] .form-input');
+                const expiryField = document.querySelector('[data-field-id="expiry"] .form-input');
+                const cvvField = document.querySelector('[data-field-id="cvv"] .form-input');
+                const nameField = document.querySelector('[data-field-id="nameOnCard"] .form-input');
+                
+                if (cardField) {
+                    const cardGroup = document.querySelector('[data-field-id="cardNumber"]');
+                    cardGroup.classList.add('voice-filling');
+                    
+                    let cardNumber = '4532 1234 5678 9010';
+                    let index = 0;
+                    const cardInterval = setInterval(() => {
+                        if (index <= cardNumber.length) {
+                            cardField.value = cardNumber.substring(0, index);
+                            index++;
+                        } else {
+                            clearInterval(cardInterval);
+                            cardGroup.classList.remove('voice-filling');
+                            cardGroup.classList.add('voice-complete');
+                            setTimeout(() => cardGroup.classList.remove('voice-complete'), 500);
+                            
+                            if (expiryField) {
+                                setTimeout(() => {
+                                    const expiryGroup = document.querySelector('[data-field-id="expiry"]');
+                                    expiryGroup.classList.add('voice-filling');
+                                    expiryField.value = '12/28';
+                                    setTimeout(() => {
+                                        expiryGroup.classList.remove('voice-filling');
+                                        expiryGroup.classList.add('voice-complete');
+                                        setTimeout(() => expiryGroup.classList.remove('voice-complete'), 500);
+                                    }, 300);
+                                }, 500);
+                            }
+                            
+                            if (cvvField) {
+                                setTimeout(() => {
+                                    const cvvGroup = document.querySelector('[data-field-id="cvv"]');
+                                    cvvGroup.classList.add('voice-filling');
+                                    cvvField.value = '123';
+                                    setTimeout(() => {
+                                        cvvGroup.classList.remove('voice-filling');
+                                        cvvGroup.classList.add('voice-complete');
+                                        setTimeout(() => cvvGroup.classList.remove('voice-complete'), 500);
+                                    }, 200);
+                                }, 1000);
+                            }
+                            
+                            if (nameField) {
+                                setTimeout(() => {
+                                    const nameGroup = document.querySelector('[data-field-id="nameOnCard"]');
+                                    nameGroup.classList.add('voice-filling');
+                                    let name = 'Michael Torres';
+                                    let nameIndex = 0;
+                                    const nameInterval = setInterval(() => {
+                                        if (nameIndex <= name.length) {
+                                            nameField.value = name.substring(0, nameIndex);
+                                            nameIndex++;
+                                        } else {
+                                            clearInterval(nameInterval);
+                                            nameGroup.classList.remove('voice-filling');
+                                            nameGroup.classList.add('voice-complete');
+                                            setTimeout(() => nameGroup.classList.remove('voice-complete'), 500);
+                                        }
+                                    }, 60);
+                                }, 1500);
+                            }
+                        }
+                    }, 40);
+                }
+            }, 1000);
+        }
+
+        async function speakText(text, speaker = 'narrator', messageId = null) {
+            if (!audioEnabled || !speechSynthesizer || currentSpeaking) return;
+            
+            currentSpeaking = true;
+            const profile = voiceProfiles[speaker] || voiceProfiles.narrator;
+            
+            if (messageId) {
+                addSpeakingAnimation(messageId);
+            }
+            
+            if (demoState.callState === 'active') {
+                updateSpeakingAvatar(speaker);
+            }
+            
+            return new Promise((resolve, reject) => {
+                const speechConfig = window.SpeechSDK.SpeechConfig.fromSubscription(
+                    demoConfig.azureTTS.key,
+                    demoConfig.azureTTS.region
+                );
+                speechConfig.speechSynthesisVoiceName = profile.voiceName;
+                
+                const audioConfig = window.SpeechSDK.AudioConfig.fromDefaultSpeakerOutput();
+                const tempSynthesizer = new window.SpeechSDK.SpeechSynthesizer(speechConfig, audioConfig);
+                
+                tempSynthesizer.speakTextAsync(
+                    text,
+                    result => {
+                        currentSpeaking = false;
+                        removeSpeakingAnimation();
+                        if (demoState.callState === 'active') {
+                            updateSpeakingAvatar(null);
+                        }
+                        tempSynthesizer.close();
+                        resolve();
+                    },
+                    error => {
+                        currentSpeaking = false;
+                        removeSpeakingAnimation();
+                        if (demoState.callState === 'active') {
+                            updateSpeakingAvatar(null);
+                        }
+                        tempSynthesizer.close();
+                        reject(error);
+                    }
+                );
+            });
+        }
+
+        function stopSpeaking() {
+            if (speechSynthesizer && currentSpeaking) {
+                speechSynthesizer.close();
+                initializeTTS();
+                currentSpeaking = false;
+                removeSpeakingAnimation();
+                if (demoState.callState === 'active') {
+                    updateSpeakingAvatar(null);
+                }
+            }
+        }
+
+        function showWelcomeScreen() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="mobile-content">
+                    <div class="mobile-header">
+                        <div class="tilt-logo">Tilt</div>
+                        <div class="mobile-subtitle">Your Progress</div>
+                    </div>
+                    <div class="mobile-body">
+                        <div class="progress-dots">
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                        </div>
+                        <h2 style="font-size: 22px; font-weight: 700; margin: 24px 0 12px;">Welcome</h2>
+                        <p style="color: #605e5c; margin-bottom: 32px;">Let's get you covered with the right insurance for your business.</p>
+                        <button class="mobile-button">Start Application</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showPersonalInfoScreen() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="mobile-content">
+                    <div class="mobile-header">
+                        <div class="tilt-logo">Tilt</div>
+                        <div class="mobile-subtitle">Personal Information</div>
+                    </div>
+                    <div class="mobile-body">
+                        <div class="progress-dots">
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot"></div>
+                            <div class="progress-dot"></div>
+                        </div>
+                        <div class="form-group" data-field-id="firstName">
+                            <label class="form-label">First name</label>
+                            <input type="text" class="form-input" value="" readonly>
+                        </div>
+                        <div class="form-group" data-field-id="lastName">
+                            <label class="form-label">Last name</label>
+                            <input type="text" class="form-input" value="" readonly>
+                        </div>
+                        <div class="form-group" data-field-id="dob">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="text" class="form-input" value="" readonly>
+                        </div>
+                        <div class="form-group" data-field-id="businessName">
+                            <label class="form-label">Business name</label>
+                            <input type="text" class="form-input" value="" readonly>
+                        </div>
+                        <button class="mobile-button">Next</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add call indicators if we're in a call
+            if (demoState.callState === 'on-app' || demoState.callState === 'active') {
+                const mobileContent = mobileScreen.querySelector('.mobile-content');
+                if (mobileContent) {
+                    addCallIndicators(mobileContent);
+                }
+            }
+        }
+
+        function showCoverageScreen() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="mobile-content">
+                    <div class="mobile-header">
+                        <div class="tilt-logo">Tilt</div>
+                        <div class="mobile-subtitle">Coverage</div>
+                    </div>
+                    <div class="mobile-body">
+                        <div class="progress-dots">
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot"></div>
+                        </div>
+                        <h2 style="font-size: 20px; font-weight: 700; margin: 20px 0;">Select coverage</h2>
+                        <div class="coverage-card" data-coverage-id="public">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Public Liability</div>
+                            <div style="font-size: 13px; color: #666;">Third party coverage</div>
+                        </div>
+                        <div class="coverage-card" data-coverage-id="professional">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Professional Indemnity</div>
+                            <div style="font-size: 13px; color: #666;">Negligence protection</div>
+                        </div>
+                        <div class="coverage-card" data-coverage-id="cyber">
+                            <div style="font-weight: 600; margin-bottom: 4px;">Cyber Insurance</div>
+                            <div style="font-size: 13px; color: #666;">Data breach coverage</div>
+                        </div>
+                        <button class="mobile-button">Continue</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add call indicators if we're in a call
+            if (demoState.callState === 'on-app' || demoState.callState === 'active') {
+                const mobileContent = mobileScreen.querySelector('.mobile-content');
+                if (mobileContent) {
+                    addCallIndicators(mobileContent);
+                }
+            }
+        }
+
+        function showPackageScreen() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="mobile-content">
+                    <div class="mobile-header">
+                        <div class="tilt-logo">Select Package</div>
+                    </div>
+                    <div class="mobile-body">
+                        <div class="package-card" data-package-id="essential">
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Essential</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #4D5FFF;">£850<span style="font-size: 14px;">/year</span></div>
+                        </div>
+                        <div class="package-card recommended" data-package-id="recommended">
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Recommended</div>
+                            <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">£1,240<span style="font-size: 14px;">/year</span></div>
+                            <div style="padding: 6px 14px; background: rgba(255,255,255,0.3); border-radius: 20px; display: inline-block; font-size: 13px; margin-top: 8px;">Selected</div>
+                        </div>
+                        <div class="package-card" data-package-id="premium">
+                            <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">Premium</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #4D5FFF;">£1,680<span style="font-size: 14px;">/year</span></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add call indicators if we're in a call
+            if (demoState.callState === 'on-app' || demoState.callState === 'active') {
+                const mobileContent = mobileScreen.querySelector('.mobile-content');
+                if (mobileContent) {
+                    addCallIndicators(mobileContent);
+                }
+            }
+        }
+
+        function showPaymentScreen() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="mobile-content">
+                    <div class="mobile-header">
+                        <div class="tilt-logo">Tilt</div>
+                        <div class="mobile-subtitle">Payment Details</div>
+                    </div>
+                    <div class="mobile-body" style="padding: 16px 20px;">
+                        <div class="progress-dots">
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot active"></div>
+                            <div class="progress-dot active"></div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Total Amount</div>
+                            <div style="font-size: 28px; font-weight: 700; color: #1a1a1a;">£1,178</div>
+                            <div style="font-size: 11px; color: #666; margin-top: 2px;">Paid annually (save £62)</div>
+                        </div>
+                        <div class="form-group" data-field-id="cardNumber" style="margin-bottom: 14px;">
+                            <label class="form-label">Card number</label>
+                            <input type="text" class="form-input" placeholder="1234 5678 9012 3456" value="">
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+                            <div class="form-group" data-field-id="expiry" style="flex: 1; margin-bottom: 0;">
+                                <label class="form-label">Expiry</label>
+                                <input type="text" class="form-input" placeholder="MM/YY" value="">
+                            </div>
+                            <div class="form-group" data-field-id="cvv" style="flex: 1; margin-bottom: 0;">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-input" placeholder="123" value="">
+                            </div>
+                        </div>
+                        <div class="form-group" data-field-id="nameOnCard" style="margin-bottom: 14px;">
+                            <label class="form-label">Name on card</label>
+                            <input type="text" class="form-input" placeholder="Michael Torres" value="">
+                        </div>
+                        <div style="font-size: 11px; color: #666; padding: 10px; background: #f0f7ff; border-radius: 6px; border-left: 3px solid #4D5FFF; margin-bottom: 14px;">
+                            🔒 Your payment details are encrypted and secure. The agent cannot see your information.
+                        </div>
+                        <button class="mobile-button">Complete Payment</button>
+                    </div>
+                </div>
+            `;
+            
+            // Add call indicators if we're in a call
+            if (demoState.callState === 'on-app' || demoState.callState === 'active') {
+                const mobileContent = mobileScreen.querySelector('.mobile-content');
+                if (mobileContent) {
+                    addCallIndicators(mobileContent);
+                }
+            }
+        }
+
+        function showConfirmationScreen() {
+            const mobileScreen = document.getElementById('mobileScreen');
+            mobileScreen.innerHTML = `
+                <div class="voice-listening-indicator" id="voiceIndicator">
+                    <div class="voice-wave">
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                        <div class="voice-bar"></div>
+                    </div>
+                    <span>Listening...</span>
+                </div>
+                <div class="mobile-content">
+                    <div class="mobile-body" style="padding: 40px 20px; text-align: center;">
+                        <div style="width: 80px; height: 80px; margin: 0 auto 24px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; color: white;">✓</div>
+                        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 16px;">You're Insured</h1>
+                        <p style="color: #666; margin-bottom: 32px;">Policy active immediately</p>
+                        <div style="text-align: left; background: #f8f9fa; padding: 20px; border-radius: 12px;">
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0e0e0;">
+                                <span style="color: #666;">Policy Number</span>
+                                <span style="font-weight: 600;">TILT-2025-4782</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e0e0e0;">
+                                <span style="color: #666;">Coverage</span>
+                                <span style="font-weight: 600;">Recommended</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 12px 0;">
+                                <span style="color: #666;">Annual Cost</span>
+                                <span style="font-weight: 600;">£1,240</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add call indicators if we're in a call
+            if (demoState.callState === 'on-app' || demoState.callState === 'active') {
+                const mobileContent = mobileScreen.querySelector('.mobile-content');
+                if (mobileContent) {
+                    addCallIndicators(mobileContent);
+                }
+            }
+        }
+
+        function displayChatMessages(messages, animate = true) {
+            const chatContainer = document.getElementById('chatMessages');
+            if (!chatContainer) return;
+
+            messages.forEach((msg, index) => {
+                const delay = animate ? index * 500 : 0;
+                
+                setTimeout(() => {
+                    const messageDiv = document.createElement('div');
+                    const time = new Date().toLocaleString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const messageId = `msg-${Date.now()}-${index}`;
+                    messageDiv.setAttribute('data-message-id', messageId);
+
+                    if (msg.type === 'system') {
+                        messageDiv.className = 'message system';
+                        messageDiv.innerHTML = `<div class="message-bubble">${msg.text}</div>`;
+                    } else {
+                        messageDiv.className = `message ${msg.type}`;
+                        const avatar = msg.type === 'agent' ? 'A' : 'C';
+                        const author = msg.type === 'agent' ? 'Agent' : 'Customer';
+                        
+                        messageDiv.innerHTML = `
+                            <div class="message-container">
+                                <div class="message-header">
+                                    <div class="message-avatar">${avatar}</div>
+                                    <span class="message-author">${author}</span>
+                                    <span class="message-time">${time}</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <div class="message-text">${msg.text}</div>
+                                    <div class="speaking-indicator">
+                                        <span>Speaking</span>
+                                        <div class="speaking-dots">
+                                            <div class="speaking-dot"></div>
+                                            <div class="speaking-dot"></div>
+                                            <div class="speaking-dot"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    chatContainer.appendChild(messageDiv);
+                    
+                    demoState.allMessages.push({
+                        element: messageDiv,
+                        data: msg,
+                        id: messageId
+                    });
+                    
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                }, delay);
+            });
+        }
+
+        function displayAgentCard(card) {
+            const chatContainer = document.getElementById('chatMessages');
+            if (!chatContainer) return;
+
+            setTimeout(() => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message agent';
+
+                let detailsHTML = '';
+                if (card.details) {
+                    for (const [key, value] of Object.entries(card.details)) {
+                        detailsHTML += `
+                            <div class="detail-item">
+                                <span class="detail-label">${key}</span>
+                                <span class="detail-value">${value}</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="message-container">
+                        <div class="agent-card">
+                            <div class="agent-card-header">
+                                <span class="agent-card-title">${card.title}</span>
+                                ${card.status ? `<span class="agent-card-status">${card.status}</span>` : ''}
+                            </div>
+                            <div class="agent-card-body">${detailsHTML}</div>
+                        </div>
+                    </div>
+                `;
+
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 1000);
+        }
+
+        function executeStepAction(action) {
+            switch(action) {
+                case 'showCallInitiation':
+                    showCallInitiation();
+                    break;
+                case 'initiateCall':
+                    setTimeout(() => {
+                        initiateCall();
+                    }, 500);
+                    break;
+                case 'agentAnswers':
+                    setTimeout(() => {
+                        agentAnswers();
+                    }, 1000);
+                    break;
+                case 'triggerAppOpen':
+                    const activeCallContent = document.querySelector('.call-content');
+                    if (activeCallContent) {
+                        const voiceCommandIndicator = document.createElement('div');
+                        voiceCommandIndicator.style.cssText = `
+                            position: absolute;
+                            top: 20px;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            background: linear-gradient(135deg, #10b981, #059669);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 24px;
+                            font-size: 13px;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            z-index: 50;
+                            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+                            animation: slideDown 0.3s ease;
+                        `;
+                        voiceCommandIndicator.innerHTML = '🎤 Voice command detected';
+                        activeCallContent.appendChild(voiceCommandIndicator);
+                        
+                        setTimeout(() => {
+                            voiceCommandIndicator.style.opacity = '0';
+                            voiceCommandIndicator.style.transform = 'translateX(-50%) translateY(-10px)';
+                            voiceCommandIndicator.style.transition = 'all 0.3s ease';
+                            setTimeout(() => voiceCommandIndicator.remove(), 300);
+                        }, 1500);
+                    }
+                    
+                    setTimeout(() => {
+                        const appButton = document.querySelector('.app-transition-btn');
+                        if (appButton) {
+                            appButton.style.animation = 'none';
+                            appButton.style.transform = 'scale(1.1)';
+                            appButton.style.boxShadow = '0 8px 32px rgba(102, 126, 234, 0.8)';
+                            
+                            setTimeout(() => {
+                                appButton.style.transform = 'scale(0.95)';
+                                
+                                setTimeout(() => {
+                                    openAppDuringCall();
+                                }, 150);
+                            }, 400);
+                        }
+                    }, 800);
+                    break;
+                case 'fillPersonalDetails':
+                    animateFieldFilling('firstName', 'Michael', 0);
+                    animateFieldFilling('lastName', 'Torres', 800);
+                    animateFieldFilling('dob', '05/12/1985', 2000);
+                    animateFieldFilling('businessName', 'Torres Consulting LLC', 4500);
+                    break;
+                case 'showWelcomeScreen':
+                    if (demoState.callState === 'idle') {
+                        showWelcomeScreen();
+                    }
+                    break;
+                case 'showPersonalInfo':
+                    if (demoState.callState === 'on-app') {
+                        setTimeout(() => {
+                            animateFieldFilling('firstName', 'Michael', 500);
+                            animateFieldFilling('lastName', 'Torres', 1500);
+                            animateFieldFilling('dob', '05/12/1985', 2500);
+                            animateFieldFilling('businessName', 'Torres Consulting LLC', 3500);
+                        }, 500);
+                    } else if (demoState.callState === 'active') {
+                        openAppDuringCall();
+                        setTimeout(() => {
+                            animateFieldFilling('firstName', 'Michael', 500);
+                            animateFieldFilling('lastName', 'Torres', 1500);
+                            animateFieldFilling('dob', '05/12/1985', 2500);
+                            animateFieldFilling('businessName', 'Torres Consulting LLC', 3500);
+                        }, 1000);
+                    } else {
+                        showPersonalInfoScreen();
+                        setTimeout(() => {
+                            animateFieldFilling('firstName', 'Michael', 500);
+                            animateFieldFilling('lastName', 'Torres', 1500);
+                            animateFieldFilling('dob', '05/12/1985', 2500);
+                            animateFieldFilling('businessName', 'Torres Consulting LLC', 3500);
+                        }, 500);
+                    }
+                    break;
+                case 'showCoverageOptions':
+                    showCoverageScreen();
+                    setTimeout(() => {
+                        animateCoverageSelection('professional', 800);
+                        animateCoverageSelection('cyber', 1600);
+                        animateCoverageSelection('public', 2400);
+                    }, 500);
+                    break;
+                case 'showPackagePresentation':
+                case 'showPricePresentation':
+                    showPackageScreen();
+                    setTimeout(() => {
+                        animatePackageSelection('recommended', 800);
+                    }, 500);
+                    break;
+                case 'showReviewConfirm':
+                    showPackageScreen();
+                    break;
+                case 'showPaymentSetup':
+                    showPaymentScreen();
+                    animatePaymentEntry();
+                    break;
+                case 'showConfirmation':
+                    showConfirmationScreen();
+                    break;
+            }
+        }
+
+        async function playCurrentStep() {
+            if (demoState.currentStep >= demoSteps.length) {
+                completeDemo();
+                return;
+            }
+
+            const step = demoSteps[demoState.currentStep];
+            
+            updateStepIndicator();
+            updateProgress();
+            document.getElementById('currentStepName').textContent = step.name || 'Step ' + (demoState.currentStep + 1);
+            
+            if (step.action) {
+                executeStepAction(step.action);
+            }
+            
+            if (window.demoData && window.demoData.chatInteractions) {
+                const stepInteractions = window.demoData.chatInteractions.find(i => i.stepId === step.id);
+                if (stepInteractions && stepInteractions.messages) {
+                    displayChatMessages(stepInteractions.messages, true);
+                }
+            }
+            
+            if (window.demoData && window.demoData.agentCards) {
+                const stepCard = window.demoData.agentCards.find(c => c.stepId === step.id);
+                if (stepCard && stepCard.card) {
+                    displayAgentCard(stepCard.card);
+                }
+            }
+            
+            if (step.narrator) {
+                showNarrator(step.narrator);
+            }
+            
+            let messageIdForVoice = null;
+            if (window.demoData && window.demoData.chatInteractions) {
+                const stepInteractions = window.demoData.chatInteractions.find(i => i.stepId === step.id);
+                if (stepInteractions && stepInteractions.messages && stepInteractions.messages.length > 0) {
+                    const lastMsg = stepInteractions.messages[stepInteractions.messages.length - 1];
+                    if (lastMsg.type !== 'system') {
+                        const storedMsg = demoState.allMessages.find(m => 
+                            m.data.text === lastMsg.text && m.data.type === lastMsg.type
+                        );
+                        if (storedMsg) {
+                            messageIdForVoice = storedMsg.id;
+                        }
+                    }
+                }
+            }
+            
+            if (step.voiceText && audioEnabled) {
+                const speaker = step.voiceSpeaker || 'narrator';
+                try {
+                    await speakText(step.voiceText, speaker, messageIdForVoice);
+                } catch (error) {
+                    console.error('Error speaking:', error);
+                }
+            }
+            
+            if (demoState.mode === 'auto' && demoState.isPlaying) {
+                demoState.timer = setTimeout(() => {
+                    nextStep();
+                }, step.duration || 5000);
+            }
+        }
+
+        function togglePlayPause() {
+            if (demoState.isPlaying) {
+                pauseDemo();
+            } else {
+                playDemo();
+            }
+        }
+
+        function playDemo() {
+            if (demoSteps.length === 0) {
+                showToast('No demo loaded', 'error');
+                return;
+            }
+            demoState.isPlaying = true;
+            document.getElementById('playBtn').innerHTML = '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+            playCurrentStep();
+        }
+
+        function pauseDemo() {
+            demoState.isPlaying = false;
+            document.getElementById('playBtn').innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+            clearTimeout(demoState.timer);
+            stopSpeaking();
+        }
+
+        function nextStep() {
+            if (demoState.currentStep < demoSteps.length - 1) {
+                stopSpeaking();
+                demoState.currentStep++;
+                playCurrentStep();
+            } else {
+                completeDemo();
+            }
+        }
+
+        function previousStep() {
+            if (demoState.currentStep > 0) {
+                stopSpeaking();
+                demoState.currentStep--;
+                playCurrentStep();
+            }
+        }
+
+        function completeDemo() {
+            demoState.isPlaying = false;
+            document.getElementById('playBtn').innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+            stopSpeaking();
+            showToast('Demo completed', 'success');
+        }
+
+        function continueDemo() {
+            hideNarrator();
+            if (demoState.isPlaying) {
+                nextStep();
+            }
+        }
+
+        function showNarrator(narrator) {
+            const overlay = document.getElementById('narratorOverlay');
+            document.getElementById('narratorTitle').textContent = narrator.title || '';
+            document.getElementById('narratorText').textContent = narrator.text || '';
+            document.getElementById('narratorSubtitle').textContent = narrator.subtitle || '';
+            overlay.classList.add('active');
+        }
+
+        function hideNarrator() {
+            document.getElementById('narratorOverlay').classList.remove('active');
+        }
+
+        function toggleAudio() {
+            audioEnabled = !audioEnabled;
+            const btn = document.getElementById('audioToggle');
+            if (audioEnabled) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+                stopSpeaking();
+            }
+        }
+
+        function updateStepIndicator() {
+            document.getElementById('currentStep').textContent = demoState.currentStep + 1;
+            document.getElementById('totalSteps').textContent = demoSteps.length || 1;
+        }
+
+        function updateProgress() {
+            if (demoSteps.length === 0) return;
+            const progress = ((demoState.currentStep) / Math.max(demoSteps.length - 1, 1)) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function setMode(mode) {
+            demoState.mode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function seekToPosition(event) {
+            if (demoSteps.length === 0) return;
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const percentage = x / rect.width;
+            
+            stopSpeaking();
+            
+            const chatContainer = document.getElementById('chatMessages');
+            if (chatContainer) {
+                chatContainer.innerHTML = '';
+            }
+            demoState.allMessages = [];
+            
+            demoState.currentStep = Math.min(Math.floor(percentage * demoSteps.length), demoSteps.length - 1);
+            
+            for (let i = 0; i <= demoState.currentStep; i++) {
+                const step = demoSteps[i];
+                
+                if (step.action) {
+                    executeStepAction(step.action);
+                }
+                
+                if (window.demoData && window.demoData.chatInteractions) {
+                    const stepInteractions = window.demoData.chatInteractions.find(si => si.stepId === step.id);
+                    if (stepInteractions && stepInteractions.messages) {
+                        displayChatMessages(stepInteractions.messages, false);
+                    }
+                }
+            }
+            
+            updateStepIndicator();
+            updateProgress();
+        }
+
+        function openSettings() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        demoConfig = JSON.parse(event.target.result);
+                        demoSteps = demoConfig.demoSteps || [];
+                        window.demoData = {
+                            chatInteractions: demoConfig.chatInteractions || [],
+                            agentCards: demoConfig.agentCards || []
+                        };
+                        
+                        localStorage.setItem('tiltDemoConfig', event.target.result);
+                        initializeTTS();
+                        
+                        demoState.currentStep = 0;
+                        demoState.allMessages = [];
+                        
+                        const chatContainer = document.getElementById('chatMessages');
+                        if (chatContainer) {
+                            chatContainer.innerHTML = '';
+                        }
+                        
+                        playCurrentStep();
+                        showToast('Configuration loaded successfully', 'success');
+                    } catch (err) {
+                        showToast('Error loading configuration', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const msg = document.getElementById('toastMessage');
+
+            msg.textContent = message;
+            toast.className = `toast show ${type}`;
+            icon.textContent = type === 'success' ? '✓' : '✗';
+
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    togglePlayPause();
+                    break;
+                case 'ArrowRight':
+                    nextStep();
+                    break;
+                case 'ArrowLeft':
+                    previousStep();
+                    break;
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            stopSpeaking();
+            stopRingTone();
+            stopCallTimer();
+            stopAudioVisualizer();
+            if (speechSynthesizer) {
+                speechSynthesizer.close();
+            }
+        });
+    </script>
+</body>
+</html>
