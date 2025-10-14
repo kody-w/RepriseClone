@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         .generator-container {
-            max-width: 1800px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -18,20 +18,6 @@
             padding: 30px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
-        }
-
-        .selector-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .selector-panel {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .split-view {
@@ -52,10 +38,241 @@
             color: #667eea;
         }
 
+        /* Full Screen Preview Mode */
+        .fullscreen-preview-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .fullscreen-preview-overlay.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fullscreen-header {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .fullscreen-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .fullscreen-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .fullscreen-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .fullscreen-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .fullscreen-btn.active {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .close-fullscreen-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .close-fullscreen-btn:hover {
+            background: rgba(255,100,100,0.4);
+        }
+
+        .fullscreen-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .fullscreen-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #f5f5f5;
+        }
+
+        .browser-preview {
+            width: 100%;
+            height: 100%;
+            background: white;
+            overflow: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+        }
+
+        .browser-preview.active {
+            display: block;
+        }
+
+        /* Selection overlay styles */
+        .browser-preview * {
+            cursor: pointer !important;
+        }
+
+        .browser-preview *:hover {
+            outline: 2px solid rgba(102, 126, 234, 0.5) !important;
+            outline-offset: 2px !important;
+        }
+
+        .browser-preview .chat-gen-selected {
+            outline: 3px solid #667eea !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Floating selection button */
+        .floating-select-btn {
+            position: fixed;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            pointer-events: none;
+            z-index: 100000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.5);
+            display: none;
+            white-space: nowrap;
+            transition: transform 0.1s ease, opacity 0.15s ease;
+            user-select: none;
+        }
+
+        .floating-select-btn.visible {
+            pointer-events: all;
+            display: block;
+            animation: floatIn 0.2s ease;
+        }
+
+        .floating-select-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .floating-select-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .element-tag-label {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            opacity: 0.9;
+            margin-left: 8px;
+            padding-left: 8px;
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .iframe-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            z-index: 1;
+            display: none;
+        }
+
+        .iframe-loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fullscreen-sidebar {
+            width: 400px;
+            background: #2a2a3e;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+        }
+
+        .fullscreen-sidebar.active {
+            transform: translateX(0);
+        }
+
         .upload-area {
             border: 2px dashed #667eea;
             border-radius: 8px;
-            padding: 40px;
+            padding: 30px;
             text-align: center;
             background: #f8f9fa;
             cursor: pointer;
@@ -267,18 +484,20 @@
 
         /* HTML Tree Navigator */
         .tree-navigator {
-            background: #f8f9fa;
-            border: 2px solid #667eea;
-            border-radius: 8px;
             padding: 20px;
-            height: 600px;
+            height: 100%;
             overflow-y: auto;
-            display: none;
+            background: transparent;
+            color: #e0e0e0;
         }
 
-        .tree-navigator.active {
-            display: block;
-            animation: slideDown 0.3s ease;
+        .tree-navigator-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
         }
 
         @keyframes slideDown {
@@ -307,10 +526,11 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            color: #e0e0e0;
         }
 
         .tree-node-header:hover {
-            background: #e7e9fc;
+            background: rgba(102, 126, 234, 0.2);
         }
 
         .tree-node-header.selected {
@@ -330,7 +550,7 @@
         }
 
         .tree-tag {
-            color: #e74c3c;
+            color: #ff6b9d;
             font-weight: 600;
         }
 
@@ -339,7 +559,7 @@
         }
 
         .tree-id {
-            color: #27ae60;
+            color: #5efc82;
             font-weight: 600;
         }
 
@@ -348,7 +568,7 @@
         }
 
         .tree-class {
-            color: #3498db;
+            color: #4fc3f7;
         }
 
         .tree-node-header.selected .tree-class {
@@ -397,49 +617,178 @@
             display: block;
         }
 
-        /* Visual Preview */
-        .visual-preview {
+        /* Frame Composer Styles */
+        .composer-section {
+            margin-top: 40px;
             background: white;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            margin-top: 15px;
-            overflow: hidden;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             display: none;
-            position: relative;
         }
 
-        .visual-preview.active {
+        .composer-section.active {
             display: block;
         }
 
-        .visual-preview-header {
-            background: #667eea;
-            color: white;
-            padding: 10px 15px;
-            font-weight: 600;
-            font-size: 13px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .visual-preview-iframe {
+        .composer-canvas {
+            position: relative;
             width: 100%;
-            height: 500px;
-            border: none;
-            display: block;
-            pointer-events: all;
-            position: relative;
+            height: 600px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f5f5f5;
+            margin: 20px 0;
         }
 
-        /* Highlight overlay for selected element in iframe */
-        .highlight-overlay {
+        .composer-background {
             position: absolute;
-            border: 3px solid #667eea;
-            background: rgba(102, 126, 234, 0.2);
-            pointer-events: none;
-            z-index: 999999;
-            transition: all 0.2s;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background: white;
+            z-index: 1;
+        }
+
+        .chat-overlay-container {
+            position: absolute;
+            border: 3px dashed #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            cursor: move;
+            min-width: 200px;
+            min-height: 150px;
+            display: none;
+            z-index: 10;
+        }
+
+        .chat-overlay-container.active {
+            display: block;
+        }
+
+        .chat-overlay-content {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            right: -7px;
+            bottom: -7px;
+        }
+
+        .overlay-controls {
+            position: absolute;
+            top: -35px;
+            right: 0;
+            display: flex;
+            gap: 5px;
+            background: #667eea;
+            padding: 5px;
+            border-radius: 6px 6px 0 0;
+            z-index: 20;
+        }
+
+        .overlay-control-btn {
+            background: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .overlay-control-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .animation-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .frame-counter {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .clean-chat-message {
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease;
+        }
+
+        .clean-chat-message.agent {
+            background: #e7e9fc;
+            color: #333;
+            align-self: flex-start;
+            max-width: 75%;
+        }
+
+        .clean-chat-message.customer {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+            max-width: 75%;
+            margin-left: auto;
+        }
+
+        .clean-chat-message.system {
+            background: #f0f0f0;
+            color: #666;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+
+        .upload-zone:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .upload-zone.has-file {
+            border-color: #27ae60;
+            background: #d4edda;
         }
     </style>
 </head>
@@ -456,45 +805,38 @@
                 <h3>How to Use</h3>
                 <ol>
                     <li>Upload your base HTML frame (the static page with chat container)</li>
+                    <li>Use the visual preview or tree navigator to select the chat container</li>
                     <li>Add chat messages in sequence (agent or customer)</li>
-                    <li>Preview the generated frames</li>
                     <li>Generate and download all frames as individual HTML files</li>
                     <li>Load frames into the animator to step through them</li>
                 </ol>
             </div>
 
+            <!-- Upload Section -->
+            <div class="top-section">
+                <h2>1. Upload Base Frame</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div style="font-size: 36px; margin-bottom: 10px;">📄</div>
+                    <p style="font-weight: 600; margin-bottom: 8px;">Drop HTML file here or click to browse</p>
+                    <p style="font-size: 13px; color: #666;">Upload the base frame with chat container</p>
+                    <input type="file" id="fileInput" accept=".html" style="display: none;">
+                </div>
+                <div id="fileStatus"></div>
+
+                <h2 style="margin-top: 25px;">2. Chat Container Selector</h2>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">CSS selector for the chat messages container (e.g., #chatMessages, .chat-container)</p>
+                <input type="text" id="containerSelector" placeholder="#chatMessages"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;">
+                <button class="browse-btn" onclick="toggleTreeNavigator()" id="browseBtn" style="display: none;">
+                    🔍 Browse HTML Structure
+                </button>
+                <div class="selected-path" id="selectedPath"></div>
+            </div>
+
+            <!-- Messages and Frame Preview -->
             <div class="split-view">
                 <div class="panel">
-                    <h2>1. Upload Base Frame</h2>
-                    <div class="upload-area" id="uploadArea">
-                        <div style="font-size: 48px; margin-bottom: 15px;">📄</div>
-                        <p style="font-weight: 600; margin-bottom: 10px;">Drop HTML file here or click to browse</p>
-                        <p style="font-size: 13px; color: #666;">Upload the base frame with chat container</p>
-                        <input type="file" id="fileInput" accept=".html" style="display: none;">
-                    </div>
-                    <div id="fileStatus"></div>
-
-                    <h2 style="margin-top: 30px;">2. Chat Container Selector</h2>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 10px;">CSS selector for the chat messages container (e.g., #chatMessages, .chat-container)</p>
-                    <input type="text" id="containerSelector" placeholder="#chatMessages"
-                           style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;">
-                    <button class="browse-btn" onclick="toggleTreeNavigator()" id="browseBtn" style="display: none;">
-                        🔍 Browse HTML Structure
-                    </button>
-                    <div class="selected-path" id="selectedPath"></div>
-
-                    <!-- Visual Preview -->
-                    <div class="visual-preview" id="visualPreview">
-                        <div class="visual-preview-header">
-                            <span>📱 Visual Preview - Click on elements to select</span>
-                            <span style="font-size: 11px; opacity: 0.9;">Synced with tree navigator</span>
-                        </div>
-                        <iframe id="previewIframe" class="visual-preview-iframe" sandbox="allow-same-origin"></iframe>
-                    </div>
-
-                    <div class="tree-navigator" id="treeNavigator"></div>
-
-                    <h2 style="margin-top: 30px;">3. Add Messages</h2>
+                    <h2>3. Add Messages</h2>
                     <div class="message-input-container" id="messageInputs">
                         <!-- Messages will be added here -->
                     </div>
@@ -505,7 +847,8 @@
 
                     <h2 style="margin-top: 30px;">4. Generate Frames</h2>
                     <div class="btn-group">
-                        <button class="btn btn-primary" onclick="generateFrames()">🎬 Generate Frames</button>
+                        <button class="btn btn-primary" onclick="generateFrames()">🎬 Generate Full Frames</button>
+                        <button class="btn" style="background: #27ae60; color: white;" onclick="generateCleanChatFrames()">✨ Generate Clean Chat Only</button>
                         <button class="btn btn-success" onclick="downloadAllFrames()" id="downloadBtn" style="display: none;">📥 Download All Frames</button>
                     </div>
                     <div id="statusMessage"></div>
@@ -519,7 +862,94 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Frame Composer Section -->
+            <div class="composer-section" id="composerSection">
+                <h2>5. Frame Composer - Overlay Chat on Background</h2>
+                <p style="color: #666; margin-bottom: 20px;">Your uploaded HTML is loaded as the background. Drag and resize the chat overlay to position it perfectly. Only the chat will animate!</p>
+
+                <!-- Composer Canvas -->
+                <div class="composer-canvas" id="composerCanvas">
+                    <div id="composerBackground" class="composer-background"></div>
+
+                    <div class="chat-overlay-container" id="chatOverlay">
+                        <div class="overlay-controls">
+                            <span style="color: white; font-size: 11px; padding: 4px 8px;">Chat Overlay</span>
+                            <button class="overlay-control-btn" onclick="resetOverlayPosition()">Reset</button>
+                        </div>
+                        <div class="chat-overlay-content" id="chatOverlayContent">
+                            <!-- Chat frames will be displayed here -->
+                        </div>
+                        <div class="resize-handle" id="resizeHandle"></div>
+                    </div>
+                </div>
+
+                <!-- Animation Controls -->
+                <div class="animation-preview">
+                    <div class="frame-counter" id="frameCounter">Frame 1 of 1</div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="prevFrame()">⏮️ Previous</button>
+                        <button class="btn btn-primary" onclick="toggleAnimation()" id="playBtn">▶️ Play Animation</button>
+                        <button class="btn btn-secondary" onclick="nextFrame()">⏭️ Next</button>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label style="font-size: 13px; color: #666;">Frame Duration: <span id="fpsDisplay">500ms</span></label>
+                        <input type="range" id="fpsSlider" min="100" max="2000" value="500" step="100"
+                               style="width: 200px; vertical-align: middle; margin: 0 10px;"
+                               oninput="document.getElementById('fpsDisplay').textContent = this.value + 'ms'">
+                    </div>
+                </div>
+
+                <!-- Export Options -->
+                <div style="margin-top: 30px;">
+                    <h3>6. Export Final Product</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="downloadCompositeFrames()">📥 Download All Composite Frames</button>
+                        <button class="btn btn-primary" onclick="exportToVideo()">🎥 Export to Video (MP4)</button>
+                        <button class="btn" style="background: #e67e22; color: white;" onclick="exportToGIF()">🎞️ Export to GIF</button>
+                    </div>
+                    <div id="exportStatus"></div>
+                </div>
+            </div>
         </main>
+    </div>
+
+    <!-- Fullscreen Preview Overlay -->
+    <div class="fullscreen-preview-overlay" id="fullscreenOverlay">
+        <div class="fullscreen-header">
+            <div class="fullscreen-header-left">
+                <div class="fullscreen-title">📱 Visual Preview - Select Chat Container</div>
+                <input type="text" id="fullscreenSelector" placeholder="CSS Selector" readonly
+                       style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 4px; font-family: monospace; font-size: 13px; min-width: 300px;">
+            </div>
+            <div class="fullscreen-controls">
+                <button class="fullscreen-btn" id="toggleTreeBtn" onclick="toggleFullscreenSidebar()">
+                    🌳 HTML Structure
+                </button>
+                <button class="close-fullscreen-btn" onclick="closeFullscreen()">✕ Close</button>
+            </div>
+        </div>
+        <div class="fullscreen-content">
+            <div class="fullscreen-main">
+                <div class="iframe-loading" id="iframeLoading">
+                    <div class="iframe-loading-spinner"></div>
+                    <div>Loading preview...</div>
+                </div>
+                <div id="browserPreview" class="browser-preview">
+                    <!-- HTML content will be injected here -->
+                </div>
+            </div>
+            <div class="fullscreen-sidebar" id="fullscreenSidebar">
+                <div class="tree-navigator" id="fullscreenTreeNavigator">
+                    <div class="tree-navigator-title">🌳 HTML Structure - Click to select</div>
+                </div>
+            </div>
+        </div>
+        <!-- Floating selection button -->
+        <div class="floating-select-btn" id="floatingSelectBtn">
+            ✓ Select This Element
+            <span class="element-tag-label" id="elementTagLabel"></span>
+        </div>
     </div>
 
     <script>
@@ -584,55 +1014,205 @@
         }
 
         function loadVisualPreview() {
-            const iframe = document.getElementById('previewIframe');
-            const visualPreview = document.getElementById('visualPreview');
+            const overlay = document.getElementById('fullscreenOverlay');
+            const browserPreview = document.getElementById('browserPreview');
+            const loading = document.getElementById('iframeLoading');
 
-            // Show visual preview
-            visualPreview.classList.add('active');
+            // Validate baseHTML
+            if (!baseHTML || baseHTML.trim().length === 0) {
+                console.error('baseHTML is empty or invalid');
+                loading.innerHTML = '<div style="color: #e74c3c;">Error: No HTML content to display</div>';
+                return;
+            }
 
-            // Load HTML into iframe
-            iframe.srcdoc = baseHTML;
+            console.log('Loading HTML directly into browser preview');
+            console.log('HTML length:', baseHTML.length);
 
-            // Wait for iframe to load, then add click handlers
-            iframe.onload = () => {
-                setupIframeClickHandlers();
-            };
+            // Show fullscreen overlay
+            overlay.classList.add('active');
+
+            // Show loading indicator
+            loading.style.display = 'block';
+
+            // Parse the HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(baseHTML, 'text/html');
+
+            // Extract styles and scripts to inject
+            const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
+            const scripts = Array.from(doc.querySelectorAll('script'));
+
+            // Clone the body content
+            const bodyContent = doc.body.cloneNode(true);
+
+            // Clear and populate browser preview
+            if (!browserPreview.getAttribute('data-loaded')) {
+                browserPreview.innerHTML = '';
+
+                // Inject styles
+                styles.forEach(style => {
+                    browserPreview.appendChild(style.cloneNode(true));
+                });
+
+                // Inject body content
+                const bodyWrapper = document.createElement('div');
+                bodyWrapper.innerHTML = bodyContent.innerHTML;
+                browserPreview.appendChild(bodyWrapper);
+
+                // Inject scripts (optional - might cause issues)
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        newScript.textContent = script.textContent;
+                    }
+                    browserPreview.appendChild(newScript);
+                });
+
+                browserPreview.setAttribute('data-loaded', 'true');
+            }
+
+            // Show the preview
+            browserPreview.classList.add('active');
+
+            console.log('✓ HTML content injected');
+            console.log('Body content length:', bodyContent.innerHTML.length);
+            console.log('Body has children:', bodyContent.children.length);
+
+            // Hide loading
+            loading.style.display = 'none';
+
+            // Setup click handlers
+            setTimeout(() => {
+                setupBrowserClickHandlers();
+            }, 100);
+
+            // Build tree navigator (only once)
+            if (!document.getElementById('fullscreenTreeNavigator').hasAttribute('data-built')) {
+                buildTreeNavigator();
+                document.getElementById('fullscreenTreeNavigator').setAttribute('data-built', 'true');
+            }
+
+            // Auto-open sidebar
+            const sidebar = document.getElementById('fullscreenSidebar');
+            const toggleBtn = document.getElementById('toggleTreeBtn');
+            sidebar.classList.add('active');
+            toggleBtn.classList.add('active');
         }
 
-        function setupIframeClickHandlers() {
-            const iframe = document.getElementById('previewIframe');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        function closeFullscreen() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            overlay.classList.remove('active');
+            // Note: We deliberately keep the iframe content loaded
+            // so it doesn't blink when reopening
+        }
 
-            // Add click handler to all elements in iframe
-            iframeDoc.body.addEventListener('click', (e) => {
+        function toggleFullscreenSidebar() {
+            const sidebar = document.getElementById('fullscreenSidebar');
+            const toggleBtn = document.getElementById('toggleTreeBtn');
+            sidebar.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+        }
+
+        let currentHoveredElement = null;
+
+        function setupBrowserClickHandlers() {
+            const browserPreview = document.getElementById('browserPreview');
+            const floatingBtn = document.getElementById('floatingSelectBtn');
+            const elementTagLabel = document.getElementById('elementTagLabel');
+
+            // Prevent duplicate setup
+            if (browserPreview.getAttribute('data-handlers-setup')) {
+                console.log('Handlers already set up, skipping');
+                return;
+            }
+
+            console.log('Setting up browser preview click handlers');
+
+            // Add mousemove handler to track cursor and show floating button
+            browserPreview.addEventListener('mousemove', (e) => {
+                const target = e.target;
+
+                // Skip if hovering over the floating button itself
+                if (target === floatingBtn || floatingBtn.contains(target)) {
+                    return;
+                }
+
+                currentHoveredElement = target;
+
+                // Position the floating button near the cursor
+                const offsetX = 15;
+                const offsetY = 15;
+                floatingBtn.style.left = (e.clientX + offsetX) + 'px';
+                floatingBtn.style.top = (e.clientY + offsetY) + 'px';
+
+                // Update element tag label
+                let tagText = target.tagName.toLowerCase();
+                if (target.id) {
+                    tagText += `#${target.id}`;
+                } else if (target.className && typeof target.className === 'string') {
+                    const classes = target.className.split(' ').filter(c => c.trim() && !c.startsWith('chat-gen'));
+                    if (classes.length > 0) {
+                        tagText += `.${classes[0]}`;
+                    }
+                }
+                elementTagLabel.textContent = tagText;
+
+                // Show the button
+                floatingBtn.classList.add('visible');
+            }, true);
+
+            // Hide button when leaving browser preview
+            browserPreview.addEventListener('mouseleave', () => {
+                floatingBtn.classList.remove('visible');
+                currentHoveredElement = null;
+            });
+
+            // Click handler for the floating button
+            floatingBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (currentHoveredElement) {
+                    console.log('Floating button clicked for:', currentHoveredElement.tagName);
+                    handleBrowserElementClick(currentHoveredElement);
+                    floatingBtn.classList.remove('visible');
+
+                    // Close fullscreen and return to main screen
+                    setTimeout(() => {
+                        closeFullscreen();
+                    }, 300); // Small delay to show selection feedback
+                }
+            });
+
+            // Add click handler to all elements (using capture phase) as backup
+            browserPreview.addEventListener('click', (e) => {
+                console.log('Click detected on:', e.target.tagName, e.target.className);
                 e.preventDefault();
                 e.stopPropagation();
 
                 const clickedElement = e.target;
-                handleIframeElementClick(clickedElement);
+                handleBrowserElementClick(clickedElement);
+                floatingBtn.classList.remove('visible');
+
+                // Close fullscreen and return to main screen
+                setTimeout(() => {
+                    closeFullscreen();
+                }, 300); // Small delay to show selection feedback
             }, true);
 
-            // Add hover effect
-            iframeDoc.body.addEventListener('mouseover', (e) => {
-                e.stopPropagation();
-                const element = e.target;
-                element.style.outline = '2px solid rgba(102, 126, 234, 0.5)';
-                element.style.outlineOffset = '2px';
-                element.style.cursor = 'pointer';
-            }, true);
-
-            iframeDoc.body.addEventListener('mouseout', (e) => {
-                e.stopPropagation();
-                const element = e.target;
-                element.style.outline = '';
-                element.style.outlineOffset = '';
-                element.style.cursor = '';
-            }, true);
+            // Mark as setup complete
+            browserPreview.setAttribute('data-handlers-setup', 'true');
+            console.log('✓ Browser click handlers setup complete');
         }
 
-        function handleIframeElementClick(iframeElement) {
+        function handleBrowserElementClick(browserElement) {
+            console.log('handleBrowserElementClick called for:', browserElement.tagName);
+
             // Find corresponding element in parsedDoc
-            const selector = getElementPath(iframeElement);
+            const selector = getElementPath(browserElement);
+            console.log('Generated selector:', selector);
 
             try {
                 const correspondingElement = parsedDoc.querySelector(selector);
@@ -649,7 +1229,9 @@
                         expandTreeToElement(treeHeader);
                     }
 
-                    highlightElementInIframe(iframeElement);
+                    highlightElementInBrowser(browserElement);
+                } else {
+                    console.warn('Could not find corresponding element in parsedDoc');
                 }
             } catch (e) {
                 console.warn('Could not find element in tree:', e);
@@ -706,47 +1288,52 @@
             }
         }
 
-        function highlightElementInIframe(element) {
-            const iframe = document.getElementById('previewIframe');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        function highlightElementInBrowser(element) {
+            try {
+                const browserPreview = document.getElementById('browserPreview');
 
-            // Remove existing highlights
-            const existingHighlights = iframeDoc.querySelectorAll('.chat-gen-highlight');
-            existingHighlights.forEach(h => h.remove());
+                if (!browserPreview) {
+                    console.error('Cannot access browser preview');
+                    return;
+                }
 
-            // Remove inline styles from previously highlighted elements
-            const previouslyStyled = iframeDoc.querySelectorAll('[data-chat-gen-highlight]');
-            previouslyStyled.forEach(el => {
-                el.style.outline = '';
-                el.style.outlineOffset = '';
-                el.removeAttribute('data-chat-gen-highlight');
-            });
+                // Remove inline styles from previously highlighted elements
+                const previouslyStyled = browserPreview.querySelectorAll('[data-chat-gen-highlight]');
+                previouslyStyled.forEach(el => {
+                    el.classList.remove('chat-gen-selected');
+                    el.removeAttribute('data-chat-gen-highlight');
+                });
 
-            // Highlight current element
-            element.style.outline = '3px solid #667eea';
-            element.style.outlineOffset = '2px';
-            element.setAttribute('data-chat-gen-highlight', 'true');
+                // Highlight current element using CSS class
+                element.classList.add('chat-gen-selected');
+                element.setAttribute('data-chat-gen-highlight', 'true');
 
-            // Scroll into view
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Scroll into view
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                console.log('✓ Element highlighted in browser preview');
+            } catch (e) {
+                console.error('Error highlighting element:', e);
+            }
         }
 
         function toggleTreeNavigator() {
-            const treeNav = document.getElementById('treeNavigator');
+            const overlay = document.getElementById('fullscreenOverlay');
 
-            if (treeNav.classList.contains('active')) {
-                treeNav.classList.remove('active');
+            // Open fullscreen if not already open
+            if (!overlay.classList.contains('active')) {
+                loadVisualPreview();
             } else {
-                buildTreeNavigator();
-                treeNav.classList.add('active');
+                // Just toggle the sidebar if already open
+                toggleFullscreenSidebar();
             }
         }
 
         function buildTreeNavigator() {
             if (!parsedDoc) return;
 
-            const treeNav = document.getElementById('treeNavigator');
-            treeNav.innerHTML = '<div style="font-weight: 600; margin-bottom: 15px; color: #667eea;">Click on an element to select it as the chat container:</div>';
+            const treeNav = document.getElementById('fullscreenTreeNavigator');
+            treeNav.innerHTML = '<div class="tree-navigator-title">🌳 HTML Structure - Click to select</div>';
 
             const bodyElement = parsedDoc.body;
             if (bodyElement) {
@@ -841,69 +1428,84 @@
         }
 
         function highlightCorrespondingIframeElement(parsedElement) {
-            const iframe = document.getElementById('previewIframe');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-            if (!iframeDoc) return;
-
-            // Generate selector for the parsed element
-            const selector = generateSelector(parsedElement);
-
             try {
-                const iframeElement = iframeDoc.querySelector(selector);
-                if (iframeElement) {
-                    highlightElementInIframe(iframeElement);
+                const browserPreview = document.getElementById('browserPreview');
+
+                if (!browserPreview) return;
+
+                // Generate selector for the parsed element
+                const selector = generateSelector(parsedElement);
+
+                // Skip if selector is empty
+                if (!selector || selector.trim() === '') {
+                    console.warn('Empty selector generated for element:', parsedElement.tagName);
+                    return;
+                }
+
+                // Query within the browserPreview container
+                const browserElement = browserPreview.querySelector(selector);
+                if (browserElement) {
+                    highlightElementInBrowser(browserElement);
+                } else {
+                    console.warn('Could not find element in browser preview with selector:', selector);
                 }
             } catch (e) {
-                console.warn('Could not highlight in iframe:', e);
+                console.warn('Could not highlight in browser preview:', e);
             }
         }
 
         function previewHoverInIframe(parsedElement) {
-            const iframe = document.getElementById('previewIframe');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-
-            if (!iframeDoc) return;
-
-            // Generate selector for the parsed element
-            const selector = generateSelector(parsedElement);
-
             try {
-                const iframeElement = iframeDoc.querySelector(selector);
-                if (iframeElement) {
+                const browserPreview = document.getElementById('browserPreview');
+
+                if (!browserPreview) return;
+
+                // Generate selector for the parsed element
+                const selector = generateSelector(parsedElement);
+
+                // Skip if selector is empty
+                if (!selector || selector.trim() === '') {
+                    return;
+                }
+
+                const browserElement = browserPreview.querySelector(selector);
+                if (browserElement) {
                     // Use dashed outline for hover preview (lighter than selection)
-                    iframeElement.style.outline = '2px dashed #667eea';
-                    iframeElement.style.outlineOffset = '2px';
-                    iframeElement.setAttribute('data-chat-gen-hover', 'true');
+                    browserElement.style.outline = '2px dashed rgba(102, 126, 234, 0.8)';
+                    browserElement.style.outlineOffset = '2px';
+                    browserElement.setAttribute('data-chat-gen-hover', 'true');
 
                     // Optionally scroll into view if not visible
-                    const rect = iframeElement.getBoundingClientRect();
-                    const iframeRect = iframe.getBoundingClientRect();
-                    if (rect.top < 0 || rect.bottom > iframe.clientHeight) {
-                        iframeElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    const rect = browserElement.getBoundingClientRect();
+                    const previewRect = browserPreview.getBoundingClientRect();
+                    if (rect.top < previewRect.top || rect.bottom > previewRect.bottom) {
+                        browserElement.scrollIntoView({ behavior: 'auto', block: 'center' });
                     }
                 }
             } catch (e) {
-                console.warn('Could not preview hover in iframe:', e);
+                // Silently ignore selector errors for hover
             }
         }
 
         function clearHoverPreview() {
-            const iframe = document.getElementById('previewIframe');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            try {
+                const browserPreview = document.getElementById('browserPreview');
 
-            if (!iframeDoc) return;
+                if (!browserPreview) return;
 
-            // Remove hover preview from all elements
-            const hoveredElements = iframeDoc.querySelectorAll('[data-chat-gen-hover]');
-            hoveredElements.forEach(el => {
-                // Don't clear if this is the selected element
-                if (!el.hasAttribute('data-chat-gen-highlight')) {
-                    el.style.outline = '';
-                    el.style.outlineOffset = '';
-                    el.removeAttribute('data-chat-gen-hover');
-                }
-            });
+                // Remove hover preview from all elements
+                const hoveredElements = browserPreview.querySelectorAll('[data-chat-gen-hover]');
+                hoveredElements.forEach(el => {
+                    // Don't clear if this is the selected element
+                    if (!el.hasAttribute('data-chat-gen-highlight')) {
+                        el.style.outline = '';
+                        el.style.outlineOffset = '';
+                        el.removeAttribute('data-chat-gen-hover');
+                    }
+                });
+            } catch (e) {
+                console.warn('Could not clear hover preview:', e);
+            }
         }
 
         function selectElement(element, headerElement) {
@@ -918,8 +1520,9 @@
             // Generate CSS selector
             const selector = generateSelector(element);
 
-            // Update input field
+            // Update both input fields
             document.getElementById('containerSelector').value = selector;
+            document.getElementById('fullscreenSelector').value = selector;
 
             // Show selected path
             const pathDiv = document.getElementById('selectedPath');
@@ -928,6 +1531,16 @@
         }
 
         function generateSelector(element) {
+            // Handle body element specially
+            if (element === parsedDoc.body) {
+                return 'body';
+            }
+
+            // Handle html element specially
+            if (element === parsedDoc.documentElement) {
+                return 'html';
+            }
+
             // If element has an ID, use that
             if (element.id) {
                 return `#${element.id}`;
@@ -939,9 +1552,13 @@
                 if (classes.length > 0) {
                     // Try class selector
                     const classSelector = `.${classes.join('.')}`;
-                    const matches = parsedDoc.querySelectorAll(classSelector);
-                    if (matches.length === 1) {
-                        return classSelector;
+                    try {
+                        const matches = parsedDoc.querySelectorAll(classSelector);
+                        if (matches.length === 1) {
+                            return classSelector;
+                        }
+                    } catch (e) {
+                        // Invalid class selector, continue
                     }
                 }
             }
@@ -950,7 +1567,7 @@
             const path = [];
             let current = element;
 
-            while (current && current !== parsedDoc.body) {
+            while (current && current.parentElement) {
                 let selector = current.tagName.toLowerCase();
 
                 if (current.id) {
@@ -959,21 +1576,29 @@
                 } else if (current.className && typeof current.className === 'string') {
                     const classes = current.className.split(' ').filter(c => c.trim());
                     if (classes.length > 0) {
-                        selector += `.${classes[0]}`;
+                        // Escape special characters in class names
+                        const safeClass = classes[0].replace(/[^\w-]/g, '\\$&');
+                        selector += `.${safeClass}`;
                     }
                 }
 
                 // Add nth-child if needed for uniqueness
                 if (current.parentElement) {
                     const siblings = Array.from(current.parentElement.children);
-                    const index = siblings.indexOf(current);
-                    if (siblings.filter(s => s.tagName === current.tagName).length > 1) {
-                        selector += `:nth-child(${index + 1})`;
+                    const sameTagSiblings = siblings.filter(s => s.tagName === current.tagName);
+                    if (sameTagSiblings.length > 1) {
+                        const index = siblings.indexOf(current) + 1;
+                        selector += `:nth-child(${index})`;
                     }
                 }
 
                 path.unshift(selector);
                 current = current.parentElement;
+            }
+
+            // If path is empty, return a fallback
+            if (path.length === 0) {
+                return element.tagName.toLowerCase();
             }
 
             return path.join(' > ');
@@ -1168,8 +1793,444 @@
             }
         }
 
-        // Add initial message input
+        // ============================================
+        // FRAME COMPOSER FUNCTIONS
+        // ============================================
+
+        let cleanChatFrames = [];
+        let backgroundHTML = null;
+        let currentFrameIndex = 0;
+        let animationInterval = null;
+        let overlayPosition = { x: 50, y: 50, width: 400, height: 500 };
+
+        // Generate clean chat-only frames
+        function generateCleanChatFrames() {
+            if (!baseHTML) {
+                showStatus('Please upload a base HTML frame first', 'error');
+                return;
+            }
+
+            collectMessages();
+
+            if (messages.length === 0) {
+                showStatus('Please add at least one message', 'error');
+                return;
+            }
+
+            cleanChatFrames = [];
+
+            // Create frames with progressively more messages
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+                const chatHTML = generateCleanChatHTML(frameMessages);
+                cleanChatFrames.push(chatHTML);
+            }
+
+            showStatus(`Generated ${cleanChatFrames.length} clean chat frames!`, 'success');
+
+            // Use baseHTML as background
+            backgroundHTML = baseHTML;
+
+            // Show composer section and load background + chat overlay
+            document.getElementById('composerSection').classList.add('active');
+            loadBackgroundFrame();
+            currentFrameIndex = 0;
+            displayCurrentFrame();
+            updateFrameCounter();
+        }
+
+        // Generate minimal HTML for clean chat
+        function generateCleanChatHTML(msgs) {
+            const messagesHTML = msgs.map(msg => {
+                const msgClass = msg.type;
+                return `<div class="clean-chat-message ${msgClass}">${msg.text}</div>`;
+            }).join('\n');
+
+            return `<div style="display: flex; flex-direction: column; gap: 8px; padding: 10px;">
+                ${messagesHTML}
+            </div>`;
+        }
+
+        // Load background frame - EXACT SAME PATTERN AS SELECTOR PREVIEW
+        function loadBackgroundFrame() {
+            const backgroundDiv = document.getElementById('composerBackground');
+
+            console.log('Loading background frame, HTML length:', backgroundHTML ? backgroundHTML.length : 0);
+
+            if (!backgroundHTML || backgroundHTML.trim().length === 0) {
+                console.error('backgroundHTML is empty or invalid');
+                return;
+            }
+
+            // EXACT SAME PATTERN AS loadVisualPreview()
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(backgroundHTML, 'text/html');
+
+            const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
+            const scripts = Array.from(doc.querySelectorAll('script'));
+            const bodyContent = doc.body.cloneNode(true);
+
+            // Clear and inject - EXACT SAME ORDER
+            backgroundDiv.innerHTML = '';
+
+            // Inject styles first
+            styles.forEach(style => {
+                backgroundDiv.appendChild(style.cloneNode(true));
+            });
+
+            // Inject body content EXACTLY like browserPreview
+            const bodyWrapper = document.createElement('div');
+            bodyWrapper.innerHTML = bodyContent.innerHTML;
+            backgroundDiv.appendChild(bodyWrapper);
+
+            // Inject scripts last
+            scripts.forEach(script => {
+                const newScript = document.createElement('script');
+                if (script.src) {
+                    newScript.src = script.src;
+                } else {
+                    newScript.textContent = script.textContent;
+                }
+                backgroundDiv.appendChild(newScript);
+            });
+
+            console.log('✓ Background HTML injected (same pattern as selector preview)');
+            console.log('Body content length:', bodyContent.innerHTML.length);
+            console.log('Body has children:', bodyContent.children.length);
+
+            // Now calculate overlay position and show it
+            setTimeout(() => {
+                calculateOverlayPosition();
+                showChatOverlay();
+            }, 200);
+        }
+
+        // Calculate where the chat container is in the background
+        function calculateOverlayPosition() {
+            const backgroundDiv = document.getElementById('composerBackground');
+
+            if (!backgroundDiv) return;
+
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+
+            try {
+                const chatContainer = backgroundDiv.querySelector(containerSelector);
+
+                if (chatContainer) {
+                    const rect = chatContainer.getBoundingClientRect();
+                    const canvas = document.getElementById('composerCanvas');
+                    const canvasRect = canvas.getBoundingClientRect();
+
+                    // Calculate relative position within the canvas
+                    overlayPosition = {
+                        x: rect.left - canvasRect.left,
+                        y: rect.top - canvasRect.top,
+                        width: Math.max(200, rect.width),
+                        height: Math.max(150, rect.height)
+                    };
+
+                    console.log('✓ Auto-positioned overlay at chat container:', overlayPosition);
+                } else {
+                    console.warn('Chat container not found with selector:', containerSelector);
+                }
+            } catch (e) {
+                console.warn('Could not find chat container for auto-positioning:', e);
+                // Keep default position if selector doesn't work
+            }
+        }
+
+        function showChatOverlay() {
+            const overlay = document.getElementById('chatOverlay');
+            overlay.classList.add('active');
+            overlay.style.left = overlayPosition.x + 'px';
+            overlay.style.top = overlayPosition.y + 'px';
+            overlay.style.width = overlayPosition.width + 'px';
+            overlay.style.height = overlayPosition.height + 'px';
+
+            // Clear original chat container in the background iframe
+            clearOriginalChatContainer();
+
+            setupDragAndResize();
+            displayCurrentFrame();
+        }
+
+        function clearOriginalChatContainer() {
+            const backgroundDiv = document.getElementById('composerBackground');
+
+            if (!backgroundDiv) return;
+
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+
+            try {
+                const chatContainer = backgroundDiv.querySelector(containerSelector);
+                if (chatContainer) {
+                    chatContainer.innerHTML = '';
+                    console.log('✓ Cleared original chat container in preview');
+                }
+            } catch (e) {
+                console.warn('Could not clear original chat container:', e);
+            }
+        }
+
+        // Drag and resize functionality
+        function setupDragAndResize() {
+            const overlay = document.getElementById('chatOverlay');
+            const resizeHandle = document.getElementById('resizeHandle');
+            let isDragging = false;
+            let isResizing = false;
+            let startX, startY, startLeft, startTop, startWidth, startHeight;
+
+            // Dragging
+            overlay.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('resize-handle') || e.target.closest('.overlay-controls')) {
+                    return;
+                }
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                const rect = overlay.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+                e.preventDefault();
+            });
+
+            // Resizing
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                const rect = overlay.getBoundingClientRect();
+                startWidth = rect.width;
+                startHeight = rect.height;
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    const newLeft = startLeft + dx;
+                    const newTop = startTop + dy;
+                    overlay.style.left = newLeft + 'px';
+                    overlay.style.top = newTop + 'px';
+                    overlayPosition.x = newLeft;
+                    overlayPosition.y = newTop;
+                }
+
+                if (isResizing) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    const newWidth = Math.max(200, startWidth + dx);
+                    const newHeight = Math.max(150, startHeight + dy);
+                    overlay.style.width = newWidth + 'px';
+                    overlay.style.height = newHeight + 'px';
+                    overlayPosition.width = newWidth;
+                    overlayPosition.height = newHeight;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                isResizing = false;
+            });
+        }
+
+        function resetOverlayPosition() {
+            overlayPosition = { x: 50, y: 50, width: 400, height: 500 };
+            const overlay = document.getElementById('chatOverlay');
+            overlay.style.left = overlayPosition.x + 'px';
+            overlay.style.top = overlayPosition.y + 'px';
+            overlay.style.width = overlayPosition.width + 'px';
+            overlay.style.height = overlayPosition.height + 'px';
+        }
+
+        // Display current frame
+        function displayCurrentFrame() {
+            if (cleanChatFrames.length === 0) return;
+
+            const content = document.getElementById('chatOverlayContent');
+            content.innerHTML = cleanChatFrames[currentFrameIndex];
+        }
+
+        function updateFrameCounter() {
+            const counter = document.getElementById('frameCounter');
+            counter.textContent = `Frame ${currentFrameIndex + 1} of ${cleanChatFrames.length}`;
+        }
+
+        // Animation controls
+        function prevFrame() {
+            if (currentFrameIndex > 0) {
+                currentFrameIndex--;
+                displayCurrentFrame();
+                updateFrameCounter();
+            }
+        }
+
+        function nextFrame() {
+            if (currentFrameIndex < cleanChatFrames.length - 1) {
+                currentFrameIndex++;
+                displayCurrentFrame();
+                updateFrameCounter();
+            }
+        }
+
+        function toggleAnimation() {
+            const playBtn = document.getElementById('playBtn');
+
+            if (animationInterval) {
+                // Stop animation
+                clearInterval(animationInterval);
+                animationInterval = null;
+                playBtn.textContent = '▶️ Play Animation';
+            } else {
+                // Start animation
+                const duration = parseInt(document.getElementById('fpsSlider').value);
+                playBtn.textContent = '⏸️ Pause Animation';
+
+                animationInterval = setInterval(() => {
+                    if (currentFrameIndex < cleanChatFrames.length - 1) {
+                        currentFrameIndex++;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    } else {
+                        // Loop back to start
+                        currentFrameIndex = 0;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    }
+                }, duration);
+            }
+        }
+
+        // Export functions
+        function downloadCompositeFrames() {
+            if (!backgroundHTML || cleanChatFrames.length === 0) {
+                showExportStatus('Please generate frames and upload a background first', 'error');
+                return;
+            }
+
+            cleanChatFrames.forEach((chatHTML, index) => {
+                const compositeHTML = createCompositeFrame(chatHTML, index);
+                const blob = new Blob([compositeHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `composite-frame-${String(index + 1).padStart(2, '0')}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            showExportStatus(`Downloaded ${cleanChatFrames.length} composite frames!`, 'success');
+        }
+
+        function createCompositeFrame(chatHTML, frameIndex) {
+            // Parse background HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(backgroundHTML, 'text/html');
+
+            // Clear the original chat container (so we don't have duplicate content)
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+            try {
+                const originalChatContainer = doc.querySelector(containerSelector);
+                if (originalChatContainer) {
+                    originalChatContainer.innerHTML = '';
+                    console.log('Cleared original chat container');
+                }
+            } catch (e) {
+                console.warn('Could not clear original chat container:', e);
+            }
+
+            // Create overlay div with chat content
+            const overlayDiv = doc.createElement('div');
+            overlayDiv.style.cssText = `
+                position: absolute;
+                left: ${overlayPosition.x}px;
+                top: ${overlayPosition.y}px;
+                width: ${overlayPosition.width}px;
+                height: ${overlayPosition.height}px;
+                background: white;
+                border-radius: 8px;
+                overflow: auto;
+                padding: 15px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                z-index: 9999;
+            `;
+            overlayDiv.innerHTML = chatHTML;
+
+            // Add overlay to body
+            doc.body.appendChild(overlayDiv);
+
+            return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+        }
+
+        function exportToVideo() {
+            showExportStatus('Video export requires additional libraries. Downloading frames instead...', 'error');
+            setTimeout(() => {
+                downloadCompositeFrames();
+            }, 1500);
+        }
+
+        function exportToGIF() {
+            showExportStatus('GIF export requires additional libraries. Downloading frames instead...', 'error');
+            setTimeout(() => {
+                downloadCompositeFrames();
+            }, 1500);
+        }
+
+        function showExportStatus(message, type) {
+            const statusDiv = document.getElementById('exportStatus');
+            statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Add initial message inputs with default test data
         addMessageInput();
+
+        // Add default test messages for easy testing
+        setTimeout(() => {
+            const messageInputs = document.querySelectorAll('.message-input-group');
+
+            // First message - Customer
+            if (messageInputs[0]) {
+                messageInputs[0].querySelector('select').value = 'customer';
+                messageInputs[0].querySelector('textarea').value = 'Hello what can you do?';
+                updateMessageType(messageInputs[0].getAttribute('data-message-id'), 'customer');
+            }
+
+            // Add second message
+            addMessageInput();
+
+            // Wait a bit then populate it
+            setTimeout(() => {
+                const inputs2 = document.querySelectorAll('.message-input-group');
+                if (inputs2[1]) {
+                    inputs2[1].querySelector('select').value = 'agent';
+                    inputs2[1].querySelector('textarea').value = 'I can do stuff';
+                    updateMessageType(inputs2[1].getAttribute('data-message-id'), 'agent');
+                }
+
+                // Add third message
+                addMessageInput();
+
+                setTimeout(() => {
+                    const inputs3 = document.querySelectorAll('.message-input-group');
+                    if (inputs3[2]) {
+                        inputs3[2].querySelector('select').value = 'customer';
+                        inputs3[2].querySelector('textarea').value = 'Thats kewl!';
+                        updateMessageType(inputs3[2].getAttribute('data-message-id'), 'customer');
+                    }
+
+                    // Update preview with all messages
+                    updatePreview();
+                }, 50);
+            }, 50);
+        }, 100);
     </script>
 </body>
 </html>
