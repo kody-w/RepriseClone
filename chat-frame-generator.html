@@ -634,34 +634,37 @@
         .composer-canvas {
             position: relative;
             width: 100%;
-            height: 600px;
+            height: 800px;
             border: 2px solid #ddd;
             border-radius: 8px;
-            overflow: hidden;
+            overflow: auto;
             background: #f5f5f5;
             margin: 20px 0;
         }
 
         .composer-background {
+            width: 100%;
+            height: 100%;
+            background: white;
+            overflow: auto;
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background: white;
-            z-index: 1;
+            right: 0;
+            bottom: 0;
+            display: block;
         }
 
         .chat-overlay-container {
             position: absolute;
             border: 3px dashed #667eea;
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.95);
             cursor: move;
             min-width: 200px;
             min-height: 150px;
             display: none;
-            z-index: 10;
+            z-index: 100;
+            pointer-events: all;
         }
 
         .chat-overlay-container.active {
@@ -674,7 +677,8 @@
             overflow: auto;
             padding: 15px;
             background: white;
-            border-radius: 8px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .resize-handle {
@@ -698,7 +702,7 @@
             background: #667eea;
             padding: 5px;
             border-radius: 6px 6px 0 0;
-            z-index: 20;
+            z-index: 101;
         }
 
         .overlay-control-btn {
@@ -1059,13 +1063,22 @@
                 bodyWrapper.innerHTML = bodyContent.innerHTML;
                 browserPreview.appendChild(bodyWrapper);
 
-                // Inject scripts (optional - might cause issues)
+                // Inject scripts with error handling
                 scripts.forEach(script => {
                     const newScript = document.createElement('script');
                     if (script.src) {
                         newScript.src = script.src;
                     } else {
-                        newScript.textContent = script.textContent;
+                        // Wrap inline scripts to catch errors
+                        newScript.textContent = `
+                            (function() {
+                                try {
+                                    ${script.textContent}
+                                } catch (e) {
+                                    console.warn('Script error caught and suppressed:', e);
+                                }
+                            })();
+                        `;
                     }
                     browserPreview.appendChild(newScript);
                 });
@@ -1851,7 +1864,7 @@
             </div>`;
         }
 
-        // Load background frame - EXACT SAME PATTERN AS SELECTOR PREVIEW
+        // Load background frame - STATIC VERSION (no scripts)
         function loadBackgroundFrame() {
             const backgroundDiv = document.getElementById('composerBackground');
 
@@ -1862,64 +1875,77 @@
                 return;
             }
 
-            // EXACT SAME PATTERN AS loadVisualPreview()
+            // Parse HTML
             const parser = new DOMParser();
             const doc = parser.parseFromString(backgroundHTML, 'text/html');
 
             const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
-            const scripts = Array.from(doc.querySelectorAll('script'));
+            // NOTE: We deliberately DO NOT inject scripts - this is a static background
             const bodyContent = doc.body.cloneNode(true);
 
-            // Clear and inject - EXACT SAME ORDER
-            backgroundDiv.innerHTML = '';
+            // Only inject once
+            if (!backgroundDiv.getAttribute('data-loaded')) {
+                backgroundDiv.innerHTML = '';
 
-            // Inject styles first
-            styles.forEach(style => {
-                backgroundDiv.appendChild(style.cloneNode(true));
-            });
+                // Inject styles first
+                styles.forEach(style => {
+                    backgroundDiv.appendChild(style.cloneNode(true));
+                });
 
-            // Inject body content EXACTLY like browserPreview
-            const bodyWrapper = document.createElement('div');
-            bodyWrapper.innerHTML = bodyContent.innerHTML;
-            backgroundDiv.appendChild(bodyWrapper);
+                // Inject body content
+                const bodyWrapper = document.createElement('div');
+                bodyWrapper.innerHTML = bodyContent.innerHTML;
+                backgroundDiv.appendChild(bodyWrapper);
 
-            // Inject scripts last
-            scripts.forEach(script => {
-                const newScript = document.createElement('script');
-                if (script.src) {
-                    newScript.src = script.src;
-                } else {
-                    newScript.textContent = script.textContent;
-                }
-                backgroundDiv.appendChild(newScript);
-            });
+                backgroundDiv.setAttribute('data-loaded', 'true');
+            }
 
-            console.log('✓ Background HTML injected (same pattern as selector preview)');
+            console.log('✓ Background HTML injected (static - no scripts)');
             console.log('Body content length:', bodyContent.innerHTML.length);
             console.log('Body has children:', bodyContent.children.length);
 
-            // Now calculate overlay position and show it
+            // Wait longer for DOM to settle, then calculate overlay position
             setTimeout(() => {
                 calculateOverlayPosition();
                 showChatOverlay();
-            }, 200);
+            }, 500);
         }
 
         // Calculate where the chat container is in the background
         function calculateOverlayPosition() {
             const backgroundDiv = document.getElementById('composerBackground');
 
-            if (!backgroundDiv) return;
+            if (!backgroundDiv) {
+                console.warn('Background div not found');
+                return;
+            }
 
             const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+            console.log('🔍 Looking for chat container with selector:', containerSelector);
+            console.log('Background div children:', backgroundDiv.children.length);
 
             try {
+                // Try to find the element
                 const chatContainer = backgroundDiv.querySelector(containerSelector);
 
                 if (chatContainer) {
+                    console.log('✓ Found chat container:', chatContainer.tagName, chatContainer.id, chatContainer.className);
+
                     const rect = chatContainer.getBoundingClientRect();
                     const canvas = document.getElementById('composerCanvas');
                     const canvasRect = canvas.getBoundingClientRect();
+
+                    console.log('Chat container rect:', {
+                        left: rect.left,
+                        top: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    });
+
+                    console.log('Canvas rect:', {
+                        left: canvasRect.left,
+                        top: canvasRect.top
+                    });
 
                     // Calculate relative position within the canvas
                     overlayPosition = {
@@ -1929,12 +1955,16 @@
                         height: Math.max(150, rect.height)
                     };
 
-                    console.log('✓ Auto-positioned overlay at chat container:', overlayPosition);
+                    console.log('✓ Auto-positioned overlay at:', overlayPosition);
                 } else {
-                    console.warn('Chat container not found with selector:', containerSelector);
+                    console.warn('❌ Chat container not found with selector:', containerSelector);
+
+                    // Debug: List some IDs that ARE present
+                    const allIds = Array.from(backgroundDiv.querySelectorAll('[id]')).slice(0, 10);
+                    console.log('First 10 elements with IDs in background:', allIds.map(el => `#${el.id}`));
                 }
             } catch (e) {
-                console.warn('Could not find chat container for auto-positioning:', e);
+                console.error('Error finding chat container:', e);
                 // Keep default position if selector doesn't work
             }
         }
