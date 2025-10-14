@@ -655,6 +655,19 @@
             display: block;
         }
 
+        .composer-background-fullscreen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            overflow: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: block;
+        }
+
         .chat-overlay-container {
             position: absolute;
             border: 3px dashed #667eea;
@@ -867,53 +880,8 @@
                 </div>
             </div>
 
-            <!-- Frame Composer Section -->
-            <div class="composer-section" id="composerSection">
-                <h2>5. Frame Composer - Overlay Chat on Background</h2>
-                <p style="color: #666; margin-bottom: 20px;">Your uploaded HTML is loaded as the background. Drag and resize the chat overlay to position it perfectly. Only the chat will animate!</p>
-
-                <!-- Composer Canvas -->
-                <div class="composer-canvas" id="composerCanvas">
-                    <div id="composerBackground" class="composer-background"></div>
-
-                    <div class="chat-overlay-container" id="chatOverlay">
-                        <div class="overlay-controls">
-                            <span style="color: white; font-size: 11px; padding: 4px 8px;">Chat Overlay</span>
-                            <button class="overlay-control-btn" onclick="resetOverlayPosition()">Reset</button>
-                        </div>
-                        <div class="chat-overlay-content" id="chatOverlayContent">
-                            <!-- Chat frames will be displayed here -->
-                        </div>
-                        <div class="resize-handle" id="resizeHandle"></div>
-                    </div>
-                </div>
-
-                <!-- Animation Controls -->
-                <div class="animation-preview">
-                    <div class="frame-counter" id="frameCounter">Frame 1 of 1</div>
-                    <div class="btn-group">
-                        <button class="btn btn-secondary" onclick="prevFrame()">⏮️ Previous</button>
-                        <button class="btn btn-primary" onclick="toggleAnimation()" id="playBtn">▶️ Play Animation</button>
-                        <button class="btn btn-secondary" onclick="nextFrame()">⏭️ Next</button>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        <label style="font-size: 13px; color: #666;">Frame Duration: <span id="fpsDisplay">500ms</span></label>
-                        <input type="range" id="fpsSlider" min="100" max="2000" value="500" step="100"
-                               style="width: 200px; vertical-align: middle; margin: 0 10px;"
-                               oninput="document.getElementById('fpsDisplay').textContent = this.value + 'ms'">
-                    </div>
-                </div>
-
-                <!-- Export Options -->
-                <div style="margin-top: 30px;">
-                    <h3>6. Export Final Product</h3>
-                    <div class="btn-group">
-                        <button class="btn btn-success" onclick="downloadCompositeFrames()">📥 Download All Composite Frames</button>
-                        <button class="btn btn-primary" onclick="exportToVideo()">🎥 Export to Video (MP4)</button>
-                        <button class="btn" style="background: #e67e22; color: white;" onclick="exportToGIF()">🎞️ Export to GIF</button>
-                    </div>
-                    <div id="exportStatus"></div>
-                </div>
+            <!-- Frame Composer Section - Hidden, will open in fullscreen -->
+            <div class="composer-section" id="composerSection" style="display: none;">
             </div>
         </main>
     </div>
@@ -953,6 +921,50 @@
         <div class="floating-select-btn" id="floatingSelectBtn">
             ✓ Select This Element
             <span class="element-tag-label" id="elementTagLabel"></span>
+        </div>
+    </div>
+
+    <!-- Fullscreen Frame Composer Overlay -->
+    <div class="fullscreen-preview-overlay" id="composerOverlay">
+        <div class="fullscreen-header">
+            <div class="fullscreen-header-left">
+                <div class="fullscreen-title">🎬 Frame Composer - Animate Chat</div>
+                <div class="frame-counter" id="fullscreenFrameCounter" style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 4px; font-size: 13px;">Frame 1 of 1</div>
+                <div style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 4px; font-size: 11px; margin-left: 15px; opacity: 0.8;">
+                    ⌨️ Space: Play/Pause • ← →: Navigate • ESC: Close
+                </div>
+            </div>
+            <div class="fullscreen-controls">
+                <button class="fullscreen-btn" onclick="prevFrame()">⏮️ Prev</button>
+                <button class="fullscreen-btn" onclick="toggleAnimation()" id="fullscreenPlayBtn">▶️ Play</button>
+                <button class="fullscreen-btn" onclick="nextFrame()">Next ⏭️</button>
+                <div style="display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                    <label style="font-size: 12px;">Speed:</label>
+                    <input type="range" id="fullscreenFpsSlider" min="100" max="2000" value="500" step="100"
+                           style="width: 120px;"
+                           oninput="updateAnimationSpeed(this.value)">
+                    <span id="fullscreenFpsDisplay" style="font-size: 12px; min-width: 50px;">500ms</span>
+                </div>
+                <button class="fullscreen-btn" style="background: rgba(39, 174, 96, 0.3); border-color: rgba(39, 174, 96, 0.5);" onclick="downloadCompositeFrames()">📥 Download</button>
+                <button class="close-fullscreen-btn" onclick="closeComposer()">✕ Close</button>
+            </div>
+        </div>
+        <div class="fullscreen-content">
+            <div class="fullscreen-main">
+                <!-- Background and overlay will be rendered here -->
+                <div id="composerBackground" class="composer-background-fullscreen"></div>
+
+                <div class="chat-overlay-container" id="chatOverlay">
+                    <div class="overlay-controls">
+                        <span style="color: white; font-size: 11px; padding: 4px 8px;">Chat Overlay (Drag & Resize)</span>
+                        <button class="overlay-control-btn" onclick="resetOverlayPosition()">Reset Position</button>
+                    </div>
+                    <div class="chat-overlay-content" id="chatOverlayContent">
+                        <!-- Chat frames will be displayed here -->
+                    </div>
+                    <div class="resize-handle" id="resizeHandle"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1844,12 +1856,58 @@
             // Use baseHTML as background
             backgroundHTML = baseHTML;
 
-            // Show composer section and load background + chat overlay
-            document.getElementById('composerSection').classList.add('active');
+            // Open fullscreen composer
+            openComposerFullscreen();
+        }
+
+        // Open composer in fullscreen mode
+        function openComposerFullscreen() {
+            const overlay = document.getElementById('composerOverlay');
+            overlay.classList.add('active');
+
+            // Load background and initialize
             loadBackgroundFrame();
             currentFrameIndex = 0;
             displayCurrentFrame();
             updateFrameCounter();
+        }
+
+        // Close fullscreen composer
+        function closeComposer() {
+            const overlay = document.getElementById('composerOverlay');
+            overlay.classList.remove('active');
+
+            // Stop animation if playing
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                const playBtn = document.getElementById('fullscreenPlayBtn');
+                if (playBtn) playBtn.textContent = '▶️ Play';
+            }
+        }
+
+        // Update animation speed
+        function updateAnimationSpeed(value) {
+            document.getElementById('fullscreenFpsDisplay').textContent = value + 'ms';
+
+            // If animation is playing, restart it with new speed
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                const duration = parseInt(value);
+                const playBtn = document.getElementById('fullscreenPlayBtn');
+
+                animationInterval = setInterval(() => {
+                    if (currentFrameIndex < cleanChatFrames.length - 1) {
+                        currentFrameIndex++;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    } else {
+                        currentFrameIndex = 0;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    }
+                }, duration);
+            }
         }
 
         // Generate minimal HTML for clean chat
@@ -2085,7 +2143,12 @@
 
         function updateFrameCounter() {
             const counter = document.getElementById('frameCounter');
-            counter.textContent = `Frame ${currentFrameIndex + 1} of ${cleanChatFrames.length}`;
+            const fullscreenCounter = document.getElementById('fullscreenFrameCounter');
+
+            const text = `Frame ${currentFrameIndex + 1} of ${cleanChatFrames.length}`;
+
+            if (counter) counter.textContent = text;
+            if (fullscreenCounter) fullscreenCounter.textContent = text;
         }
 
         // Animation controls
@@ -2107,16 +2170,21 @@
 
         function toggleAnimation() {
             const playBtn = document.getElementById('playBtn');
+            const fullscreenPlayBtn = document.getElementById('fullscreenPlayBtn');
 
             if (animationInterval) {
                 // Stop animation
                 clearInterval(animationInterval);
                 animationInterval = null;
-                playBtn.textContent = '▶️ Play Animation';
+                if (playBtn) playBtn.textContent = '▶️ Play Animation';
+                if (fullscreenPlayBtn) fullscreenPlayBtn.textContent = '▶️ Play';
             } else {
-                // Start animation
-                const duration = parseInt(document.getElementById('fpsSlider').value);
-                playBtn.textContent = '⏸️ Pause Animation';
+                // Start animation - use fullscreen slider if in fullscreen mode
+                const fpsSlider = document.getElementById('fullscreenFpsSlider') || document.getElementById('fpsSlider');
+                const duration = parseInt(fpsSlider.value);
+
+                if (playBtn) playBtn.textContent = '⏸️ Pause Animation';
+                if (fullscreenPlayBtn) fullscreenPlayBtn.textContent = '⏸️ Pause';
 
                 animationInterval = setInterval(() => {
                     if (currentFrameIndex < cleanChatFrames.length - 1) {
@@ -2210,14 +2278,46 @@
 
         function showExportStatus(message, type) {
             const statusDiv = document.getElementById('exportStatus');
-            statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+            if (statusDiv) {
+                statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
 
-            if (type === 'success') {
-                setTimeout(() => {
-                    statusDiv.innerHTML = '';
-                }, 5000);
+                if (type === 'success') {
+                    setTimeout(() => {
+                        statusDiv.innerHTML = '';
+                    }, 5000);
+                }
+            } else {
+                // Show in console if no status div
+                console.log(message);
             }
         }
+
+        // Keyboard shortcuts for fullscreen composer
+        document.addEventListener('keydown', (e) => {
+            const composerOverlay = document.getElementById('composerOverlay');
+
+            // Only handle shortcuts if composer is open
+            if (!composerOverlay.classList.contains('active')) return;
+
+            switch(e.key) {
+                case ' ': // Spacebar - play/pause
+                    e.preventDefault();
+                    toggleAnimation();
+                    break;
+                case 'ArrowLeft': // Previous frame
+                    e.preventDefault();
+                    prevFrame();
+                    break;
+                case 'ArrowRight': // Next frame
+                    e.preventDefault();
+                    nextFrame();
+                    break;
+                case 'Escape': // Close composer
+                    e.preventDefault();
+                    closeComposer();
+                    break;
+            }
+        });
 
         // Add initial message inputs with default test data
         addMessageInput();
