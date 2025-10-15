@@ -137,6 +137,82 @@ function playBIOSBeep() {
 
 **IMPORTANT:** Audio requires user interaction to start (browser security). Always call audio functions in response to clicks/keypresses.
 
+### Chat Creation System
+
+A complete workflow for designing and animating chat conversations from scratch.
+
+**Chat Frame Generator (`chat-frame-generator.html`):**
+- Visual template builder for agent and customer messages
+- Live preview with customizable styles (colors, fonts, spacing, borders)
+- Template composition mode:
+  - Drag/drop/resize message elements on canvas
+  - Export templates with positioning metadata
+- Field placeholders for dynamic content:
+  - `{{AGENT_TITLE}}` - Agent name/role (agent messages only)
+  - `{{TITLE}}` - Generic title (both message types)
+  - `{{SUBTITLE}}` - Secondary text below title
+  - `{{MESSAGE_TEXT}}` or `{{TEXT}}` - Main message content
+  - `{{TIMESTAMP}}` - Time indicator
+- Export formats:
+  - Style JSON for Chat Animator import
+  - Full HTML frames with embedded styles
+  - Template + mapping for reusable designs
+
+**Chat Animator (`chat-animator.html`):**
+- Canvas-based visual editor for positioning messages
+- Timeline with frame-by-frame animation:
+  - Play/pause controls
+  - Adjustable speed (100-3000ms per frame)
+  - Frame navigation (prev/next buttons)
+- Message editing sidebar:
+  - Type selection (agent/customer)
+  - Optional fields (title, subtitle, text, timestamp)
+  - Position controls (X/Y coordinates)
+  - Toggle checkboxes to show/hide optional fields
+- Drag-and-drop message positioning
+- Import/Export:
+  - Import styles JSON from Chat Frame Generator
+  - Import/export conversation JSON
+  - Export animation frames
+- Real-time preview with applied styles
+
+**Conversation JSON Format:**
+```javascript
+{
+  "messages": [
+    {
+      "id": 0,
+      "type": "agent",           // "agent" or "customer"
+      "title": "Support Agent",  // Optional: agent name/role
+      "subtitle": "Analyzing...", // Optional: status text
+      "text": "Main content",    // Required: message text
+      "timestamp": "2:30 PM",    // Optional: time indicator
+      "posX": 50,                // Required: horizontal position
+      "posY": 100                // Required: vertical position
+    }
+  ],
+  "metadata": {
+    "created": "2025-10-15T21:45:00.000Z",
+    "totalMessages": 1,
+    "version": "1.0"
+  }
+}
+```
+
+**Workflow:**
+1. Design message templates in `chat-frame-generator.html`
+2. Export styles JSON
+3. Open `chat-animator.html` → Import styles
+4. Add messages and position them on canvas
+5. Edit content in sidebar (title/subtitle/text/timestamp)
+6. Play animation to preview
+7. Export conversation JSON or animation frames
+
+**Key Files:**
+- `conversation-format.md` - Complete documentation of JSON structure
+- `sample-conversation.json` - Example conversation with all fields
+- `chat-styles-*.json` - Style exports from frame generator
+
 ### Editing Tools
 
 **Player Features (`player.html`):**
@@ -235,6 +311,51 @@ document.getElementById('bookmarklet').href = 'javascript:' + encodeURIComponent
 
 Test by dragging to bookmarks bar and using on external sites.
 
+### Creating Chat Animations
+
+Complete workflow from design to export:
+
+1. **Design Message Templates** (`chat-frame-generator.html`):
+```javascript
+// Customize styles in the Style Editor panel
+{
+  "agentMessageStyles": {
+    "backgroundColor": "#f0f0f0",
+    "textColor": "#000000",
+    "borderRadius": "12px",
+    // ... other styles
+  }
+}
+```
+
+2. **Add Template Placeholders**:
+   - Use `{{AGENT_TITLE}}` for agent name
+   - Use `{{SUBTITLE}}` for status text
+   - Use `{{MESSAGE_TEXT}}` for main content
+   - Use `{{TIMESTAMP}}` for time indicator
+
+3. **Export Styles** → Click "Export Styles JSON"
+
+4. **Open Chat Animator** → Import styles JSON
+
+5. **Build Conversation**:
+   - Click "➕ Add Agent" or "➕ Add Customer"
+   - Fill in fields in sidebar (title, subtitle, text, timestamp)
+   - Toggle optional fields with checkboxes
+   - Drag messages to position them on canvas
+
+6. **Animate** → Click "▶️ Play Animation" to preview
+
+7. **Export**:
+   - "💬 Export Conversation" → JSON file for later editing
+   - "💾 Export Frames" → Complete animation with styles
+
+**Tips:**
+- Agent messages typically positioned at `posX: 50` (left)
+- Customer messages at `posX: 500` (right)
+- Vertical spacing of 100-150px between messages
+- Use `\n` in text field for multi-line messages
+
 ## File Organization
 
 ```
@@ -250,6 +371,13 @@ Test by dragging to bookmarks bar and using on external sites.
 ├── visual-history.html           # Flipbook player with demo buttons
 ├── meta-evolution.html           # Hardware evolution (CRT → Gaming PC)
 ├── 4d-timeline.html             # Branching timeline multiverse
+│
+├── CHAT CREATION SYSTEM
+├── chat-frame-generator.html    # Visual template designer
+├── chat-animator.html           # Canvas-based message animator
+├── conversation-format.md       # JSON format documentation
+├── sample-conversation.json     # Example conversation
+├── chat-styles-*.json           # Exported style configurations
 │
 ├── RECORDING & PLAYBACK
 ├── bookmarklet.html             # Bookmarklet installer (RECOMMENDED)

@@ -346,7 +346,6 @@
     <div class="control-bar">
         <h1>Chat Animator</h1>
         <button class="btn btn-primary" onclick="importStyles()">🎨 Import Styles</button>
-        <button class="btn btn-primary" onclick="exportStyles()">📤 Export Styles</button>
         <button class="btn btn-primary" onclick="importConversation()">📥 Import Conversation</button>
         <button class="btn btn-success" onclick="addMessage('agent')">➕ Add Agent</button>
         <button class="btn btn-success" onclick="addMessage('customer')">➕ Add Customer</button>
@@ -522,31 +521,6 @@
             </div>
             <button class="btn btn-danger" onclick="deleteSelectedMessage()" style="width: 100%; margin-top: 10px;">
                 🗑️ Delete Message
-            </button>
-        </div>
-
-        <div class="section" id="previewSection" style="display: none;">
-            <h3>Rendered Output Preview</h3>
-            <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
-                Exact HTML that will be rendered for this message:
-            </div>
-            <textarea id="renderedPreview" readonly style="
-                width: 100%;
-                min-height: 150px;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                font-family: 'Courier New', monospace;
-                font-size: 11px;
-                background: #f9f9f9;
-                resize: vertical;
-                color: #333;
-            "></textarea>
-            <div style="font-size: 11px; color: #666; margin-top: 10px; margin-bottom: 5px;">
-                Character Count: <span id="charCount" style="font-weight: 600;">0</span>
-            </div>
-            <button class="btn btn-primary" onclick="copyRenderedHTML()" style="width: 100%; margin-top: 5px; font-size: 12px;">
-                📋 Copy HTML
             </button>
         </div>
 
@@ -809,53 +783,6 @@
             showStatus('Conversation exported successfully!');
         }
 
-        // Export styles
-        function exportStyles() {
-            const hasStyles = agentMessageTemplate || customerMessageTemplate || agentMessageStyles || customerMessageStyles;
-
-            if (!hasStyles) {
-                showStatus('No styles to export. Import styles first.', 'error');
-                return;
-            }
-
-            const stylesData = {
-                agentMessageTemplate: agentMessageTemplate,
-                customerMessageTemplate: customerMessageTemplate,
-                agentMessageStyles: agentMessageStyles,
-                customerMessageStyles: customerMessageStyles,
-                metadata: {
-                    exported: new Date().toISOString(),
-                    version: '1.0'
-                }
-            };
-
-            // Download as JSON
-            const blob = new Blob([JSON.stringify(stylesData, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `chat-styles-${Date.now()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            showStatus('Styles exported successfully!');
-        }
-
-        // Copy rendered HTML to clipboard
-        function copyRenderedHTML() {
-            const preview = document.getElementById('renderedPreview');
-            if (!preview.value) {
-                showStatus('No HTML to copy', 'error');
-                return;
-            }
-
-            navigator.clipboard.writeText(preview.value).then(() => {
-                showStatus('HTML copied to clipboard!');
-            }).catch(err => {
-                showStatus('Failed to copy: ' + err.message, 'error');
-            });
-        }
-
         // Add new message
         function addMessage(type) {
             // Calculate better default position - vertical stack
@@ -957,119 +884,10 @@
                 document.getElementById('showTimestamp').checked = hasTimestamp;
                 document.getElementById('editSubtitleGroup').style.display = hasSubtitle ? 'block' : 'none';
                 document.getElementById('editTimestampGroup').style.display = hasTimestamp ? 'block' : 'none';
-
-                // Update preview panel
-                updatePreviewPanel(msg);
             }
 
             updateMessageList();
             renderAllMessages();
-        }
-
-        // Update preview panel with rendered HTML
-        function updatePreviewPanel(msg) {
-            if (!msg) {
-                document.getElementById('previewSection').style.display = 'none';
-                return;
-            }
-
-            // Generate the same HTML that would be rendered
-            let renderedHTML = generateMessageHTML(msg);
-
-            // Apply custom styles
-            renderedHTML = applyCustomStyles(renderedHTML, msg);
-
-            // Display in preview
-            const previewTextarea = document.getElementById('renderedPreview');
-            previewTextarea.value = renderedHTML;
-
-            // Calculate character count (HTML entities count as one character)
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = renderedHTML;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            document.getElementById('charCount').textContent = textContent.length;
-
-            // Show preview section
-            document.getElementById('previewSection').style.display = 'block';
-        }
-
-        // Generate message HTML (extracted from renderAllMessages for reuse)
-        function generateMessageHTML(msg) {
-            let messageHTML = '';
-
-            if (msg.type === 'agent' && agentMessageTemplate) {
-                messageHTML = agentMessageTemplate.html
-                    .replace(/\{\{AGENT_TITLE\}\}/g, `<span data-field="title">${msg.title || 'Agent'}</span>`)
-                    .replace(/\{\{TITLE\}\}/g, `<span data-field="title">${msg.title || 'Agent'}</span>`)
-                    .replace(/\{\{SUBTITLE\}\}/g, msg.subtitle ? `<span data-field="subtitle">${msg.subtitle}</span>` : '')
-                    .replace(/\{\{MESSAGE_TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
-                    .replace(/\{\{TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
-                    .replace(/\{\{TIMESTAMP\}\}/g, msg.timestamp ? `<span data-field="timestamp">${msg.timestamp}</span>` : '');
-
-                // Clean up empty elements
-                if (!msg.subtitle || !msg.subtitle.trim()) {
-                    messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
-                        return match.includes('{{SUBTITLE}}') ? '' : match;
-                    });
-                }
-                if (!msg.timestamp || !msg.timestamp.trim()) {
-                    messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
-                        return match.includes('{{TIMESTAMP}}') ? '' : match;
-                    });
-                }
-            } else if (msg.type === 'customer' && customerMessageTemplate) {
-                messageHTML = customerMessageTemplate.html
-                    .replace(/\{\{TITLE\}\}/g, msg.title ? `<span data-field="title">${msg.title}</span>` : '')
-                    .replace(/\{\{SUBTITLE\}\}/g, msg.subtitle ? `<span data-field="subtitle">${msg.subtitle}</span>` : '')
-                    .replace(/\{\{MESSAGE_TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
-                    .replace(/\{\{TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
-                    .replace(/\{\{TIMESTAMP\}\}/g, msg.timestamp ? `<span data-field="timestamp">${msg.timestamp}</span>` : '');
-
-                // Clean up empty elements
-                if (!msg.title || !msg.title.trim()) {
-                    messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
-                        return match.includes('{{TITLE}}') ? '' : match;
-                    });
-                }
-                if (!msg.subtitle || !msg.subtitle.trim()) {
-                    messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
-                        return match.includes('{{SUBTITLE}}') ? '' : match;
-                    });
-                }
-                if (!msg.timestamp || !msg.timestamp.trim()) {
-                    messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
-                        return match.includes('{{TIMESTAMP}}') ? '' : match;
-                    });
-                }
-            } else {
-                // Fallback styling
-                const bgColor = msg.type === 'customer' ? '#0084ff' : '#e4e6eb';
-                const textColor = msg.type === 'customer' ? '#ffffff' : '#050505';
-                const subtitleColor = msg.type === 'customer' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)';
-                const timestampColor = msg.type === 'customer' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
-
-                let bubbleContent = '';
-
-                if (msg.type === 'agent' && msg.title && msg.title.trim()) {
-                    bubbleContent += `<div style="font-weight: 600; margin-bottom: 4px; font-size: 13px;" data-field="title">${msg.title}</div>`;
-                }
-
-                if (msg.subtitle && msg.subtitle.trim()) {
-                    bubbleContent += `<div style="font-size: 12px; font-style: italic; color: ${subtitleColor}; margin-bottom: 6px;" data-field="subtitle">${msg.subtitle}</div>`;
-                }
-
-                if (msg.text && msg.text.trim()) {
-                    bubbleContent += `<div style="white-space: pre-wrap;" data-field="text">${msg.text}</div>`;
-                }
-
-                if (msg.timestamp && msg.timestamp.trim()) {
-                    bubbleContent += `<div style="font-size: 11px; color: ${timestampColor}; margin-top: 6px; text-align: right;" data-field="timestamp">${msg.timestamp}</div>`;
-                }
-
-                messageHTML = `<div style="background: ${bgColor}; color: ${textColor}; padding: 10px 14px; border-radius: 18px; max-width: 350px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); word-wrap: break-word;">${bubbleContent}</div>`;
-            }
-
-            return messageHTML;
         }
 
         // Toggle optional fields
@@ -1142,9 +960,6 @@
             console.log('Updated message:', JSON.stringify(msg, null, 2));
 
             document.getElementById('editTitleGroup').style.display = msg.type === 'agent' ? 'block' : 'none';
-
-            // Update preview panel with new values
-            updatePreviewPanel(msg);
 
             updateMessageList();
             renderAllMessages();
@@ -1231,8 +1046,110 @@
                 el.style.left = (msg.posX || 0) + 'px';
                 el.style.top = (msg.posY || 0) + 'px';
 
-                // Use the same HTML generation as preview panel
-                let messageHTML = generateMessageHTML(msg);
+                // Render message HTML
+                let messageHTML = '';
+                if (msg.type === 'agent' && agentMessageTemplate) {
+                    // Replace all placeholders in agent template
+                    // Wrap placeholders with data-field for custom styling
+                    messageHTML = agentMessageTemplate.html
+                        .replace(/\{\{AGENT_TITLE\}\}/g, `<span data-field="title">${msg.title || 'Agent'}</span>`)
+                        .replace(/\{\{TITLE\}\}/g, `<span data-field="title">${msg.title || 'Agent'}</span>`)
+                        .replace(/\{\{SUBTITLE\}\}/g, msg.subtitle ? `<span data-field="subtitle">${msg.subtitle}</span>` : '')
+                        .replace(/\{\{MESSAGE_TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
+                        .replace(/\{\{TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
+                        .replace(/\{\{TIMESTAMP\}\}/g, msg.timestamp ? `<span data-field="timestamp">${msg.timestamp}</span>` : '');
+
+                    // Clean up empty subtitle/timestamp elements if they're wrapped in HTML
+                    if (!msg.subtitle || !msg.subtitle.trim()) {
+                        // Remove elements that only contain the SUBTITLE placeholder
+                        messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
+                            return match.includes('{{SUBTITLE}}') ? '' : match;
+                        });
+                    }
+                    if (!msg.timestamp || !msg.timestamp.trim()) {
+                        // Remove elements that only contain the TIMESTAMP placeholder
+                        messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
+                            return match.includes('{{TIMESTAMP}}') ? '' : match;
+                        });
+                    }
+                } else if (msg.type === 'customer' && customerMessageTemplate) {
+                    // Replace all placeholders in customer template
+                    // Wrap placeholders with data-field for custom styling
+                    messageHTML = customerMessageTemplate.html
+                        .replace(/\{\{TITLE\}\}/g, msg.title ? `<span data-field="title">${msg.title}</span>` : '')
+                        .replace(/\{\{SUBTITLE\}\}/g, msg.subtitle ? `<span data-field="subtitle">${msg.subtitle}</span>` : '')
+                        .replace(/\{\{MESSAGE_TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
+                        .replace(/\{\{TEXT\}\}/g, `<span data-field="text">${msg.text || ''}</span>`)
+                        .replace(/\{\{TIMESTAMP\}\}/g, msg.timestamp ? `<span data-field="timestamp">${msg.timestamp}</span>` : '');
+
+                    // Clean up empty elements
+                    if (!msg.title || !msg.title.trim()) {
+                        messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
+                            return match.includes('{{TITLE}}') ? '' : match;
+                        });
+                    }
+                    if (!msg.subtitle || !msg.subtitle.trim()) {
+                        messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
+                            return match.includes('{{SUBTITLE}}') ? '' : match;
+                        });
+                    }
+                    if (!msg.timestamp || !msg.timestamp.trim()) {
+                        messageHTML = messageHTML.replace(/<[^>]*>\s*<\/[^>]*>/g, (match) => {
+                            return match.includes('{{TIMESTAMP}}') ? '' : match;
+                        });
+                    }
+                } else {
+                    // Fallback styling - clean, simple chat bubbles
+                    const bgColor = msg.type === 'customer' ? '#0084ff' : '#e4e6eb';
+                    const textColor = msg.type === 'customer' ? '#ffffff' : '#050505';
+                    const subtitleColor = msg.type === 'customer' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.6)';
+                    const timestampColor = msg.type === 'customer' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)';
+                    const align = msg.type === 'customer' ? 'right' : 'left';
+
+                    let bubbleContent = '';
+
+                    console.log('Building fallback bubble for msg', msg.id, '- Title:', msg.title, 'Text:', msg.text, 'Type:', msg.type);
+
+                    // Title (for agent messages)
+                    if (msg.type === 'agent' && msg.title && msg.title.trim()) {
+                        console.log('Adding title to bubble:', msg.title);
+                        bubbleContent += `<div style="font-weight: 600; margin-bottom: 4px; font-size: 13px;" data-field="title">${msg.title}</div>`;
+                    }
+
+                    // Subtitle (optional)
+                    if (msg.subtitle && msg.subtitle.trim()) {
+                        console.log('Adding subtitle to bubble:', msg.subtitle);
+                        bubbleContent += `<div style="font-size: 12px; font-style: italic; color: ${subtitleColor}; margin-bottom: 6px;" data-field="subtitle">${msg.subtitle}</div>`;
+                    }
+
+                    // Main text
+                    if (msg.text && msg.text.trim()) {
+                        console.log('Adding text to bubble:', msg.text);
+                        bubbleContent += `<div style="white-space: pre-wrap;" data-field="text">${msg.text}</div>`;
+                    }
+
+                    // Timestamp (optional)
+                    if (msg.timestamp && msg.timestamp.trim()) {
+                        console.log('Adding timestamp to bubble:', msg.timestamp);
+                        bubbleContent += `<div style="font-size: 11px; color: ${timestampColor}; margin-top: 6px; text-align: right;" data-field="timestamp">${msg.timestamp}</div>`;
+                    }
+
+                    messageHTML = `
+                        <div style="
+                            background: ${bgColor};
+                            color: ${textColor};
+                            padding: 10px 14px;
+                            border-radius: 18px;
+                            max-width: 350px;
+                            font-size: 14px;
+                            line-height: 1.4;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                            word-wrap: break-word;
+                        ">
+                            ${bubbleContent}
+                        </div>
+                    `;
+                }
 
                 // Apply custom field styles
                 messageHTML = applyCustomStyles(messageHTML, msg);
@@ -1444,7 +1361,6 @@
             if (e.target.id === 'chatContainer') {
                 selectedMessageId = null;
                 document.getElementById('editSection').style.display = 'none';
-                document.getElementById('previewSection').style.display = 'none';
                 updateMessageList();
                 renderAllMessages();
             }
