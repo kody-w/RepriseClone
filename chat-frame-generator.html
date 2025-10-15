@@ -925,20 +925,26 @@
             font-size: 14px;
             line-height: 1.5;
             animation: slideIn 0.3s ease;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+            box-sizing: border-box;
         }
 
         .clean-chat-message.agent {
             background: #e7e9fc;
             color: #333;
             align-self: flex-start;
-            max-width: 75%;
+            max-width: 85%;
+            width: auto;
         }
 
         .clean-chat-message.customer {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             align-self: flex-end;
-            max-width: 75%;
+            max-width: 85%;
+            width: auto;
             margin-left: auto;
         }
 
@@ -1055,10 +1061,24 @@
                         </button>
                         <div class="selected-path" id="customerStyleStatus" style="font-size: 11px; margin-top: 8px;"></div>
                     </div>
+
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="exportStylesToAnimator()" id="exportStylesBtn" style="width: 100%; background: #9b59b6; color: white; font-size: 13px; padding: 10px;">
+                            📤 Export Styles to Chat Animator
+                        </button>
+                    </div>
                 </div>
 
                 <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 12px; color: #856404;">
                     💡 <strong>Tip:</strong> Select one agent message and one customer message to copy their complete styling (colors, fonts, padding, borders, etc.)
+                </div>
+
+                <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px; border-radius: 6px; font-size: 12px; color: #0d47a1; margin-top: 15px;">
+                    <strong>🎯 Agent Title & Message System:</strong><br>
+                    Agent messages support two separate components:<br>
+                    • <strong>Title</strong> (e.g., "Planning Agent") - Static header shown on every message<br>
+                    • <strong>Message Text</strong> - Dynamic content that changes per message<br><br>
+                    When selecting styles, the tool automatically detects bold/heading elements as titles and uses <code>{{AGENT_TITLE}}</code> and <code>{{MESSAGE_TEXT}}</code> placeholders. Customer messages only use <code>{{MESSAGE_TEXT}}</code>.
                 </div>
 
                 <!-- Style Preview Section -->
@@ -1144,6 +1164,12 @@
                 <div class="panel">
                     <h2>Frame Preview</h2>
                     <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Preview of generated frames (each frame adds one message)</p>
+                    <div style="margin-bottom: 15px;">
+                        <button class="btn" onclick="toggleEditMode()" id="editModeBtn" style="background: #9b59b6; color: white;">
+                            ✏️ Enable Edit Mode
+                        </button>
+                        <span id="editModeStatus" style="margin-left: 10px; font-size: 12px; color: #999;"></span>
+                    </div>
                     <div class="preview-area" id="previewArea">
                         <p style="text-align: center; color: #999; padding: 40px;">Add messages to see preview</p>
                     </div>
@@ -1274,6 +1300,10 @@
         let agentMessageTemplate = null; // HTML template for agent messages
         let customerMessageTemplate = null; // HTML template for customer messages
         let currentStyleSelectionMode = null; // 'agent' or 'customer'
+        let editModeEnabled = false; // Track edit mode state
+        let draggedElement = null; // Currently dragged element
+        let dragOffsetX = 0; // Mouse offset for dragging
+        let dragOffsetY = 0;
 
         // File upload handlers
         const uploadArea = document.getElementById('uploadArea');
@@ -1370,8 +1400,14 @@
 
                 // Use HTML template if available, otherwise use CSS styling
                 if (agentMessageTemplate) {
-                    // Replace placeholder with sample text
-                    agentPreview.innerHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, 'This is how agent messages will look');
+                    // Generate sample structured message
+                    const sampleStructuredMessage = "Analyzing sample data and generating preview.\n\n📊 Sample Report\nStatus: Preview\n\n• Total Items: 5 items found\n• Status: Ready for review\n• Next Action: Import your JSON to see actual data";
+                    const formattedSample = formatStructuredMessage(sampleStructuredMessage);
+                    // Replace placeholders with formatted sample
+                    let templateHTML = agentMessageTemplate.html;
+                    templateHTML = templateHTML.replace(/\{\{AGENT_TITLE\}\}/g, 'Planning Agent');
+                    templateHTML = templateHTML.replace(/\{\{MESSAGE_TEXT\}\}/g, formattedSample);
+                    agentPreview.innerHTML = templateHTML;
                 } else if (agentMessageStyles) {
                     // Clear existing styles
                     agentPreview.style.cssText = '';
@@ -1387,7 +1423,9 @@
                         }
                     });
 
-                    agentPreview.innerHTML = 'This is how agent messages will look';
+                    // Generate sample structured message to show what cards will look like
+                    const sampleStructuredMessage = "Analyzing sample data and generating preview.\n\n📊 Sample Report\nStatus: Preview\n\n• Total Items: 5 items found\n• Status: Ready for review\n• Next Action: Import your JSON to see actual data";
+                    agentPreview.innerHTML = formatStructuredMessage(sampleStructuredMessage);
                 }
                 console.log('Agent preview updated');
             } else {
@@ -1470,12 +1508,41 @@
                 }
             }
 
-            // Function to find and replace all text nodes with placeholder
+            // Function to find and replace all text nodes with placeholders
+            // Smart detection: first bold/strong element gets {{AGENT_TITLE}}, rest gets {{MESSAGE_TEXT}}
+            let titleReplaced = false;
+
             function replaceTextNodes(node) {
                 if (node.nodeType === Node.TEXT_NODE) {
                     // Only replace if it has meaningful text (not just whitespace)
                     if (node.textContent.trim().length > 0) {
-                        node.textContent = '{{MESSAGE_TEXT}}';
+                        // Check if this text node is inside a bold/strong element
+                        let parent = node.parentElement;
+                        let isInBoldElement = false;
+
+                        while (parent && parent !== clone) {
+                            const style = window.getComputedStyle(parent);
+                            const isBold = style.fontWeight >= 600 ||
+                                         parent.tagName === 'STRONG' ||
+                                         parent.tagName === 'B' ||
+                                         parent.tagName === 'H1' ||
+                                         parent.tagName === 'H2' ||
+                                         parent.tagName === 'H3';
+
+                            if (isBold) {
+                                isInBoldElement = true;
+                                break;
+                            }
+                            parent = parent.parentElement;
+                        }
+
+                        // If this is the first bold element and we haven't replaced title yet, use AGENT_TITLE
+                        if (isInBoldElement && !titleReplaced) {
+                            node.textContent = '{{AGENT_TITLE}}';
+                            titleReplaced = true;
+                        } else {
+                            node.textContent = '{{MESSAGE_TEXT}}';
+                        }
                     }
                 } else {
                     // Recursively process child nodes
@@ -1894,6 +1961,7 @@
             if (currentStyleSelectionMode === 'agent') {
                 agentMessageStyles = styles;
                 agentMessageTemplate = template;
+                console.log('Captured agent template HTML:', template.html);
                 document.getElementById('agentSelector').value = selector;
                 document.getElementById('agentStyleStatus').innerHTML = `
                     <div style="background: #d4edda; color: #155724; padding: 8px; border-radius: 4px;">
@@ -2327,6 +2395,7 @@
                     <option value="customer">Customer Message</option>
                     <option value="system">System Message</option>
                 </select>
+                <input type="text" class="title-input" placeholder="Agent title (e.g., 'Planning Agent')" oninput="updatePreview()" style="display: block; width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; font-weight: 600;">
                 <textarea placeholder="Enter message text..." oninput="updatePreview()"></textarea>
                 <button class="remove-btn" onclick="removeMessage(${id})">Remove</button>
             `;
@@ -2337,6 +2406,13 @@
         function updateMessageType(id, type) {
             const messageDiv = document.querySelector(`[data-message-id="${id}"]`);
             messageDiv.className = `message-input-group ${type}`;
+
+            // Show/hide title input based on message type
+            const titleInput = messageDiv.querySelector('.title-input');
+            if (titleInput) {
+                titleInput.style.display = (type === 'agent') ? 'block' : 'none';
+            }
+
             updatePreview();
         }
 
@@ -2412,10 +2488,14 @@
 
                                 if (targetInput) {
                                     const select = targetInput.querySelector('select');
+                                    const titleInput = targetInput.querySelector('.title-input');
                                     const textarea = targetInput.querySelector('textarea');
 
                                     if (select && textarea) {
                                         select.value = msg.type || 'agent';
+                                        if (titleInput && msg.title) {
+                                            titleInput.value = msg.title;
+                                        }
                                         textarea.value = msg.text || '';
                                         updateMessageType(targetInput.getAttribute('data-message-id'), msg.type || 'agent');
                                     }
@@ -2446,9 +2526,16 @@
             messages = [];
             inputs.forEach(input => {
                 const type = input.querySelector('select').value;
+                const titleInput = input.querySelector('.title-input');
+                const title = titleInput ? titleInput.value.trim() : '';
                 const text = input.querySelector('textarea').value.trim();
                 if (text) {
-                    messages.push({ type, text });
+                    const message = { type, text };
+                    if (type === 'agent' && title) {
+                        message.title = title;
+                    }
+                    console.log('Collected message:', message);
+                    messages.push(message);
                 }
             });
             return messages;
@@ -2467,31 +2554,45 @@
             for (let i = 0; i < messages.length; i++) {
                 // Generate the actual styled message HTML for this frame
                 const frameMessages = messages.slice(0, i + 1);
-                const styledMessagesHTML = frameMessages.map(msg => {
+                const styledMessagesHTML = frameMessages.map((msg, frameIdx) => {
                     let messageHTML = '';
 
                     // Use the same template logic as generateMessageHTML
                     if (msg.type === 'agent' && agentMessageTemplate) {
-                        messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                        const formattedText = formatStructuredMessage(msg.text);
+                        console.log('Replacing title:', msg.title, 'in template:', agentMessageTemplate.html.substring(0, 200));
+                        messageHTML = agentMessageTemplate.html
+                            .replace(/\{\{AGENT_TITLE\}\}/g, msg.title || 'Agent')
+                            .replace(/\{\{MESSAGE_TEXT\}\}/g, formattedText);
                     } else if (msg.type === 'customer' && customerMessageTemplate) {
                         messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
                     } else {
                         // Fallback to CSS styling if no template
                         let styleString = '';
+                        const formattedText = msg.type === 'agent' ? formatStructuredMessage(msg.text) : msg.text;
                         if (msg.type === 'agent' && agentMessageStyles) {
                             styleString = stylesToCSSString(agentMessageStyles);
                         } else if (msg.type === 'customer' && customerMessageStyles) {
                             styleString = stylesToCSSString(customerMessageStyles);
                         }
-                        messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                        messageHTML = `<div style="${styleString}">${formattedText}</div>`;
                     }
 
                     // Determine alignment
                     const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
 
+                    // Calculate message index in the global messages array
+                    const messageIndex = messages.indexOf(msg);
+
+                    // Apply stored position if available
+                    let positionStyle = '';
+                    if (msg.posX !== undefined && msg.posY !== undefined) {
+                        positionStyle = `position: absolute; left: ${msg.posX}px; top: ${msg.posY}px; margin: 0;`;
+                    }
+
                     // Wrap message in container for proper alignment
                     return `
-                        <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
+                        <div data-msg-index="${messageIndex}" style="display: flex; justify-content: ${alignment}; margin: 8px 0; width: 100%; box-sizing: border-box; ${positionStyle}">
                             ${messageHTML}
                         </div>
                     `;
@@ -2503,7 +2604,7 @@
                             <span class="preview-frame-title">Frame ${i + 1}</span>
                             <span style="color: #999; font-size: 12px;">${i + 1} message${i > 0 ? 's' : ''}</span>
                         </div>
-                        <div class="preview-messages" style="display: flex; flex-direction: column; padding: 10px; background: #f8f9fa;">
+                        <div class="preview-messages" style="display: flex; flex-direction: column; padding: 10px; background: #f8f9fa; width: 100%; max-width: 100%; box-sizing: border-box; overflow-x: hidden; position: relative; min-height: 300px;">
                             ${styledMessagesHTML}
                         </div>
                     </div>
@@ -2511,6 +2612,143 @@
             }
 
             previewArea.innerHTML = previewHTML;
+
+            // Auto-scroll to the last frame
+            setTimeout(() => {
+                const lastFrame = previewArea.lastElementChild;
+                if (lastFrame) {
+                    lastFrame.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                }
+            }, 100);
+
+            // Re-enable edit mode if it was enabled
+            if (editModeEnabled) {
+                enableEditMode();
+            }
+        }
+
+        function toggleEditMode() {
+            editModeEnabled = !editModeEnabled;
+            const btn = document.getElementById('editModeBtn');
+            const status = document.getElementById('editModeStatus');
+
+            if (editModeEnabled) {
+                btn.innerHTML = '🔒 Disable Edit Mode';
+                btn.style.background = '#e74c3c';
+                status.textContent = 'Drag elements to reposition them';
+                status.style.color = '#27ae60';
+                enableEditMode();
+            } else {
+                btn.innerHTML = '✏️ Enable Edit Mode';
+                btn.style.background = '#9b59b6';
+                status.textContent = '';
+                disableEditMode();
+            }
+        }
+
+        function enableEditMode() {
+            // Find all message elements in all preview frames
+            const previewArea = document.getElementById('previewArea');
+            const allMessages = previewArea.querySelectorAll('.preview-frame .preview-messages > div[data-msg-index]');
+
+            allMessages.forEach((messageContainer) => {
+                // Add visual indicator
+                messageContainer.style.outline = '2px dashed #3498db';
+                messageContainer.style.cursor = 'move';
+
+                // Ensure it has position set for dragging
+                if (!messageContainer.style.position || messageContainer.style.position === 'relative') {
+                    messageContainer.style.position = 'relative';
+                }
+
+                // Make it draggable
+                messageContainer.addEventListener('mousedown', startDrag);
+            });
+        }
+
+        function disableEditMode() {
+            const previewArea = document.getElementById('previewArea');
+            const allMessages = previewArea.querySelectorAll('.preview-frame .preview-messages > div');
+
+            allMessages.forEach(messageContainer => {
+                // Remove visual indicators
+                messageContainer.style.outline = '';
+                messageContainer.style.cursor = '';
+
+                // Remove drag listeners
+                messageContainer.removeEventListener('mousedown', startDrag);
+            });
+        }
+
+        function startDrag(e) {
+            if (!editModeEnabled) return;
+
+            draggedElement = e.currentTarget;
+            const rect = draggedElement.getBoundingClientRect();
+
+            // Calculate offset from mouse to element's top-left corner
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+
+            // Change to absolute positioning
+            draggedElement.style.position = 'absolute';
+            draggedElement.style.left = rect.left + 'px';
+            draggedElement.style.top = rect.top + 'px';
+            draggedElement.style.margin = '0'; // Remove margin for precise positioning
+            draggedElement.style.zIndex = '9999';
+
+            // Add global listeners
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+
+            e.preventDefault();
+        }
+
+        function onDrag(e) {
+            if (!draggedElement) return;
+
+            // Find the preview-messages container
+            const previewMessages = draggedElement.closest('.preview-messages');
+            if (!previewMessages) return;
+
+            const containerRect = previewMessages.getBoundingClientRect();
+
+            let newX = e.clientX - dragOffsetX;
+            let newY = e.clientY - dragOffsetY;
+
+            // Constrain to preview-messages container
+            newX = Math.max(containerRect.left, Math.min(newX, containerRect.right - draggedElement.offsetWidth));
+            newY = Math.max(containerRect.top, Math.min(newY, containerRect.bottom - draggedElement.offsetHeight));
+
+            draggedElement.style.left = newX + 'px';
+            draggedElement.style.top = newY + 'px';
+        }
+
+        function stopDrag(e) {
+            if (!draggedElement) return;
+
+            // Save position to message data
+            const messageIndex = parseInt(draggedElement.dataset.msgIndex);
+            if (!isNaN(messageIndex) && messages[messageIndex]) {
+                // Find the preview-messages container
+                const previewMessages = draggedElement.closest('.preview-messages');
+                if (previewMessages) {
+                    const rect = draggedElement.getBoundingClientRect();
+                    const containerRect = previewMessages.getBoundingClientRect();
+
+                    // Store position relative to the preview-messages container
+                    messages[messageIndex].posX = rect.left - containerRect.left;
+                    messages[messageIndex].posY = rect.top - containerRect.top;
+
+                    console.log('Saved position for message', messageIndex, ':', messages[messageIndex].posX, messages[messageIndex].posY);
+                }
+            }
+
+            // Remove global listeners
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+
+            draggedElement = null;
         }
 
         function generateMessageHTML(messages) {
@@ -2519,35 +2757,45 @@
                 let messageHTML = '';
 
                 if (msg.type === 'agent' && agentMessageTemplate) {
-                    // Use HTML template and replace placeholder with actual text
-                    messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                    // Use HTML template and replace placeholders with actual text
+                    const formattedText = formatStructuredMessage(msg.text);
+                    messageHTML = agentMessageTemplate.html
+                        .replace(/\{\{AGENT_TITLE\}\}/g, msg.title || 'Agent')
+                        .replace(/\{\{MESSAGE_TEXT\}\}/g, formattedText);
                 } else if (msg.type === 'customer' && customerMessageTemplate) {
                     // Use HTML template and replace placeholder with actual text
                     messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
                 } else {
                     // Fallback to CSS styling if no template
                     let styleString = '';
+                    const formattedText = msg.type === 'agent' ? formatStructuredMessage(msg.text) : msg.text;
                     if (msg.type === 'agent' && agentMessageStyles) {
                         styleString = stylesToCSSString(agentMessageStyles);
                     } else if (msg.type === 'customer' && customerMessageStyles) {
                         styleString = stylesToCSSString(customerMessageStyles);
                     }
-                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                    messageHTML = `<div style="${styleString}">${formattedText}</div>`;
                 }
 
                 // Determine alignment
                 const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
 
+                // Apply stored position if available
+                let positionStyle = '';
+                if (msg.posX !== undefined && msg.posY !== undefined) {
+                    positionStyle = `position: absolute; left: ${msg.posX}px; top: ${msg.posY}px; margin: 0;`;
+                }
+
                 // Wrap message in container for proper alignment
                 return `
-                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
+                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0; width: 100%; box-sizing: border-box; ${positionStyle}">
                         ${messageHTML}
                     </div>
                 `;
             }).join('\n');
 
             // Return wrapped in flex container
-            return `<div style="display: flex; flex-direction: column;">${messagesHTML}</div>`;
+            return `<div style="display: flex; flex-direction: column; width: 100%; max-width: 100%; box-sizing: border-box; overflow-x: hidden; position: relative; min-height: 300px;">${messagesHTML}</div>`;
         }
 
         function generateFrames() {
@@ -3354,7 +3602,12 @@
 
         function displayFrame() {
             if (frames.length === 0) return;
-            document.getElementById('chatContainer').innerHTML = frames[currentFrame];
+            const container = document.getElementById('chatContainer');
+            container.innerHTML = frames[currentFrame];
+            // Auto-scroll to bottom
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
         }
 
         function updateFrameInfo() {
@@ -3522,6 +3775,12 @@
             }
         }
 
+        // Format messages - just add line breaks, that's it
+        function formatStructuredMessage(text) {
+            // Simple: just preserve line breaks with proper spacing
+            return '<div style="white-space: pre-wrap; line-height: 1.6;">' + text + '</div>';
+        }
+
         // Generate minimal HTML for clean chat
         function generateCleanChatHTML(msgs) {
             const messagesHTML = msgs.map(msg => {
@@ -3529,15 +3788,19 @@
                 let messageHTML = '';
 
                 if (msg.type === 'agent' && agentMessageTemplate) {
-                    // Use HTML template and replace placeholder with actual text
-                    messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                    // Format structured messages first, then insert into template
+                    const formattedText = formatStructuredMessage(msg.text);
+                    messageHTML = agentMessageTemplate.html
+                        .replace(/\{\{AGENT_TITLE\}\}/g, msg.title || 'Agent')
+                        .replace(/\{\{MESSAGE_TEXT\}\}/g, formattedText);
                 } else if (msg.type === 'customer' && customerMessageTemplate) {
                     // Use HTML template and replace placeholder with actual text
                     messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
                 } else if (msg.type === 'agent' && agentMessageStyles) {
                     // Fallback to CSS styling
                     const styleString = stylesToCSSString(agentMessageStyles);
-                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                    const formattedText = formatStructuredMessage(msg.text);
+                    messageHTML = `<div style="${styleString}">${formattedText}</div>`;
                 } else if (msg.type === 'customer' && customerMessageStyles) {
                     // Fallback to CSS styling
                     const styleString = stylesToCSSString(customerMessageStyles);
@@ -3545,20 +3808,21 @@
                 } else {
                     // Fallback to default styling if nothing is captured
                     const msgClass = msg.type;
-                    messageHTML = `<div class="clean-chat-message ${msgClass}">${msg.text}</div>`;
+                    const formattedText = msg.type === 'agent' ? formatStructuredMessage(msg.text) : msg.text;
+                    messageHTML = `<div class="clean-chat-message ${msgClass}">${formattedText}</div>`;
                 }
 
                 // Determine alignment
                 const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
 
                 return `
-                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
+                    <div style="display: flex; justify-content: ${alignment}; margin: 16px 0; width: 100%; box-sizing: border-box; clear: both;">
                         ${messageHTML}
                     </div>
                 `;
             }).join('\n');
 
-            return `<div style="display: flex; flex-direction: column; padding: 10px;">
+            return `<div style="display: flex; flex-direction: column; padding: 20px; width: 100%; max-width: 100%; box-sizing: border-box; overflow-x: hidden; gap: 12px;">
                 ${messagesHTML}
             </div>`;
         }
@@ -4090,6 +4354,30 @@
                 }, 50);
             }, 50);
         }, 100);
+
+        // Export styles to Chat Animator
+        function exportStylesToAnimator() {
+            if (!agentMessageTemplate && !customerMessageTemplate && !agentMessageStyles && !customerMessageStyles) {
+                showStatus('Please select at least one message style first', 'error');
+                return;
+            }
+
+            const exportData = {
+                agentMessageTemplate: agentMessageTemplate,
+                customerMessageTemplate: customerMessageTemplate,
+                agentMessageStyles: agentMessageStyles,
+                customerMessageStyles: customerMessageStyles
+            };
+
+            // Copy to clipboard
+            const jsonString = JSON.stringify(exportData, null, 2);
+            navigator.clipboard.writeText(jsonString).then(() => {
+                showStatus('Styles copied to clipboard! Open Chat Animator and click "Import Styles" to paste.', 'success');
+            }).catch(() => {
+                // Fallback: show in alert
+                alert('Copy this JSON and paste it in Chat Animator:\n\n' + jsonString);
+            });
+        }
     </script>
 </body>
 </html>

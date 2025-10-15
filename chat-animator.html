@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Animator - Simple Chat Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Top Control Bar */
+        .control-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .control-bar h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: auto;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-purple {
+            background: #9b59b6;
+            color: white;
+        }
+
+        /* Canvas Area */
+        .canvas {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 300px;
+            bottom: 80px;
+            background: white;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .message-item {
+            position: absolute;
+            cursor: move;
+            transition: all 0.2s;
+            border-radius: 18px;
+        }
+
+        .message-item.selected {
+            outline: 3px solid #3498db;
+            outline-offset: 3px;
+        }
+
+        .message-item:hover:not(.selected) {
+            transform: scale(1.02);
+            filter: brightness(0.98);
+        }
+
+        /* Right Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            right: 0;
+            width: 300px;
+            bottom: 80px;
+            background: #f8f9fa;
+            border-left: 1px solid #ddd;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .sidebar .section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .sidebar .section:last-child {
+            border-bottom: none;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .message-list {
+            list-style: none;
+        }
+
+        .message-list-item {
+            padding: 10px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .message-list-item:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+        }
+
+        .message-list-item.active {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        .message-list-item .type {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+
+        .message-list-item .preview {
+            font-size: 12px;
+            margin-top: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #34495e;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        .timeline-track {
+            flex: 1;
+            height: 40px;
+            background: #2c3e50;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            width: 3px;
+            height: 100%;
+            background: #e74c3c;
+            top: 0;
+            transition: left 0.1s linear;
+        }
+
+        .timeline-frames {
+            display: flex;
+            height: 100%;
+        }
+
+        .timeline-frame {
+            flex: 1;
+            border-right: 1px solid #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .timeline-frame:hover {
+            background: rgba(52, 152, 219, 0.2);
+        }
+
+        .timeline-frame.active {
+            background: rgba(52, 152, 219, 0.4);
+        }
+
+        /* Import/Export Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .status-message {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #27ae60;
+            color: white;
+            border-radius: 4px;
+            font-size: 13px;
+            z-index: 1500;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: all 0.3s;
+        }
+
+        .status-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .status-message.error {
+            background: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <!-- Control Bar -->
+    <div class="control-bar">
+        <h1>Chat Animator</h1>
+        <button class="btn btn-primary" onclick="importStyles()">📥 Import Styles</button>
+        <button class="btn btn-success" onclick="addMessage('agent')">➕ Add Agent</button>
+        <button class="btn btn-success" onclick="addMessage('customer')">➕ Add Customer</button>
+        <button class="btn btn-purple" onclick="exportFrames()">💾 Export Frames</button>
+        <button class="btn btn-danger" onclick="clearAll()">🗑️ Clear All</button>
+    </div>
+
+    <!-- Canvas -->
+    <div class="canvas">
+        <div class="chat-container" id="chatContainer">
+            <div id="emptyState" style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                color: #999;
+                font-size: 16px;
+            ">
+                <div style="font-size: 48px; margin-bottom: 20px;">💬</div>
+                <div style="font-weight: 600; margin-bottom: 10px;">No messages yet</div>
+                <div style="font-size: 14px;">Click "➕ Add Agent" or "➕ Add Customer" to start</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="section">
+            <h3>Messages</h3>
+            <ul class="message-list" id="messageList">
+                <li style="text-align: center; color: #999; padding: 20px; font-size: 12px;">
+                    No messages yet
+                </li>
+            </ul>
+        </div>
+
+        <div class="section" id="editSection" style="display: none;">
+            <h3>Edit Selected</h3>
+            <div class="input-group">
+                <label>Type</label>
+                <select id="editType" onchange="updateSelectedMessage()">
+                    <option value="agent">Agent</option>
+                    <option value="customer">Customer</option>
+                </select>
+            </div>
+            <div class="input-group" id="editTitleGroup">
+                <label>Title (Agent only)</label>
+                <input type="text" id="editTitle" oninput="updateSelectedMessage()" placeholder="e.g., Planning Agent">
+            </div>
+            <div class="input-group">
+                <label>Message Text</label>
+                <textarea id="editText" oninput="updateSelectedMessage()" placeholder="Enter message text..."></textarea>
+            </div>
+            <div class="input-group">
+                <label>Position X</label>
+                <input type="number" id="editPosX" oninput="updateSelectedMessagePosition()" placeholder="0">
+            </div>
+            <div class="input-group">
+                <label>Position Y</label>
+                <input type="number" id="editPosY" oninput="updateSelectedMessagePosition()" placeholder="0">
+            </div>
+            <button class="btn btn-danger" onclick="deleteSelectedMessage()" style="width: 100%; margin-top: 10px;">
+                🗑️ Delete Message
+            </button>
+        </div>
+
+        <div class="section">
+            <h3>Animation</h3>
+            <div class="input-group">
+                <label>Current Frame: <span id="currentFrameLabel">1</span></label>
+            </div>
+            <div class="input-group">
+                <label>Speed (ms)</label>
+                <input type="number" id="animSpeed" value="500" min="100" max="3000" step="100">
+            </div>
+            <button class="btn btn-primary" onclick="togglePlay()" id="playBtn" style="width: 100%;">
+                ▶️ Play Animation
+            </button>
+        </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="timeline">
+        <button class="btn btn-primary" onclick="prevFrame()">⏮️</button>
+        <button class="btn btn-primary" onclick="togglePlay()" id="playBtn2">▶️</button>
+        <button class="btn btn-primary" onclick="nextFrame()">⏭️</button>
+        <div class="timeline-track">
+            <div class="timeline-marker" id="timelineMarker"></div>
+            <div class="timeline-frames" id="timelineFrames">
+                <div class="timeline-frame">1</div>
+            </div>
+        </div>
+        <span id="frameCounter">Frame 1 / 1</span>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <h2>Import Styles</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                Paste the exported JSON from the Chat Frame Generator:
+            </p>
+            <textarea id="importData" placeholder='{"agentMessageTemplate": {...}, "customerMessageTemplate": {...}}'></textarea>
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal()" style="background: #95a5a6; color: white;">Cancel</button>
+                <button class="btn btn-primary" onclick="processImport()">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Message -->
+    <div class="status-message" id="statusMessage"></div>
+
+    <script>
+        // State
+        let messages = [];
+        let selectedMessageId = null;
+        let agentMessageTemplate = null;
+        let customerMessageTemplate = null;
+        let agentMessageStyles = null;
+        let customerMessageStyles = null;
+        let currentFrame = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        let draggedElement = null;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let messageIdCounter = 0;
+
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.textContent = message;
+            statusEl.className = 'status-message show' + (type === 'error' ? ' error' : '');
+            setTimeout(() => {
+                statusEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Import styles modal
+        function importStyles() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('importModal').classList.remove('active');
+        }
+
+        function processImport() {
+            const data = document.getElementById('importData').value.trim();
+            if (!data) {
+                showStatus('Please paste JSON data', 'error');
+                return;
+            }
+
+            try {
+                const imported = JSON.parse(data);
+
+                if (imported.agentMessageTemplate) {
+                    agentMessageTemplate = imported.agentMessageTemplate;
+                }
+                if (imported.customerMessageTemplate) {
+                    customerMessageTemplate = imported.customerMessageTemplate;
+                }
+                if (imported.agentMessageStyles) {
+                    agentMessageStyles = imported.agentMessageStyles;
+                }
+                if (imported.customerMessageStyles) {
+                    customerMessageStyles = imported.customerMessageStyles;
+                }
+
+                closeModal();
+                showStatus('Styles imported successfully!');
+                renderAllMessages();
+            } catch (e) {
+                showStatus('Invalid JSON format: ' + e.message, 'error');
+            }
+        }
+
+        // Add new message
+        function addMessage(type) {
+            // Calculate better default position - vertical stack
+            const messageIndex = messages.length;
+            const verticalSpacing = 100; // Space between messages vertically
+
+            const message = {
+                id: messageIdCounter++,
+                type: type,
+                title: type === 'agent' ? 'Agent' : '',
+                text: type === 'agent' ? 'Agent message...' : 'Customer message...',
+                posX: type === 'customer' ? 500 : 50, // Customer on right, Agent on left
+                posY: 50 + (messageIndex * verticalSpacing)
+            };
+
+            messages.push(message);
+            updateMessageList();
+            renderAllMessages();
+            updateTimeline();
+            showStatus(`${type === 'agent' ? 'Agent' : 'Customer'} message added`);
+        }
+
+        // Update message list in sidebar
+        function updateMessageList() {
+            const listEl = document.getElementById('messageList');
+
+            if (messages.length === 0) {
+                listEl.innerHTML = '<li style="text-align: center; color: #999; padding: 20px; font-size: 12px;">No messages yet</li>';
+                return;
+            }
+
+            listEl.innerHTML = messages.map((msg, index) => `
+                <li class="message-list-item ${selectedMessageId === msg.id ? 'active' : ''}"
+                    onclick="selectMessage(${msg.id})"
+                    data-msg-id="${msg.id}">
+                    <div class="type">${msg.type}</div>
+                    <div class="preview">${msg.title || msg.text}</div>
+                </li>
+            `).join('');
+        }
+
+        // Select message
+        function selectMessage(id) {
+            selectedMessageId = id;
+            const msg = messages.find(m => m.id === id);
+
+            if (msg) {
+                document.getElementById('editType').value = msg.type;
+                document.getElementById('editTitle').value = msg.title || '';
+                document.getElementById('editText').value = msg.text || '';
+                document.getElementById('editPosX').value = msg.posX || 0;
+                document.getElementById('editPosY').value = msg.posY || 0;
+                document.getElementById('editSection').style.display = 'block';
+                document.getElementById('editTitleGroup').style.display = msg.type === 'agent' ? 'block' : 'none';
+            }
+
+            updateMessageList();
+            renderAllMessages();
+        }
+
+        // Update selected message from inputs
+        function updateSelectedMessage() {
+            if (selectedMessageId === null) return;
+
+            const msg = messages.find(m => m.id === selectedMessageId);
+            if (!msg) return;
+
+            msg.type = document.getElementById('editType').value;
+            msg.title = document.getElementById('editTitle').value;
+            msg.text = document.getElementById('editText').value;
+
+            document.getElementById('editTitleGroup').style.display = msg.type === 'agent' ? 'block' : 'none';
+
+            updateMessageList();
+            renderAllMessages();
+        }
+
+        // Update selected message position
+        function updateSelectedMessagePosition() {
+            if (selectedMessageId === null) return;
+
+            const msg = messages.find(m => m.id === selectedMessageId);
+            if (!msg) return;
+
+            msg.posX = parseFloat(document.getElementById('editPosX').value) || 0;
+            msg.posY = parseFloat(document.getElementById('editPosY').value) || 0;
+
+            renderAllMessages();
+        }
+
+        // Delete selected message
+        function deleteSelectedMessage() {
+            if (selectedMessageId === null) return;
+
+            if (confirm('Delete this message?')) {
+                messages = messages.filter(m => m.id !== selectedMessageId);
+                selectedMessageId = null;
+                document.getElementById('editSection').style.display = 'none';
+                updateMessageList();
+                renderAllMessages();
+                updateTimeline();
+                showStatus('Message deleted');
+            }
+        }
+
+        // Render all messages on canvas
+        function renderAllMessages() {
+            const container = document.getElementById('chatContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            // Clear existing messages but keep empty state element
+            const messagesToRemove = container.querySelectorAll('.message-item');
+            messagesToRemove.forEach(msg => msg.remove());
+
+            if (messages.length === 0) {
+                if (emptyState) emptyState.style.display = 'block';
+                return;
+            } else {
+                if (emptyState) emptyState.style.display = 'none';
+            }
+
+            const visibleMessages = messages.slice(0, currentFrame + 1);
+
+            visibleMessages.forEach(msg => {
+                const el = document.createElement('div');
+                el.className = 'message-item' + (selectedMessageId === msg.id ? ' selected' : '');
+                el.dataset.msgId = msg.id;
+                el.style.left = (msg.posX || 0) + 'px';
+                el.style.top = (msg.posY || 0) + 'px';
+
+                // Render message HTML
+                let messageHTML = '';
+                if (msg.type === 'agent' && agentMessageTemplate) {
+                    messageHTML = agentMessageTemplate.html
+                        .replace(/\{\{AGENT_TITLE\}\}/g, msg.title || 'Agent')
+                        .replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text || '');
+                } else if (msg.type === 'customer' && customerMessageTemplate) {
+                    messageHTML = customerMessageTemplate.html
+                        .replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text || '');
+                } else {
+                    // Fallback styling - clean, simple chat bubbles
+                    const bgColor = msg.type === 'customer' ? '#0084ff' : '#e4e6eb';
+                    const textColor = msg.type === 'customer' ? '#ffffff' : '#050505';
+                    const align = msg.type === 'customer' ? 'right' : 'left';
+                    messageHTML = `
+                        <div style="
+                            background: ${bgColor};
+                            color: ${textColor};
+                            padding: 10px 14px;
+                            border-radius: 18px;
+                            max-width: 350px;
+                            font-size: 14px;
+                            line-height: 1.4;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                            word-wrap: break-word;
+                        ">
+                            ${msg.type === 'agent' && msg.title ? `<div style="font-weight: 600; margin-bottom: 4px;">${msg.title}</div>` : ''}
+                            ${msg.text || ''}
+                        </div>
+                    `;
+                }
+
+                el.innerHTML = messageHTML;
+                el.addEventListener('mousedown', startDrag);
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectMessage(msg.id);
+                });
+
+                container.appendChild(el);
+            });
+        }
+
+        // Drag functionality
+        function startDrag(e) {
+            const msgId = parseInt(e.currentTarget.dataset.msgId);
+            selectMessage(msgId);
+
+            draggedElement = e.currentTarget;
+            const rect = draggedElement.getBoundingClientRect();
+            const containerRect = document.getElementById('chatContainer').getBoundingClientRect();
+
+            dragOffsetX = e.clientX - rect.left;
+            dragOffsetY = e.clientY - rect.top;
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+
+            e.preventDefault();
+        }
+
+        function onDrag(e) {
+            if (!draggedElement) return;
+
+            const containerRect = document.getElementById('chatContainer').getBoundingClientRect();
+
+            let newX = e.clientX - containerRect.left - dragOffsetX;
+            let newY = e.clientY - containerRect.top - dragOffsetY;
+
+            newX = Math.max(0, newX);
+            newY = Math.max(0, newY);
+
+            draggedElement.style.left = newX + 'px';
+            draggedElement.style.top = newY + 'px';
+        }
+
+        function stopDrag(e) {
+            if (!draggedElement) return;
+
+            const msgId = parseInt(draggedElement.dataset.msgId);
+            const msg = messages.find(m => m.id === msgId);
+
+            if (msg) {
+                msg.posX = parseFloat(draggedElement.style.left);
+                msg.posY = parseFloat(draggedElement.style.top);
+
+                // Update edit inputs
+                document.getElementById('editPosX').value = msg.posX;
+                document.getElementById('editPosY').value = msg.posY;
+            }
+
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+
+            draggedElement = null;
+        }
+
+        // Timeline functions
+        function updateTimeline() {
+            const totalFrames = Math.max(1, messages.length);
+            const framesEl = document.getElementById('timelineFrames');
+
+            framesEl.innerHTML = '';
+            for (let i = 0; i < totalFrames; i++) {
+                const frameEl = document.createElement('div');
+                frameEl.className = 'timeline-frame' + (i === currentFrame ? ' active' : '');
+                frameEl.textContent = i + 1;
+                frameEl.onclick = () => goToFrame(i);
+                framesEl.appendChild(frameEl);
+            }
+
+            updateFrameCounter();
+            updateTimelineMarker();
+        }
+
+        function updateFrameCounter() {
+            const total = Math.max(1, messages.length);
+            document.getElementById('frameCounter').textContent = `Frame ${currentFrame + 1} / ${total}`;
+            document.getElementById('currentFrameLabel').textContent = currentFrame + 1;
+        }
+
+        function updateTimelineMarker() {
+            const total = Math.max(1, messages.length);
+            const percent = (currentFrame / total) * 100;
+            document.getElementById('timelineMarker').style.left = percent + '%';
+        }
+
+        function goToFrame(index) {
+            const total = Math.max(1, messages.length);
+            currentFrame = Math.max(0, Math.min(index, total - 1));
+            renderAllMessages();
+            updateTimeline();
+        }
+
+        function prevFrame() {
+            goToFrame(currentFrame - 1);
+        }
+
+        function nextFrame() {
+            goToFrame(currentFrame + 1);
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+
+            const btn1 = document.getElementById('playBtn');
+            const btn2 = document.getElementById('playBtn2');
+
+            if (isPlaying) {
+                btn1.innerHTML = '⏸️ Pause';
+                btn2.innerHTML = '⏸️';
+                play();
+            } else {
+                btn1.innerHTML = '▶️ Play Animation';
+                btn2.innerHTML = '▶️';
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                }
+            }
+        }
+
+        function play() {
+            if (!isPlaying) return;
+
+            const speed = parseInt(document.getElementById('animSpeed').value) || 500;
+
+            playInterval = setInterval(() => {
+                if (currentFrame >= messages.length - 1) {
+                    currentFrame = 0;
+                } else {
+                    currentFrame++;
+                }
+                renderAllMessages();
+                updateTimeline();
+            }, speed);
+        }
+
+        // Export frames
+        function exportFrames() {
+            if (messages.length === 0) {
+                showStatus('No messages to export', 'error');
+                return;
+            }
+
+            const frames = [];
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+                frames.push({
+                    frameNumber: i + 1,
+                    messages: frameMessages.map(m => ({
+                        type: m.type,
+                        title: m.title,
+                        text: m.text,
+                        posX: m.posX,
+                        posY: m.posY
+                    }))
+                });
+            }
+
+            const exportData = {
+                frames,
+                agentMessageTemplate,
+                customerMessageTemplate,
+                agentMessageStyles,
+                customerMessageStyles
+            };
+
+            // Download as JSON
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-animation-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus('Frames exported successfully!');
+        }
+
+        // Clear all
+        function clearAll() {
+            if (confirm('Clear all messages? This cannot be undone.')) {
+                messages = [];
+                selectedMessageId = null;
+                currentFrame = 0;
+                document.getElementById('editSection').style.display = 'none';
+                updateMessageList();
+                renderAllMessages();
+                updateTimeline();
+                showStatus('All messages cleared');
+            }
+        }
+
+        // Click outside to deselect
+        document.getElementById('chatContainer').addEventListener('click', (e) => {
+            if (e.target.id === 'chatContainer') {
+                selectedMessageId = null;
+                document.getElementById('editSection').style.display = 'none';
+                updateMessageList();
+                renderAllMessages();
+            }
+        });
+
+        // Initialize
+        updateTimeline();
+    </script>
+</body>
+</html>
