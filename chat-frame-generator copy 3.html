@@ -89,89 +89,6 @@
             align-items: center;
         }
 
-        /* Hover controls - hidden by default, slide in from top */
-        #composerOverlay .fullscreen-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            transform: translateY(-100%);
-            transition: transform 0.3s ease-in-out;
-            z-index: 10000;
-        }
-
-        /* Show on hover when not pinned and not hidden */
-        #composerOverlay:hover .fullscreen-header:not(.pinned):not(.hidden),
-        #composerOverlay .fullscreen-header:not(.pinned):not(.hidden):hover {
-            transform: translateY(0);
-        }
-
-        /* Always show when pinned (unless hidden) */
-        #composerOverlay .fullscreen-header.pinned:not(.hidden) {
-            transform: translateY(0);
-        }
-
-        /* Force hide when hidden class is active */
-        #composerOverlay .fullscreen-header.hidden {
-            transform: translateY(-100%) !important;
-        }
-
-        /* Add hover trigger zone at top */
-        #composerOverlay .hover-trigger {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50px;
-            z-index: 9998;
-            pointer-events: none;
-        }
-
-        /* Show button when controls are hidden */
-        #composerOverlay .show-controls-btn {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #667eea;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 10001;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        #composerOverlay .show-controls-btn.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        #composerOverlay:hover .show-controls-btn.visible {
-            opacity: 0.7;
-        }
-
-        #composerOverlay .show-controls-btn:hover {
-            background: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-            opacity: 1 !important;
-        }
-
-        /* Pin button styles */
-        .pin-btn {
-            background: rgba(255, 255, 255, 0.2) !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-        }
-
-        .pin-btn.pinned {
-            background: rgba(255, 215, 0, 0.3) !important;
-            border-color: rgba(255, 215, 0, 0.5) !important;
-        }
-
         .fullscreen-btn {
             background: rgba(255,255,255,0.2);
             border: 1px solid rgba(255,255,255,0.3);
@@ -753,40 +670,28 @@
 
         .chat-overlay-container {
             position: absolute;
-            border: 3px dashed transparent;
-            background: white;
-            cursor: default;
+            border: 3px dashed #667eea;
+            background: rgba(255, 255, 255, 0.95);
+            cursor: move;
             min-width: 200px;
             min-height: 150px;
             display: none;
             z-index: 100;
             pointer-events: all;
-            transition: border-color 0.2s ease;
         }
 
         .chat-overlay-container.active {
             display: block;
         }
 
-        .chat-overlay-container.selected {
-            border-color: #667eea;
-            cursor: move;
-        }
-
         .chat-overlay-content {
             width: 100%;
             height: 100%;
             overflow: auto;
-            padding: 0;
-            background: transparent;
-            border-radius: 0;
-            box-shadow: none;
-            opacity: 1;
-        }
-
-        .chat-overlay-container.selected .chat-overlay-content {
             padding: 15px;
             background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .resize-handle {
@@ -799,96 +704,18 @@
             cursor: nwse-resize;
             right: -7px;
             bottom: -7px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-        }
-
-        .chat-overlay-container.selected .resize-handle {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Color picker styles */
-        .color-picker-panel {
-            position: absolute;
-            top: -110px;
-            left: 0;
-            background: white;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            padding: 12px;
-            display: none;
-            z-index: 102;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            min-width: 280px;
-            font-size: 12px;
-        }
-
-        .chat-overlay-container.selected .color-picker-panel {
-            display: block;
-            animation: slideDown 0.2s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .color-sample {
-            width: 40px;
-            height: 40px;
-            border: 2px solid #ccc;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-
-        .color-sample:hover {
-            border-color: #667eea;
-        }
-
-        .eyedropper-active {
-            cursor: crosshair !important;
-        }
-
-        .eyedropper-active * {
-            cursor: crosshair !important;
-        }
-
-        #eyedropperBtn.active {
-            background: #f39c12 !important;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
         }
 
         .overlay-controls {
             position: absolute;
             top: -35px;
             right: 0;
-            display: none;
+            display: flex;
             gap: 5px;
             background: #667eea;
             padding: 5px;
             border-radius: 6px 6px 0 0;
             z-index: 101;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        .chat-overlay-container.selected .overlay-controls {
-            display: flex;
-            opacity: 1;
         }
 
         .overlay-control-btn {
@@ -1197,9 +1024,6 @@
 
     <!-- Fullscreen Frame Composer Overlay -->
     <div class="fullscreen-preview-overlay" id="composerOverlay">
-        <button class="show-controls-btn" id="showControlsBtn" onclick="showControls()">
-            Show Controls ▼
-        </button>
         <div class="fullscreen-header">
             <div class="fullscreen-header-left">
                 <div class="fullscreen-title">🎬 Frame Composer - Animate Chat</div>
@@ -1209,8 +1033,6 @@
                 </div>
             </div>
             <div class="fullscreen-controls">
-                <button class="fullscreen-btn pin-btn" onclick="togglePinControls()" id="pinControlsBtn" title="Pin controls to keep visible">📌 Pin</button>
-                <button class="fullscreen-btn" onclick="hideControls()" title="Hide controls (hover top to show again)">➖ Hide</button>
                 <button class="fullscreen-btn" onclick="prevFrame()">⏮️ Prev</button>
                 <button class="fullscreen-btn" onclick="toggleAnimation()" id="fullscreenPlayBtn">▶️ Play</button>
                 <button class="fullscreen-btn" onclick="nextFrame()">Next ⏭️</button>
@@ -1231,27 +1053,6 @@
                 <div id="composerBackground" class="composer-background-fullscreen"></div>
 
                 <div class="chat-overlay-container" id="chatOverlay">
-                    <div class="color-picker-panel">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                            <button class="overlay-control-btn" onclick="activateEyedropper()" id="eyedropperBtn" title="Click to pick a color from the background">
-                                🎨 Pick Color
-                            </button>
-                            <div class="color-sample" id="colorSample" style="background: white;" title="Selected color"></div>
-                            <input type="color" id="colorInput" style="width: 40px; height: 40px; border: none; cursor: pointer;" title="Manual color picker">
-                        </div>
-                        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
-                            <button class="overlay-control-btn" onclick="applyBackgroundColor()" style="font-size: 11px;">Apply to Background</button>
-                            <button class="overlay-control-btn" onclick="applyTextColor()" style="font-size: 11px;">Apply to Text</button>
-                        </div>
-                        <div style="display: flex; gap: 5px; border-top: 1px solid #ddd; padding-top: 8px;">
-                            <button class="overlay-control-btn" onclick="exportOverlayTheme()" style="font-size: 11px; background: #27ae60; color: white;">📥 Export Theme</button>
-                            <button class="overlay-control-btn" onclick="importOverlayTheme()" style="font-size: 11px; background: #3498db; color: white;">📤 Import Theme</button>
-                        </div>
-                        <div style="display: flex; gap: 5px; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px;">
-                            <button class="overlay-control-btn" onclick="exportPortableAnimation()" style="font-size: 11px; background: #e67e22; color: white; width: 100%;">🎬 Export Portable Animation</button>
-                        </div>
-                        <input type="file" id="themeFileInput" accept=".json" style="display: none;" onchange="handleThemeImport(event)">
-                    </div>
                     <div class="overlay-controls">
                         <span style="color: white; font-size: 11px; padding: 4px 8px;">Chat Overlay (Drag & Resize)</span>
                         <button class="overlay-control-btn" onclick="resetOverlayPosition()">Reset Position</button>
@@ -2770,732 +2571,6 @@
                 const playBtn = document.getElementById('fullscreenPlayBtn');
                 if (playBtn) playBtn.textContent = '▶️ Play';
             }
-
-            // Reset pin/hide state
-            const header = document.querySelector('#composerOverlay .fullscreen-header');
-            const showBtn = document.getElementById('showControlsBtn');
-            const pinBtn = document.getElementById('pinControlsBtn');
-            const chatOverlay = document.getElementById('chatOverlay');
-
-            if (header) {
-                header.classList.remove('pinned', 'hidden');
-            }
-            if (showBtn) {
-                showBtn.classList.remove('visible');
-            }
-            if (pinBtn) {
-                pinBtn.classList.remove('pinned');
-                pinBtn.textContent = '📌 Pin';
-            }
-            if (chatOverlay) {
-                chatOverlay.classList.remove('selected');
-                chatOverlay.removeAttribute('data-selection-setup');
-            }
-        }
-
-        // Toggle pin state for controls
-        function togglePinControls() {
-            const header = document.querySelector('#composerOverlay .fullscreen-header');
-            const pinBtn = document.getElementById('pinControlsBtn');
-
-            if (!header) return;
-
-            if (header.classList.contains('pinned')) {
-                // Unpin
-                header.classList.remove('pinned');
-                pinBtn.classList.remove('pinned');
-                pinBtn.textContent = '📌 Pin';
-                pinBtn.title = 'Pin controls to keep visible';
-            } else {
-                // Pin
-                header.classList.add('pinned');
-                pinBtn.classList.add('pinned');
-                pinBtn.textContent = '📌 Pinned';
-                pinBtn.title = 'Unpin controls';
-            }
-        }
-
-        // Hide controls completely
-        function hideControls() {
-            const header = document.querySelector('#composerOverlay .fullscreen-header');
-            const showBtn = document.getElementById('showControlsBtn');
-
-            if (!header || !showBtn) return;
-
-            header.classList.add('hidden');
-            showBtn.classList.add('visible');
-        }
-
-        // Show controls
-        function showControls() {
-            const header = document.querySelector('#composerOverlay .fullscreen-header');
-            const showBtn = document.getElementById('showControlsBtn');
-
-            if (!header || !showBtn) return;
-
-            header.classList.remove('hidden');
-            showBtn.classList.remove('visible');
-        }
-
-        // Color picker functionality
-        let eyedropperActive = false;
-        let selectedColor = '#ffffff';
-
-        function activateEyedropper() {
-            const composerOverlay = document.getElementById('composerOverlay');
-            const background = document.getElementById('composerBackground');
-            const btn = document.getElementById('eyedropperBtn');
-
-            eyedropperActive = true;
-            composerOverlay.classList.add('eyedropper-active');
-            btn.classList.add('active');
-            btn.textContent = '🎯 Click to sample...';
-
-            console.log('🎨 Eyedropper activated - click anywhere on the background to sample color');
-        }
-
-        function deactivateEyedropper() {
-            const composerOverlay = document.getElementById('composerOverlay');
-            const btn = document.getElementById('eyedropperBtn');
-
-            eyedropperActive = false;
-            composerOverlay.classList.remove('eyedropper-active');
-            btn.classList.remove('active');
-            btn.textContent = '🎨 Pick Color';
-        }
-
-        function sampleColorAtPoint(x, y) {
-            const background = document.getElementById('composerBackground');
-
-            // Get the element at the point
-            const element = document.elementFromPoint(x, y);
-
-            if (!element || element.closest('#chatOverlay')) {
-                console.warn('Cannot sample from overlay itself');
-                return null;
-            }
-
-            // Get computed style
-            const computedStyle = window.getComputedStyle(element);
-            let color = computedStyle.backgroundColor;
-
-            // If transparent, walk up the DOM tree
-            let currentElement = element;
-            while (color === 'rgba(0, 0, 0, 0)' || color === 'transparent') {
-                currentElement = currentElement.parentElement;
-                if (!currentElement || currentElement === background) {
-                    color = 'rgb(255, 255, 255)'; // Default to white
-                    break;
-                }
-                color = window.getComputedStyle(currentElement).backgroundColor;
-            }
-
-            // Convert to hex
-            const rgb = color.match(/\d+/g);
-            if (rgb) {
-                const hex = '#' + rgb.slice(0, 3).map(x => {
-                    const hex = parseInt(x).toString(16);
-                    return hex.length === 1 ? '0' + hex : hex;
-                }).join('');
-                return hex;
-            }
-
-            return null;
-        }
-
-        function applyBackgroundColor() {
-            const overlay = document.getElementById('chatOverlay');
-            const overlayContent = document.getElementById('chatOverlayContent');
-
-            // Apply to both container and content for complete coverage
-            if (overlay) {
-                overlay.style.setProperty('background', selectedColor, 'important');
-                overlay.style.setProperty('background-color', selectedColor, 'important');
-            }
-
-            if (overlayContent) {
-                overlayContent.style.setProperty('background', selectedColor, 'important');
-                overlayContent.style.setProperty('background-color', selectedColor, 'important');
-                overlayContent.style.setProperty('opacity', '1', 'important');
-                console.log('✓ Applied background color:', selectedColor);
-            }
-        }
-
-        function applyTextColor() {
-            const overlayContent = document.getElementById('chatOverlayContent');
-            if (overlayContent) {
-                overlayContent.style.color = selectedColor;
-                console.log('✓ Applied text color:', selectedColor);
-            }
-        }
-
-        // Update color from manual picker
-        document.addEventListener('DOMContentLoaded', () => {
-            const colorInput = document.getElementById('colorInput');
-            if (colorInput) {
-                colorInput.addEventListener('input', (e) => {
-                    selectedColor = e.target.value;
-                    document.getElementById('colorSample').style.background = selectedColor;
-                });
-            }
-        });
-
-        // Export overlay theme to JSON
-        function exportOverlayTheme() {
-            const overlay = document.getElementById('chatOverlay');
-            const overlayContent = document.getElementById('chatOverlayContent');
-
-            const theme = {
-                version: '1.0',
-                timestamp: new Date().toISOString(),
-                overlay: {
-                    position: {
-                        x: overlayPosition.x,
-                        y: overlayPosition.y,
-                        width: overlayPosition.width,
-                        height: overlayPosition.height
-                    },
-                    backgroundColor: overlayContent.style.getPropertyValue('background') || overlayContent.style.backgroundColor || '#ffffff',
-                    textColor: overlayContent.style.color || '#000000',
-                    selectedColor: selectedColor,
-                    containerBackground: overlay.style.getPropertyValue('background') || overlay.style.backgroundColor
-                },
-                styles: {
-                    padding: overlayContent.style.padding,
-                    fontSize: overlayContent.style.fontSize,
-                    fontFamily: overlayContent.style.fontFamily,
-                    lineHeight: overlayContent.style.lineHeight
-                }
-            };
-
-            // Download as JSON
-            const blob = new Blob([JSON.stringify(theme, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `overlay-theme-${Date.now()}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            console.log('✓ Exported overlay theme:', theme);
-            alert('Theme exported successfully!');
-        }
-
-        // Trigger file input for import
-        function importOverlayTheme() {
-            const fileInput = document.getElementById('themeFileInput');
-            fileInput.click();
-        }
-
-        // Handle theme import
-        function handleThemeImport(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const theme = JSON.parse(e.target.result);
-                    applyOverlayTheme(theme);
-                    console.log('✓ Imported overlay theme:', theme);
-                    alert('Theme imported successfully!');
-                } catch (error) {
-                    console.error('Error importing theme:', error);
-                    alert('Error importing theme. Please check the JSON file format.');
-                }
-            };
-            reader.readAsText(file);
-
-            // Reset file input
-            event.target.value = '';
-        }
-
-        // Apply imported theme
-        function applyOverlayTheme(theme) {
-            const overlay = document.getElementById('chatOverlay');
-            const overlayContent = document.getElementById('chatOverlayContent');
-
-            // Apply position
-            if (theme.overlay && theme.overlay.position) {
-                overlayPosition = theme.overlay.position;
-                overlay.style.left = overlayPosition.x + 'px';
-                overlay.style.top = overlayPosition.y + 'px';
-                overlay.style.width = overlayPosition.width + 'px';
-                overlay.style.height = overlayPosition.height + 'px';
-            }
-
-            // Apply colors
-            if (theme.overlay) {
-                if (theme.overlay.backgroundColor) {
-                    overlay.style.setProperty('background', theme.overlay.backgroundColor, 'important');
-                    overlay.style.setProperty('background-color', theme.overlay.backgroundColor, 'important');
-                    overlayContent.style.setProperty('background', theme.overlay.backgroundColor, 'important');
-                    overlayContent.style.setProperty('background-color', theme.overlay.backgroundColor, 'important');
-                }
-
-                if (theme.overlay.textColor) {
-                    overlayContent.style.color = theme.overlay.textColor;
-                }
-
-                if (theme.overlay.selectedColor) {
-                    selectedColor = theme.overlay.selectedColor;
-                    document.getElementById('colorSample').style.background = selectedColor;
-                    document.getElementById('colorInput').value = selectedColor;
-                }
-
-                if (theme.overlay.containerBackground) {
-                    overlay.style.setProperty('background', theme.overlay.containerBackground, 'important');
-                }
-            }
-
-            // Apply additional styles
-            if (theme.styles) {
-                if (theme.styles.padding) overlayContent.style.padding = theme.styles.padding;
-                if (theme.styles.fontSize) overlayContent.style.fontSize = theme.styles.fontSize;
-                if (theme.styles.fontFamily) overlayContent.style.fontFamily = theme.styles.fontFamily;
-                if (theme.styles.lineHeight) overlayContent.style.lineHeight = theme.styles.lineHeight;
-            }
-
-            // Refresh current frame display
-            displayCurrentFrame();
-        }
-
-        // Export portable animation HTML file
-        function exportPortableAnimation() {
-            if (cleanChatFrames.length === 0) {
-                alert('Please generate frames first before exporting!');
-                return;
-            }
-
-            const overlay = document.getElementById('chatOverlay');
-            const overlayContent = document.getElementById('chatOverlayContent');
-            const backgroundColor = overlayContent.style.getPropertyValue('background') || overlayContent.style.backgroundColor || '#ffffff';
-            const textColor = overlayContent.style.color || '#000000';
-
-            // Get the background HTML
-            const bgHTML = backgroundHTML || baseHTML || '<html><body style="background: #f5f5f5;"></body></html>';
-
-            // Parse messages from current state
-            const currentMessages = messages.map(msg => ({
-                type: msg.type,
-                text: msg.text
-            }));
-
-            const portableHTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message Simulation Animation</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            overflow: hidden;
-        }
-
-        #background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            z-index: 1;
-        }
-
-        #chatContainer {
-            position: fixed;
-            left: ${overlayPosition.x}px;
-            top: ${overlayPosition.y}px;
-            width: ${overlayPosition.width}px;
-            height: ${overlayPosition.height}px;
-            background: ${backgroundColor};
-            color: ${textColor};
-            overflow: auto;
-            z-index: 100;
-        }
-
-        #controls {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            z-index: 200;
-        }
-
-        .btn {
-            background: #667eea;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .btn:hover {
-            background: #5568d3;
-            transform: translateY(-1px);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        #frameInfo {
-            font-size: 13px;
-            font-weight: 600;
-            color: #333;
-            min-width: 100px;
-            text-align: center;
-        }
-
-        #speedControl {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #speedControl label {
-            font-size: 12px;
-            color: #666;
-        }
-
-        #speedSlider {
-            width: 100px;
-        }
-
-        #editor {
-            position: fixed;
-            right: 20px;
-            top: 20px;
-            width: 350px;
-            max-height: 80vh;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-            padding: 20px;
-            overflow-y: auto;
-            z-index: 200;
-            display: none;
-        }
-
-        #editor.visible {
-            display: block;
-        }
-
-        .editor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .editor-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #333;
-        }
-
-        .message-item {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .message-item textarea {
-            width: 100%;
-            min-height: 60px;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-            resize: vertical;
-        }
-
-        .message-type {
-            display: flex;
-            gap: 5px;
-            margin-top: 8px;
-        }
-
-        .message-type button {
-            flex: 1;
-            padding: 6px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-
-        .message-type button.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-
-        .add-message-btn {
-            width: 100%;
-            padding: 10px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-top: 10px;
-        }
-
-        .add-message-btn:hover {
-            background: #229954;
-        }
-
-        #toggleEditor {
-            position: fixed;
-            right: 20px;
-            top: 20px;
-            z-index: 201;
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-
-        #toggleEditor:hover {
-            background: #5568d3;
-        }
-    </style>
-</head>
-<body>
-    <div id="background"></div>
-    <div id="chatContainer"></div>
-
-    <button id="toggleEditor" onclick="toggleEditor()">✏️ Edit Messages</button>
-
-    <div id="editor">
-        <div class="editor-header">
-            <div class="editor-title">Edit Messages</div>
-            <button class="btn" onclick="toggleEditor()" style="padding: 4px 8px; font-size: 11px;">Close</button>
-        </div>
-        <div id="messagesList"></div>
-        <button class="add-message-btn" onclick="addNewMessage()">+ Add Message</button>
-        <button class="btn" onclick="regenerateFrames()" style="width: 100%; margin-top: 10px; background: #3498db;">🔄 Update Animation</button>
-    </div>
-
-    <div id="controls">
-        <button class="btn" onclick="prevFrame()">⏮️ Prev</button>
-        <button class="btn" onclick="togglePlay()" id="playBtn">▶️ Play</button>
-        <button class="btn" onclick="nextFrame()">Next ⏭️</button>
-        <div id="frameInfo">Frame 1 of 1</div>
-        <div id="speedControl">
-            <label>Speed:</label>
-            <input type="range" id="speedSlider" min="100" max="2000" value="500" step="100" oninput="updateSpeed(this.value)">
-            <span id="speedDisplay">500ms</span>
-        </div>
-    </div>
-
-    <scr` + `ipt>
-        // Embedded data
-        const backgroundHTML = ${JSON.stringify(bgHTML)};
-        let messages = ${JSON.stringify(currentMessages)};
-        let frames = [];
-        let currentFrame = 0;
-        let isPlaying = false;
-        let playInterval = null;
-        let speed = 500;
-
-        // Initialize
-        document.getElementById('background').innerHTML = backgroundHTML;
-        generateFrames();
-        displayFrame();
-
-        function generateFrames() {
-            frames = [];
-            for (let i = 0; i < messages.length; i++) {
-                const frameMessages = messages.slice(0, i + 1);
-                const frameHTML = frameMessages.map(msg => {
-                    const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
-                    return \`<div style="display: flex; justify-content: \${alignment}; margin: 8px 0;">
-                        <div style="max-width: 70%; padding: 10px 15px; border-radius: 8px; background: \${msg.type === 'customer' ? '#e3f2fd' : '#f5f5f5'};">
-                            \${msg.text}
-                        </div>
-                    </div>\`;
-                }).join('');
-                frames.push(frameHTML);
-            }
-            updateFrameInfo();
-        }
-
-        function displayFrame() {
-            if (frames.length === 0) return;
-            document.getElementById('chatContainer').innerHTML = frames[currentFrame];
-        }
-
-        function updateFrameInfo() {
-            document.getElementById('frameInfo').textContent = \`Frame \${currentFrame + 1} of \${frames.length}\`;
-        }
-
-        function prevFrame() {
-            if (currentFrame > 0) {
-                currentFrame--;
-                displayFrame();
-                updateFrameInfo();
-            }
-        }
-
-        function nextFrame() {
-            if (currentFrame < frames.length - 1) {
-                currentFrame++;
-                displayFrame();
-                updateFrameInfo();
-            }
-        }
-
-        function togglePlay() {
-            const btn = document.getElementById('playBtn');
-            if (isPlaying) {
-                clearInterval(playInterval);
-                isPlaying = false;
-                btn.textContent = '▶️ Play';
-            } else {
-                isPlaying = true;
-                btn.textContent = '⏸️ Pause';
-                playInterval = setInterval(() => {
-                    if (currentFrame < frames.length - 1) {
-                        currentFrame++;
-                    } else {
-                        currentFrame = 0;
-                    }
-                    displayFrame();
-                    updateFrameInfo();
-                }, speed);
-            }
-        }
-
-        function updateSpeed(value) {
-            speed = parseInt(value);
-            document.getElementById('speedDisplay').textContent = value + 'ms';
-            if (isPlaying) {
-                clearInterval(playInterval);
-                playInterval = setInterval(() => {
-                    if (currentFrame < frames.length - 1) {
-                        currentFrame++;
-                    } else {
-                        currentFrame = 0;
-                    }
-                    displayFrame();
-                    updateFrameInfo();
-                }, speed);
-            }
-        }
-
-        function toggleEditor() {
-            const editor = document.getElementById('editor');
-            editor.classList.toggle('visible');
-            if (editor.classList.contains('visible')) {
-                renderMessagesList();
-            }
-        }
-
-        function renderMessagesList() {
-            const list = document.getElementById('messagesList');
-            list.innerHTML = messages.map((msg, idx) => \`
-                <div class="message-item">
-                    <textarea id="msg-\${idx}" oninput="updateMessage(\${idx}, this.value)">\${msg.text}</textarea>
-                    <div class="message-type">
-                        <button class="\${msg.type === 'agent' ? 'active' : ''}" onclick="setMessageType(\${idx}, 'agent')">Agent</button>
-                        <button class="\${msg.type === 'customer' ? 'active' : ''}" onclick="setMessageType(\${idx}, 'customer')">Customer</button>
-                        <button onclick="deleteMessage(\${idx})" style="background: #e74c3c; color: white; border: none;">Delete</button>
-                    </div>
-                </div>
-            \`).join('');
-        }
-
-        function updateMessage(idx, text) {
-            messages[idx].text = text;
-        }
-
-        function setMessageType(idx, type) {
-            messages[idx].type = type;
-            renderMessagesList();
-        }
-
-        function deleteMessage(idx) {
-            messages.splice(idx, 1);
-            renderMessagesList();
-        }
-
-        function addNewMessage() {
-            messages.push({ type: 'agent', text: 'New message' });
-            renderMessagesList();
-        }
-
-        function regenerateFrames() {
-            generateFrames();
-            currentFrame = 0;
-            displayFrame();
-            alert('Animation updated with new messages!');
-        }
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' && !e.target.matches('textarea')) {
-                e.preventDefault();
-                togglePlay();
-            } else if (e.key === 'ArrowLeft') {
-                e.preventDefault();
-                prevFrame();
-            } else if (e.key === 'ArrowRight') {
-                e.preventDefault();
-                nextFrame();
-            } else if (e.key === 'e' && e.ctrlKey) {
-                e.preventDefault();
-                toggleEditor();
-            }
-        });
-    </scr` + `ipt>
-</body>
-</html>`;
-
-            // Download the file
-            const blob = new Blob([portableHTML], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `message-simulation-${Date.now()}.html`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            console.log('✓ Exported portable animation with', cleanChatFrames.length, 'frames');
-            alert('Portable animation exported! Users can open this HTML file to view and edit the animation.');
         }
 
         // Update animation speed
@@ -3670,7 +2745,7 @@
 
         function showChatOverlay() {
             const overlay = document.getElementById('chatOverlay');
-            overlay.classList.add('active', 'selected');
+            overlay.classList.add('active');
             overlay.style.left = overlayPosition.x + 'px';
             overlay.style.top = overlayPosition.y + 'px';
             overlay.style.width = overlayPosition.width + 'px';
@@ -3680,70 +2755,7 @@
             clearOriginalChatContainer();
 
             setupDragAndResize();
-            setupOverlaySelection();
             displayCurrentFrame();
-        }
-
-        // Setup click handlers for overlay selection
-        function setupOverlaySelection() {
-            const overlay = document.getElementById('chatOverlay');
-            const background = document.getElementById('composerBackground');
-            const composerOverlay = document.getElementById('composerOverlay');
-
-            // Only setup once
-            if (overlay.hasAttribute('data-selection-setup')) {
-                return;
-            }
-            overlay.setAttribute('data-selection-setup', 'true');
-
-            // Click on overlay to select it
-            overlay.addEventListener('click', (e) => {
-                if (eyedropperActive) return; // Don't select if eyedropper is active
-                e.stopPropagation();
-                overlay.classList.add('selected');
-            });
-
-            // Click on background to deselect overlay OR sample color
-            background.addEventListener('click', (e) => {
-                if (eyedropperActive) {
-                    // Sample color at click position
-                    const color = sampleColorAtPoint(e.clientX, e.clientY);
-                    if (color) {
-                        selectedColor = color;
-                        document.getElementById('colorSample').style.background = color;
-                        document.getElementById('colorInput').value = color;
-                        console.log('✓ Sampled color:', color);
-                    }
-                    deactivateEyedropper();
-                    e.stopPropagation();
-                    return;
-                }
-                overlay.classList.remove('selected');
-            });
-
-            // Also deselect when clicking the main fullscreen area OR sample color
-            composerOverlay.addEventListener('click', (e) => {
-                if (eyedropperActive) {
-                    // Sample color if clicking on background area
-                    if (e.target === composerOverlay || e.target.classList.contains('fullscreen-content') || e.target.classList.contains('fullscreen-main') || e.target.closest('.composer-background-fullscreen')) {
-                        const color = sampleColorAtPoint(e.clientX, e.clientY);
-                        if (color) {
-                            selectedColor = color;
-                            document.getElementById('colorSample').style.background = color;
-                            document.getElementById('colorInput').value = color;
-                            console.log('✓ Sampled color:', color);
-                        }
-                        deactivateEyedropper();
-                        e.stopPropagation();
-                        return;
-                    }
-                }
-
-                // Only deselect if clicking directly on the overlay background, not its children
-                if (e.target === composerOverlay || e.target.classList.contains('fullscreen-content') || e.target.classList.contains('fullscreen-main')) {
-                    overlay.classList.remove('selected');
-                }
-            });
         }
 
         function clearOriginalChatContainer() {
@@ -3774,10 +2786,6 @@
 
             // Dragging
             overlay.addEventListener('mousedown', (e) => {
-                // Only allow dragging if overlay is selected
-                if (!overlay.classList.contains('selected')) {
-                    return;
-                }
                 if (e.target.classList.contains('resize-handle') || e.target.closest('.overlay-controls')) {
                     return;
                 }
@@ -3846,18 +2854,7 @@
             if (cleanChatFrames.length === 0) return;
 
             const content = document.getElementById('chatOverlayContent');
-
-            // Preserve the current background color
-            const currentBg = content.style.getPropertyValue('background');
-            const currentOpacity = content.style.getPropertyValue('opacity');
-
             content.innerHTML = cleanChatFrames[currentFrameIndex];
-
-            // Reapply background color if it was set
-            if (currentBg) {
-                content.style.setProperty('background', currentBg, 'important');
-                content.style.setProperty('opacity', currentOpacity || '1', 'important');
-            }
         }
 
         function updateFrameCounter() {
@@ -4018,20 +3015,6 @@
             // Only handle shortcuts if composer is open
             if (!composerOverlay.classList.contains('active')) return;
 
-            // ESC cancels eyedropper or closes composer
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                if (eyedropperActive) {
-                    deactivateEyedropper();
-                } else {
-                    closeComposer();
-                }
-                return;
-            }
-
-            // Don't handle other shortcuts if eyedropper is active
-            if (eyedropperActive) return;
-
             switch(e.key) {
                 case ' ': // Spacebar - play/pause
                     e.preventDefault();
@@ -4044,6 +3027,10 @@
                 case 'ArrowRight': // Next frame
                     e.preventDefault();
                     nextFrame();
+                    break;
+                case 'Escape': // Close composer
+                    e.preventDefault();
+                    closeComposer();
                     break;
             }
         });
