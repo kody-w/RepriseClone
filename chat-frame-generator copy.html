@@ -821,11 +821,10 @@
             <div class="instructions">
                 <h3>How to Use</h3>
                 <ol>
-                    <li>Upload your base HTML frame (the static page with chat messages)</li>
-                    <li>Use the visual preview to select example chat messages (agent and customer) to copy their styling</li>
-                    <li>Add your own chat messages in sequence (agent or customer)</li>
-                    <li><strong>Export messages to JSON</strong> to save and edit externally, then <strong>import back</strong> to continue</li>
-                    <li>Generate frames - your messages will match the original styling</li>
+                    <li>Upload your base HTML frame (the static page with chat container)</li>
+                    <li>Use the visual preview or tree navigator to select the chat container</li>
+                    <li>Add chat messages in sequence (agent or customer)</li>
+                    <li>Generate and download all frames as individual HTML files</li>
                     <li>Load frames into the animator to step through them</li>
                 </ol>
             </div>
@@ -841,93 +840,14 @@
                 </div>
                 <div id="fileStatus"></div>
 
-                <h2 style="margin-top: 25px;">2. Copy Message Styles</h2>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Click on example messages in your frame to copy their styling</p>
-                <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px; border-radius: 6px; font-size: 12px; color: #2e7d32; margin-bottom: 15px;">
-                    💡 <strong>Smart Detection:</strong> Click anywhere on a message (container, bubble, or text). The tool will automatically find the styled chat bubble inside and copy its styling!
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
-                        <h3 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Agent Message Style</h3>
-                        <input type="text" id="agentSelector" placeholder="Click 'Select Agent Message' below"
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 8px;" readonly>
-                        <button class="browse-btn" onclick="selectMessageStyle('agent')" id="selectAgentBtn" style="display: none; width: 100%;">
-                            🎨 Select Agent Message
-                        </button>
-                        <div class="selected-path" id="agentStyleStatus" style="font-size: 11px; margin-top: 8px;"></div>
-                    </div>
-
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #764ba2;">
-                        <h3 style="font-size: 14px; margin-bottom: 10px; color: #764ba2;">Customer Message Style</h3>
-                        <input type="text" id="customerSelector" placeholder="Click 'Select Customer Message' below"
-                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 8px;" readonly>
-                        <button class="browse-btn" onclick="selectMessageStyle('customer')" id="selectCustomerBtn" style="display: none; width: 100%;">
-                            🎨 Select Customer Message
-                        </button>
-                        <div class="selected-path" id="customerStyleStatus" style="font-size: 11px; margin-top: 8px;"></div>
-                    </div>
-                </div>
-
-                <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 12px; color: #856404;">
-                    💡 <strong>Tip:</strong> Select one agent message and one customer message to copy their complete styling (colors, fonts, padding, borders, etc.)
-                </div>
-
-                <!-- Style Preview Section -->
-                <div id="stylePreviewSection" style="margin-top: 20px; display: none;">
-                    <h3 style="font-size: 16px; margin-bottom: 15px; color: #667eea;">✨ Style Preview</h3>
-                    <div style="background: white; border: 2px solid #667eea; border-radius: 8px; padding: 20px;">
-                        <div style="display: flex; flex-direction: column; gap: 12px;">
-                            <!-- Agent preview -->
-                            <div style="display: flex; justify-content: flex-start;">
-                                <div id="agentStylePreview" style="opacity: 0.5;">
-                                    <em>Select an agent message to see preview</em>
-                                </div>
-                            </div>
-                            <!-- Customer preview -->
-                            <div style="display: flex; justify-content: flex-end;">
-                                <div id="customerStylePreview" style="opacity: 0.5;">
-                                    <em>Select a customer message to see preview</em>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Debug Output -->
-                    <div style="margin-top: 20px;">
-                        <details style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
-                            <summary style="cursor: pointer; font-weight: 600; color: #667eea;">🔍 Debug: Show Captured Properties</summary>
-
-                            <!-- Export Buttons -->
-                            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
-                                <button onclick="exportDebugInfo()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                                    📥 Export Debug Info (JSON)
-                                </button>
-                                <button onclick="copyDebugToClipboard()" style="padding: 8px 16px; background: #2ecc71; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
-                                    📋 Copy to Clipboard
-                                </button>
-                            </div>
-
-                            <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                                <!-- Agent Debug -->
-                                <div>
-                                    <h4 style="font-size: 13px; font-weight: 600; color: #667eea; margin-bottom: 10px;">Agent Properties:</h4>
-                                    <pre id="agentDebugOutput" style="background: white; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid #ddd;">No styles captured yet</pre>
-                                </div>
-                                <!-- Customer Debug -->
-                                <div>
-                                    <h4 style="font-size: 13px; font-weight: 600; color: #764ba2; margin-bottom: 10px;">Customer Properties:</h4>
-                                    <pre id="customerDebugOutput" style="background: white; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid #ddd;">No styles captured yet</pre>
-                                </div>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-
-                <h2 style="margin-top: 25px;">Chat Container Selector (Optional)</h2>
-                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">CSS selector for where to inject messages in full frames (e.g., #chatMessages, .chat-container). Leave blank to create standalone messages.</p>
-                <input type="text" id="containerSelector" placeholder="#chatMessages or .chat-container"
+                <h2 style="margin-top: 25px;">2. Chat Container Selector</h2>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">CSS selector for the chat messages container (e.g., #chatMessages, .chat-container)</p>
+                <input type="text" id="containerSelector" placeholder="#chatMessages"
                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;">
+                <button class="browse-btn" onclick="toggleTreeNavigator()" id="browseBtn" style="display: none;">
+                    🔍 Browse HTML Structure
+                </button>
+                <div class="selected-path" id="selectedPath"></div>
             </div>
 
             <!-- Messages and Frame Preview -->
@@ -940,8 +860,6 @@
                     <div class="btn-group">
                         <button class="btn btn-secondary" onclick="addMessageInput()">+ Add Message</button>
                         <button class="btn btn-secondary" onclick="clearMessages()">Clear All</button>
-                        <button class="btn" style="background: #3498db; color: white;" onclick="exportMessages()">📤 Export Messages</button>
-                        <button class="btn" style="background: #2ecc71; color: white;" onclick="importMessages()">📥 Import Messages</button>
                     </div>
 
                     <h2 style="margin-top: 30px;">4. Generate Frames</h2>
@@ -972,10 +890,9 @@
     <div class="fullscreen-preview-overlay" id="fullscreenOverlay">
         <div class="fullscreen-header">
             <div class="fullscreen-header-left">
-                <div class="fullscreen-title">🎨 Select Message to Copy Styling</div>
-                <div id="styleSelectionInfo" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; min-width: 300px;">
-                    Click any message to copy its styling
-                </div>
+                <div class="fullscreen-title">📱 Visual Preview - Select Chat Container</div>
+                <input type="text" id="fullscreenSelector" placeholder="CSS Selector" readonly
+                       style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 4px; font-family: monospace; font-size: 13px; min-width: 300px;">
             </div>
             <div class="fullscreen-controls">
                 <button class="fullscreen-btn" id="toggleTreeBtn" onclick="toggleFullscreenSidebar()">
@@ -996,13 +913,13 @@
             </div>
             <div class="fullscreen-sidebar" id="fullscreenSidebar">
                 <div class="tree-navigator" id="fullscreenTreeNavigator">
-                    <div class="tree-navigator-title">🌳 HTML Structure - Click to copy message styling</div>
+                    <div class="tree-navigator-title">🌳 HTML Structure - Click to select</div>
                 </div>
             </div>
         </div>
         <!-- Floating selection button -->
         <div class="floating-select-btn" id="floatingSelectBtn">
-            🎨 Copy Style
+            ✓ Select This Element
             <span class="element-tag-label" id="elementTagLabel"></span>
         </div>
     </div>
@@ -1055,11 +972,6 @@
         let baseHTML = null;
         let messages = [];
         let generatedFrames = [];
-        let agentMessageStyles = null;
-        let customerMessageStyles = null;
-        let agentMessageTemplate = null; // HTML template for agent messages
-        let customerMessageTemplate = null; // HTML template for customer messages
-        let currentStyleSelectionMode = null; // 'agent' or 'customer'
 
         // File upload handlers
         const uploadArea = document.getElementById('uploadArea');
@@ -1110,242 +1022,11 @@
                     </div>
                 `;
 
-                // Show style selection buttons
-                document.getElementById('selectAgentBtn').style.display = 'block';
-                document.getElementById('selectCustomerBtn').style.display = 'block';
+                // Show browse button and visual preview
+                document.getElementById('browseBtn').style.display = 'inline-block';
+                loadVisualPreview();
             };
             reader.readAsText(file);
-        }
-
-        // Select message style function
-        function selectMessageStyle(type) {
-            currentStyleSelectionMode = type;
-            loadVisualPreview();
-        }
-
-        // Update style preview
-        function updateStylePreview() {
-            const previewSection = document.getElementById('stylePreviewSection');
-            const agentPreview = document.getElementById('agentStylePreview');
-            const customerPreview = document.getElementById('customerStylePreview');
-            const agentDebugOutput = document.getElementById('agentDebugOutput');
-            const customerDebugOutput = document.getElementById('customerDebugOutput');
-
-            // Show preview section if any styles are captured
-            if (agentMessageStyles || customerMessageStyles) {
-                previewSection.style.display = 'block';
-            }
-
-            // Update agent preview
-            if (agentMessageTemplate || agentMessageStyles) {
-                console.log('Applying agent template/styles');
-
-                // Update debug output
-                let debugText = '';
-                if (agentMessageTemplate) {
-                    debugText += `Captured HTML Template:\n\n${agentMessageTemplate.html}\n\n---\n\n`;
-                }
-                if (agentMessageStyles) {
-                    debugText += `Captured ${Object.keys(agentMessageStyles).length} CSS properties:\n\n`;
-                    Object.entries(agentMessageStyles).forEach(([key, value]) => {
-                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                        debugText += `${cssKey}: ${value}\n`;
-                    });
-                }
-                agentDebugOutput.textContent = debugText;
-
-                // Use HTML template if available, otherwise use CSS styling
-                if (agentMessageTemplate) {
-                    // Replace placeholder with sample text
-                    agentPreview.innerHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, 'This is how agent messages will look');
-                } else if (agentMessageStyles) {
-                    // Clear existing styles
-                    agentPreview.style.cssText = '';
-
-                    // Apply each style individually
-                    Object.entries(agentMessageStyles).forEach(([key, value]) => {
-                        try {
-                            // Convert camelCase to kebab-case
-                            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                            agentPreview.style.setProperty(cssKey, value);
-                        } catch (e) {
-                            console.warn(`Could not apply style ${key}: ${value}`, e);
-                        }
-                    });
-
-                    agentPreview.innerHTML = 'This is how agent messages will look';
-                }
-                console.log('Agent preview updated');
-            } else {
-                agentPreview.style.cssText = 'opacity: 0.5;';
-                agentPreview.innerHTML = '<em>Select an agent message to see preview</em>';
-                agentDebugOutput.textContent = 'No styles captured yet';
-            }
-
-            // Update customer preview
-            if (customerMessageTemplate || customerMessageStyles) {
-                console.log('Applying customer template/styles');
-
-                // Update debug output
-                let debugText = '';
-                if (customerMessageTemplate) {
-                    debugText += `Captured HTML Template:\n\n${customerMessageTemplate.html}\n\n---\n\n`;
-                }
-                if (customerMessageStyles) {
-                    debugText += `Captured ${Object.keys(customerMessageStyles).length} CSS properties:\n\n`;
-                    Object.entries(customerMessageStyles).forEach(([key, value]) => {
-                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                        debugText += `${cssKey}: ${value}\n`;
-                    });
-                }
-                customerDebugOutput.textContent = debugText;
-
-                // Use HTML template if available, otherwise use CSS styling
-                if (customerMessageTemplate) {
-                    // Replace placeholder with sample text
-                    customerPreview.innerHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, 'This is how customer messages will look');
-                } else if (customerMessageStyles) {
-                    // Clear existing styles
-                    customerPreview.style.cssText = '';
-
-                    // Apply each style individually
-                    Object.entries(customerMessageStyles).forEach(([key, value]) => {
-                        try {
-                            // Convert camelCase to kebab-case
-                            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                            customerPreview.style.setProperty(cssKey, value);
-                        } catch (e) {
-                            console.warn(`Could not apply style ${key}: ${value}`, e);
-                        }
-                    });
-
-                    customerPreview.innerHTML = 'This is how customer messages will look';
-                }
-                console.log('Customer preview updated');
-            } else {
-                customerPreview.style.cssText = 'opacity: 0.5;';
-                customerPreview.innerHTML = '<em>Select a customer message to see preview</em>';
-                customerDebugOutput.textContent = 'No styles captured yet';
-            }
-        }
-
-        // Extract HTML template from an element
-        function extractHTMLTemplate(element) {
-            // Clone the element to avoid modifying the original
-            const clone = element.cloneNode(true);
-
-            // Function to override width constraints with !important inline styles
-            function overrideWidthConstraints(node) {
-                if (node.nodeType === Node.ELEMENT_NODE && node.style) {
-                    // Get current inline style
-                    const currentStyle = node.getAttribute('style') || '';
-
-                    // Remove any existing width properties
-                    node.style.removeProperty('width');
-                    node.style.removeProperty('min-width');
-                    node.style.removeProperty('max-width');
-
-                    // Add auto width with !important to override CSS classes
-                    // Use setProperty with priority 'important'
-                    node.style.setProperty('width', 'auto', 'important');
-                    node.style.setProperty('min-width', '0', 'important');
-                    node.style.setProperty('max-width', 'none', 'important');
-
-                    // Process child elements
-                    Array.from(node.children).forEach(child => overrideWidthConstraints(child));
-                }
-            }
-
-            // Function to find and replace all text nodes with placeholder
-            function replaceTextNodes(node) {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    // Only replace if it has meaningful text (not just whitespace)
-                    if (node.textContent.trim().length > 0) {
-                        node.textContent = '{{MESSAGE_TEXT}}';
-                    }
-                } else {
-                    // Recursively process child nodes
-                    Array.from(node.childNodes).forEach(child => replaceTextNodes(child));
-                }
-            }
-
-            // Override width constraints first
-            overrideWidthConstraints(clone);
-
-            // Then replace text nodes
-            replaceTextNodes(clone);
-
-            return {
-                html: clone.outerHTML,
-                originalText: element.textContent.trim()
-            };
-        }
-
-        // Extract all relevant CSS styles from an element
-        function extractStyles(element) {
-            const computedStyle = window.getComputedStyle(element);
-
-            // CSS properties to extract - ONLY visual properties, no layout-breaking ones
-            const styleProperties = [
-                // Text
-                'color', 'fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'lineHeight', 'textAlign',
-                'textDecoration', 'textTransform', 'letterSpacing', 'wordSpacing',
-
-                // Box model - padding only, no width/height/margin
-                'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
-
-                // Background - try both shorthand and specific
-                'background', 'backgroundColor', 'backgroundImage', 'backgroundSize',
-                'backgroundPosition', 'backgroundRepeat',
-
-                // Border
-                'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
-                'borderRadius', 'borderColor', 'borderWidth', 'borderStyle',
-
-                // Effects
-                'boxShadow', 'textShadow', 'opacity'
-            ];
-
-            const extractedStyles = {};
-            styleProperties.forEach(prop => {
-                const value = computedStyle.getPropertyValue(prop) || computedStyle[prop];
-                if (value && value !== 'none' && value !== 'normal' && value !== 'auto' && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
-                    extractedStyles[prop] = value;
-                }
-            });
-
-            // Special handling for background - if no backgroundColor but has background, extract it
-            if (!extractedStyles.backgroundColor && extractedStyles.background) {
-                // Try to extract background-color from the background shorthand
-                const bgMatch = extractedStyles.background.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);
-                if (bgMatch) {
-                    extractedStyles.backgroundColor = bgMatch[0];
-                }
-            }
-
-            // If still no background, check if element is visually colored (might have gradient or other bg)
-            if (!extractedStyles.backgroundColor) {
-                // Create a temporary canvas to check actual rendered color
-                console.log('No backgroundColor found, checking visual appearance');
-            }
-
-            // Add display: inline-block to ensure proper rendering
-            extractedStyles['display'] = 'inline-block';
-            extractedStyles['maxWidth'] = '75%';
-            extractedStyles['wordWrap'] = 'break-word';
-
-            return extractedStyles;
-        }
-
-        // Convert extracted styles to CSS string
-        function stylesToCSSString(styles) {
-            return Object.entries(styles)
-                .map(([key, value]) => {
-                    // Convert camelCase to kebab-case
-                    const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
-                    return `${cssKey}: ${value}`;
-                })
-                .join('; ') + ';';
         }
 
         function loadVisualPreview() {
@@ -1423,14 +1104,6 @@
             console.log('✓ HTML content injected');
             console.log('Body content length:', bodyContent.innerHTML.length);
             console.log('Body has children:', bodyContent.children.length);
-
-            // Update title based on selection mode
-            const titleEl = document.querySelector('.fullscreen-title');
-            if (currentStyleSelectionMode) {
-                const styleType = currentStyleSelectionMode.charAt(0).toUpperCase() + currentStyleSelectionMode.slice(1);
-                titleEl.textContent = `🎨 Select ${styleType} Message to Copy Styling`;
-                titleEl.style.color = currentStyleSelectionMode === 'agent' ? '#667eea' : '#764ba2';
-            }
 
             // Hide loading
             loading.style.display = 'none';
@@ -1559,163 +1232,35 @@
             console.log('✓ Browser click handlers setup complete');
         }
 
-        // Find the best styled element (bubble) - either the clicked element or a child with better styling
-        function findStyledBubble(element) {
-            const computedStyle = window.getComputedStyle(element);
-
-            // Score an element based on how well-styled it is
-            const scoreElement = (el) => {
-                const style = window.getComputedStyle(el);
-                const bgColor = style.backgroundColor;
-                const bg = style.background;
-                const borderRadius = style.borderRadius;
-                const padding = style.padding;
-                const boxShadow = style.boxShadow;
-
-                let score = 0;
-
-                // Check if it has visible background (not transparent)
-                const hasBackground = bgColor &&
-                                     bgColor !== 'rgba(0, 0, 0, 0)' &&
-                                     bgColor !== 'transparent' &&
-                                     bgColor !== 'rgba(255, 255, 255, 0)';
-
-                // Check if background shorthand has color
-                const bgHasColor = bg && bg !== 'none' && bg.match(/rgba?\(|#/);
-
-                if (hasBackground) score += 10;  // Strong indicator
-                if (bgHasColor) score += 8;      // Background with color
-                if (borderRadius && borderRadius !== '0px') score += 5;  // Rounded corners
-                if (padding && padding !== '0px') score += 3;  // Has padding
-                if (boxShadow && boxShadow !== 'none') score += 2;  // Has shadow
-
-                return score;
-            };
-
-            // Check if element has good scoring
-            const hasGoodStyling = (el) => {
-                return scoreElement(el) >= 8;  // Threshold for "good" styling
-            };
-
-            // Collect all candidate elements (clicked element + all descendants up to 3 levels deep)
-            const candidates = [element];
-
-            const collectCandidates = (parent, depth = 0) => {
-                if (depth > 3) return;
-
-                const children = Array.from(parent.children);
-                children.forEach(child => {
-                    candidates.push(child);
-                    collectCandidates(child, depth + 1);
-                });
-            };
-
-            collectCandidates(element);
-
-            // Score all candidates and pick the best one
-            let bestElement = element;
-            let bestScore = scoreElement(element);
-
-            candidates.forEach(candidate => {
-                const score = scoreElement(candidate);
-                console.log(`Scoring ${candidate.tagName}.${candidate.className}: ${score}`);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestElement = candidate;
-                }
-            });
-
-            if (bestScore >= 8) {
-                console.log(`✓ Found best styled element: ${bestElement.tagName}.${bestElement.className} (score: ${bestScore})`);
-            } else if (bestScore > 0) {
-                console.log(`⚠ Found element with some styling: ${bestElement.tagName}.${bestElement.className} (score: ${bestScore})`);
-            } else {
-                console.log(`⚠ No well-styled element found, using: ${bestElement.tagName} (score: ${bestScore})`);
-            }
-
-            return bestElement;
-        }
-
         function handleBrowserElementClick(browserElement) {
             console.log('handleBrowserElementClick called for:', browserElement.tagName);
 
-            if (!currentStyleSelectionMode) {
-                console.warn('No style selection mode set');
-                return;
+            // Find corresponding element in parsedDoc
+            const selector = getElementPath(browserElement);
+            console.log('Generated selector:', selector);
+
+            try {
+                const correspondingElement = parsedDoc.querySelector(selector);
+                if (correspondingElement) {
+                    // Find the tree header for this element
+                    const treeHeader = elementMap.get(correspondingElement);
+                    if (treeHeader) {
+                        selectElement(correspondingElement, treeHeader);
+
+                        // Scroll tree into view
+                        treeHeader.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                        // Expand tree to show selection
+                        expandTreeToElement(treeHeader);
+                    }
+
+                    highlightElementInBrowser(browserElement);
+                } else {
+                    console.warn('Could not find corresponding element in parsedDoc');
+                }
+            } catch (e) {
+                console.warn('Could not find element in tree:', e);
             }
-
-            // Find the best styled element (might be a child of what was clicked)
-            const styledElement = findStyledBubble(browserElement);
-            console.log('Using element for styling:', styledElement.tagName, styledElement.className);
-
-            // Extract both styles AND HTML template from the styled element
-            const styles = extractStyles(styledElement);
-            const template = extractHTMLTemplate(styledElement);
-            const selector = getElementPath(styledElement);
-
-            console.log('Extracted HTML template:', template.html);
-
-            console.log('Extracted styles from element:', selector);
-            console.log('Styles:', styles);
-
-            // Validate styles - check if we actually captured a styled element
-            const hasBackgroundColor = styles.backgroundColor &&
-                                       styles.backgroundColor !== 'rgba(0, 0, 0, 0)' &&
-                                       styles.backgroundColor !== 'transparent';
-            const hasPadding = styles.padding && styles.padding !== '0px';
-            const hasBorderRadius = styles.borderRadius && styles.borderRadius !== '0px';
-
-            let warning = '';
-            if (!hasBackgroundColor && !hasBorderRadius) {
-                warning = '<div style="background: #fff3cd; color: #856404; padding: 6px; border-radius: 4px; font-size: 11px; margin-top: 5px;">⚠️ Warning: No background color or border-radius detected. The automatic detection may not have found a styled bubble. Try clicking on a different message or area.</div>';
-            } else if (hasBackgroundColor || hasBorderRadius) {
-                let features = [];
-                if (hasBackgroundColor) features.push('background');
-                if (hasBorderRadius) features.push('rounded corners');
-                if (hasPadding) features.push('padding');
-                warning = `<div style="background: #d4edda; color: #155724; padding: 6px; border-radius: 4px; font-size: 11px; margin-top: 5px;">✓ Detected: ${features.join(', ')}</div>`;
-            }
-
-            // Store the styles AND templates based on mode
-            if (currentStyleSelectionMode === 'agent') {
-                agentMessageStyles = styles;
-                agentMessageTemplate = template;
-                document.getElementById('agentSelector').value = selector;
-                document.getElementById('agentStyleStatus').innerHTML = `
-                    <div style="background: #d4edda; color: #155724; padding: 8px; border-radius: 4px;">
-                        ✓ Agent template captured (${Object.keys(styles).length} properties + HTML structure)
-                    </div>
-                    ${warning}
-                `;
-                document.getElementById('agentStyleStatus').classList.add('active');
-
-                // Update preview
-                updateStylePreview();
-            } else if (currentStyleSelectionMode === 'customer') {
-                customerMessageStyles = styles;
-                customerMessageTemplate = template;
-                document.getElementById('customerSelector').value = selector;
-                document.getElementById('customerStyleStatus').innerHTML = `
-                    <div style="background: #d4edda; color: #155724; padding: 8px; border-radius: 4px;">
-                        ✓ Customer template captured (${Object.keys(styles).length} properties + HTML structure)
-                    </div>
-                    ${warning}
-                `;
-                document.getElementById('customerStyleStatus').classList.add('active');
-
-                // Update preview
-                updateStylePreview();
-            }
-
-            // Highlight the selected styled element (not the originally clicked one)
-            highlightElementInBrowser(styledElement);
-
-            // Show success message
-            const statusType = currentStyleSelectionMode.charAt(0).toUpperCase() + currentStyleSelectionMode.slice(1);
-            showStatus(`${statusType} message style copied successfully!`, 'success');
-
-            // Clear selection mode
-            currentStyleSelectionMode = null;
         }
 
         function getElementPath(element) {
@@ -1813,7 +1358,7 @@
             if (!parsedDoc) return;
 
             const treeNav = document.getElementById('fullscreenTreeNavigator');
-            treeNav.innerHTML = '<div class="tree-navigator-title">🌳 HTML Structure - Click to copy message styling</div>';
+            treeNav.innerHTML = '<div class="tree-navigator-title">🌳 HTML Structure - Click to select</div>';
 
             const bodyElement = parsedDoc.body;
             if (bodyElement) {
@@ -1858,25 +1403,8 @@
             // Click handler for selecting element
             headerDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
-
-                // If in style selection mode, extract styles from the element
-                if (currentStyleSelectionMode) {
-                    // Find corresponding element in browser preview
-                    const selector = generateSelector(element);
-                    try {
-                        const browserPreview = document.getElementById('browserPreview');
-                        const browserElement = browserPreview.querySelector(selector);
-                        if (browserElement) {
-                            handleBrowserElementClick(browserElement);
-                            closeFullscreen();
-                        }
-                    } catch (e) {
-                        console.warn('Could not find browser element:', e);
-                    }
-                } else {
-                    // Otherwise just highlight it
-                    highlightCorrespondingIframeElement(element);
-                }
+                selectElement(element, headerDiv);
+                highlightCorrespondingIframeElement(element);
             });
 
             // Hover effect to preview in iframe
@@ -2137,96 +1665,6 @@
             updatePreview();
         }
 
-        function exportMessages() {
-            collectMessages();
-
-            if (messages.length === 0) {
-                showStatus('No messages to export', 'error');
-                return;
-            }
-
-            const exportData = {
-                version: '1.0',
-                timestamp: new Date().toISOString(),
-                messageCount: messages.length,
-                messages: messages
-            };
-
-            const jsonStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `chat-messages-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            showStatus(`Exported ${messages.length} messages to JSON`, 'success');
-        }
-
-        function importMessages() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    try {
-                        const importData = JSON.parse(event.target.result);
-
-                        // Validate the imported data
-                        if (!importData.messages || !Array.isArray(importData.messages)) {
-                            showStatus('Invalid message file format', 'error');
-                            return;
-                        }
-
-                        // Clear existing messages
-                        clearMessages();
-
-                        // Populate with imported messages
-                        importData.messages.forEach((msg, index) => {
-                            addMessageInput();
-
-                            // Wait a bit for DOM to update
-                            setTimeout(() => {
-                                const messageInputs = document.querySelectorAll('.message-input-group');
-                                const targetInput = messageInputs[index];
-
-                                if (targetInput) {
-                                    const select = targetInput.querySelector('select');
-                                    const textarea = targetInput.querySelector('textarea');
-
-                                    if (select && textarea) {
-                                        select.value = msg.type || 'agent';
-                                        textarea.value = msg.text || '';
-                                        updateMessageType(targetInput.getAttribute('data-message-id'), msg.type || 'agent');
-                                    }
-                                }
-
-                                // Update preview after last message
-                                if (index === importData.messages.length - 1) {
-                                    setTimeout(() => {
-                                        updatePreview();
-                                    }, 100);
-                                }
-                            }, index * 50);
-                        });
-
-                        showStatus(`Imported ${importData.messages.length} messages from ${file.name}`, 'success');
-                    } catch (error) {
-                        showStatus('Error parsing JSON file: ' + error.message, 'error');
-                    }
-                };
-                reader.readAsText(file);
-            };
-
-            input.click();
-        }
-
         function collectMessages() {
             const inputs = document.querySelectorAll('.message-input-group');
             messages = [];
@@ -2272,40 +1710,34 @@
         }
 
         function generateMessageHTML(messages) {
-            const messagesHTML = messages.map((msg, index) => {
-                // Get the appropriate template and styling based on message type
-                let messageHTML = '';
+            return messages.map((msg, index) => {
+                const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
-                if (msg.type === 'agent' && agentMessageTemplate) {
-                    // Use HTML template and replace placeholder with actual text
-                    messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
-                } else if (msg.type === 'customer' && customerMessageTemplate) {
-                    // Use HTML template and replace placeholder with actual text
-                    messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                if (msg.type === 'system') {
+                    return `
+                        <div class="message system">
+                            <div class="message-bubble">${msg.text}</div>
+                        </div>
+                    `;
                 } else {
-                    // Fallback to CSS styling if no template
-                    let styleString = '';
-                    if (msg.type === 'agent' && agentMessageStyles) {
-                        styleString = stylesToCSSString(agentMessageStyles);
-                    } else if (msg.type === 'customer' && customerMessageStyles) {
-                        styleString = stylesToCSSString(customerMessageStyles);
-                    }
-                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                    const avatar = msg.type === 'agent' ? 'A' : 'C';
+                    const author = msg.type === 'agent' ? 'Agent' : 'Customer';
+                    return `
+                        <div class="message ${msg.type}">
+                            <div class="message-container">
+                                <div class="message-header">
+                                    <div class="message-avatar">${avatar}</div>
+                                    <span class="message-author">${author}</span>
+                                    <span class="message-time">${time}</span>
+                                </div>
+                                <div class="message-bubble">
+                                    <div class="message-text">${msg.text}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
                 }
-
-                // Determine alignment
-                const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
-
-                // Wrap message in container for proper alignment
-                return `
-                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
-                        ${messageHTML}
-                    </div>
-                `;
             }).join('\n');
-
-            // Return wrapped in flex container
-            return `<div style="display: flex; flex-direction: column;">${messagesHTML}</div>`;
         }
 
         function generateFrames() {
@@ -2321,12 +1753,7 @@
                 return;
             }
 
-            if (!agentMessageTemplate && !customerMessageTemplate && !agentMessageStyles && !customerMessageStyles) {
-                showStatus('Please select at least one message style first (agent or customer)', 'error');
-                return;
-            }
-
-            const containerSelector = document.getElementById('containerSelector').value.trim();
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
             generatedFrames = [];
 
             // Create a frame for each message count (1 to N)
@@ -2338,22 +1765,14 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(baseHTML, 'text/html');
 
-                if (containerSelector) {
-                    // If container selector provided, inject into that container
-                    const chatContainer = doc.querySelector(containerSelector);
-                    if (!chatContainer) {
-                        showStatus(`Chat container not found with selector: ${containerSelector}`, 'error');
-                        return;
-                    }
-                    // Clear existing messages and add new ones
-                    chatContainer.innerHTML = messagesHTML;
-                } else {
-                    // No container selector - append messages to body
-                    const messagesWrapper = doc.createElement('div');
-                    messagesWrapper.style.cssText = 'padding: 20px;';
-                    messagesWrapper.innerHTML = messagesHTML;
-                    doc.body.appendChild(messagesWrapper);
+                const chatContainer = doc.querySelector(containerSelector);
+                if (!chatContainer) {
+                    showStatus(`Chat container not found with selector: ${containerSelector}`, 'error');
+                    return;
                 }
+
+                // Clear existing messages and add new ones
+                chatContainer.innerHTML = messagesHTML;
 
                 // Serialize back to HTML
                 const frameHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
@@ -2397,69 +1816,6 @@
                     statusDiv.innerHTML = '';
                 }, 5000);
             }
-        }
-
-        // Export debug information
-        function exportDebugInfo() {
-            const debugData = {
-                timestamp: new Date().toISOString(),
-                agentStyles: agentMessageStyles || null,
-                customerStyles: customerMessageStyles || null,
-                agentSelector: document.getElementById('agentSelector').value,
-                customerSelector: document.getElementById('customerSelector').value,
-                metadata: {
-                    agentPropertiesCount: agentMessageStyles ? Object.keys(agentMessageStyles).length : 0,
-                    customerPropertiesCount: customerMessageStyles ? Object.keys(customerMessageStyles).length : 0
-                }
-            };
-
-            const jsonStr = JSON.stringify(debugData, null, 2);
-            const blob = new Blob([jsonStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `chat-styles-debug-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            showStatus('Debug info exported to JSON file', 'success');
-        }
-
-        // Copy debug info to clipboard
-        function copyDebugToClipboard() {
-            const debugData = {
-                timestamp: new Date().toISOString(),
-                agentStyles: agentMessageStyles || null,
-                customerStyles: customerMessageStyles || null,
-                agentSelector: document.getElementById('agentSelector').value,
-                customerSelector: document.getElementById('customerSelector').value,
-                metadata: {
-                    agentPropertiesCount: agentMessageStyles ? Object.keys(agentMessageStyles).length : 0,
-                    customerPropertiesCount: customerMessageStyles ? Object.keys(customerMessageStyles).length : 0
-                }
-            };
-
-            const jsonStr = JSON.stringify(debugData, null, 2);
-
-            navigator.clipboard.writeText(jsonStr).then(() => {
-                showStatus('Debug info copied to clipboard! Paste it into your message.', 'success');
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-                // Fallback: create a textarea to copy from
-                const textarea = document.createElement('textarea');
-                textarea.value = jsonStr;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                try {
-                    document.execCommand('copy');
-                    showStatus('Debug info copied to clipboard! Paste it into your message.', 'success');
-                } catch (e) {
-                    showStatus('Failed to copy. Please use Export button instead.', 'error');
-                }
-                document.body.removeChild(textarea);
-            });
         }
 
         // ============================================
@@ -2557,40 +1913,11 @@
         // Generate minimal HTML for clean chat
         function generateCleanChatHTML(msgs) {
             const messagesHTML = msgs.map(msg => {
-                // Get the appropriate template or styling based on message type
-                let messageHTML = '';
-
-                if (msg.type === 'agent' && agentMessageTemplate) {
-                    // Use HTML template and replace placeholder with actual text
-                    messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
-                } else if (msg.type === 'customer' && customerMessageTemplate) {
-                    // Use HTML template and replace placeholder with actual text
-                    messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
-                } else if (msg.type === 'agent' && agentMessageStyles) {
-                    // Fallback to CSS styling
-                    const styleString = stylesToCSSString(agentMessageStyles);
-                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
-                } else if (msg.type === 'customer' && customerMessageStyles) {
-                    // Fallback to CSS styling
-                    const styleString = stylesToCSSString(customerMessageStyles);
-                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
-                } else {
-                    // Fallback to default styling if nothing is captured
-                    const msgClass = msg.type;
-                    messageHTML = `<div class="clean-chat-message ${msgClass}">${msg.text}</div>`;
-                }
-
-                // Determine alignment
-                const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
-
-                return `
-                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
-                        ${messageHTML}
-                    </div>
-                `;
+                const msgClass = msg.type;
+                return `<div class="clean-chat-message ${msgClass}">${msg.text}</div>`;
             }).join('\n');
 
-            return `<div style="display: flex; flex-direction: column; padding: 10px;">
+            return `<div style="display: flex; flex-direction: column; gap: 8px; padding: 10px;">
                 ${messagesHTML}
             </div>`;
         }

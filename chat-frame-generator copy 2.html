@@ -1234,28 +1234,6 @@
             // Clone the element to avoid modifying the original
             const clone = element.cloneNode(true);
 
-            // Function to override width constraints with !important inline styles
-            function overrideWidthConstraints(node) {
-                if (node.nodeType === Node.ELEMENT_NODE && node.style) {
-                    // Get current inline style
-                    const currentStyle = node.getAttribute('style') || '';
-
-                    // Remove any existing width properties
-                    node.style.removeProperty('width');
-                    node.style.removeProperty('min-width');
-                    node.style.removeProperty('max-width');
-
-                    // Add auto width with !important to override CSS classes
-                    // Use setProperty with priority 'important'
-                    node.style.setProperty('width', 'auto', 'important');
-                    node.style.setProperty('min-width', '0', 'important');
-                    node.style.setProperty('max-width', 'none', 'important');
-
-                    // Process child elements
-                    Array.from(node.children).forEach(child => overrideWidthConstraints(child));
-                }
-            }
-
             // Function to find and replace all text nodes with placeholder
             function replaceTextNodes(node) {
                 if (node.nodeType === Node.TEXT_NODE) {
@@ -1269,10 +1247,6 @@
                 }
             }
 
-            // Override width constraints first
-            overrideWidthConstraints(clone);
-
-            // Then replace text nodes
             replaceTextNodes(clone);
 
             return {
