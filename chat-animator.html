@@ -339,6 +339,24 @@
         .status-message.error {
             background: #e74c3c;
         }
+
+        /* Inline editing styles */
+        [contenteditable="true"] {
+            position: relative;
+        }
+
+        [contenteditable="true"]:hover {
+            background: rgba(52, 152, 219, 0.1) !important;
+            border-radius: 3px;
+            transition: background 0.2s;
+        }
+
+        [contenteditable="true"]:focus {
+            background: rgba(52, 152, 219, 0.15) !important;
+            outline: 1px dashed #3498db;
+            outline-offset: 2px;
+            border-radius: 3px;
+        }
     </style>
 </head>
 <body>
@@ -520,9 +538,30 @@
                     Show Timestamp
                 </label>
             </div>
-            <button class="btn btn-danger" onclick="deleteSelectedMessage()" style="width: 100%; margin-top: 10px;">
-                🗑️ Delete Message
+            <div style="display: flex; gap: 5px; margin-top: 10px;">
+                <button class="btn btn-purple" onclick="exportSingleMessage()" style="flex: 1; font-size: 12px;">
+                    💾 Export Bubble
+                </button>
+                <button class="btn btn-danger" onclick="deleteSelectedMessage()" style="flex: 1; font-size: 12px;">
+                    🗑️ Delete
+                </button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>Message Templates</h3>
+            <div style="font-size: 11px; color: #666; margin-bottom: 10px;">
+                Save and reuse message bubble styles
+            </div>
+            <button class="btn btn-primary" onclick="importMessageTemplate()" style="width: 100%; margin-bottom: 10px; font-size: 12px;">
+                📥 Import Template
             </button>
+            <div id="templateLibrary" style="max-height: 200px; overflow-y: auto;">
+                <div style="text-align: center; color: #999; padding: 20px; font-size: 12px;">
+                    No templates yet
+                </div>
+            </div>
+            <input type="file" id="templateFileInput" accept=".json" style="display: none;" onchange="handleTemplateImport(event)">
         </div>
 
         <div class="section" id="previewSection" style="display: none;">
@@ -631,6 +670,7 @@
         let dragOffsetX = 0;
         let dragOffsetY = 0;
         let messageIdCounter = 0;
+        let messageTemplates = []; // Store imported message templates
 
         // Show status message
         function showStatus(message, type = 'success') {
@@ -678,6 +718,43 @@
             }
         }
 
+        // Helper: Apply base styles to HTML template
+        function applyStylesToTemplate(htmlString, styles) {
+            if (!htmlString || !styles) return htmlString;
+
+            const temp = document.createElement('div');
+            temp.innerHTML = htmlString;
+            const root = temp.firstElementChild;
+
+            if (!root) return htmlString;
+
+            // Apply each style property to the root element
+            Object.entries(styles).forEach(([key, value]) => {
+                if (value && value !== 'none' && value !== 'auto' && value !== 'normal') {
+                    try {
+                        // Convert camelCase to kebab-case for CSS
+                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        root.style.setProperty(cssKey, value);
+                    } catch (e) {
+                        console.warn(`Could not apply style ${key}: ${value}`, e);
+                    }
+                }
+            });
+
+            // Ensure proper display for message bubbles
+            if (!root.style.display || root.style.display === 'block') {
+                root.style.display = 'inline-block';
+            }
+            if (!root.style.maxWidth) {
+                root.style.maxWidth = '75%';
+            }
+            if (!root.style.wordWrap) {
+                root.style.wordWrap = 'break-word';
+            }
+
+            return temp.innerHTML;
+        }
+
         function processImportStyles() {
             const data = document.getElementById('importData').value.trim();
             if (!data) {
@@ -688,12 +765,43 @@
             try {
                 const imported = JSON.parse(data);
 
+                // Check if this is v2.0 format (clean HTML + separate styles)
+                const isV2 = imported.metadata && imported.metadata.version === '2.0';
+
                 if (imported.agentMessageTemplate) {
-                    agentMessageTemplate = imported.agentMessageTemplate;
+                    if (isV2 && imported.agentMessageStyles) {
+                        // V2 format: Apply styles to clean HTML
+                        const styledHTML = applyStylesToTemplate(
+                            imported.agentMessageTemplate.html,
+                            imported.agentMessageStyles
+                        );
+                        agentMessageTemplate = {
+                            html: styledHTML,
+                            originalText: imported.agentMessageTemplate.originalText
+                        };
+                    } else {
+                        // V1 format or no styles: Use HTML as-is
+                        agentMessageTemplate = imported.agentMessageTemplate;
+                    }
                 }
+
                 if (imported.customerMessageTemplate) {
-                    customerMessageTemplate = imported.customerMessageTemplate;
+                    if (isV2 && imported.customerMessageStyles) {
+                        // V2 format: Apply styles to clean HTML
+                        const styledHTML = applyStylesToTemplate(
+                            imported.customerMessageTemplate.html,
+                            imported.customerMessageStyles
+                        );
+                        customerMessageTemplate = {
+                            html: styledHTML,
+                            originalText: imported.customerMessageTemplate.originalText
+                        };
+                    } else {
+                        // V1 format or no styles: Use HTML as-is
+                        customerMessageTemplate = imported.customerMessageTemplate;
+                    }
                 }
+
                 if (imported.agentMessageStyles) {
                     agentMessageStyles = imported.agentMessageStyles;
                 }
@@ -702,10 +810,13 @@
                 }
 
                 closeModal('importModal');
-                showStatus('Styles imported successfully!');
+                const versionNote = isV2 ? ' (v2.0 clean format)' : '';
+                showStatus('Styles imported successfully' + versionNote + '!');
+                console.log('Imported and applied styles:', { agentMessageTemplate, customerMessageTemplate });
                 renderAllMessages();
             } catch (e) {
                 showStatus('Invalid JSON format: ' + e.message, 'error');
+                console.error('Import error:', e);
             }
         }
 
@@ -1238,6 +1349,10 @@
                 messageHTML = applyCustomStyles(messageHTML, msg);
 
                 el.innerHTML = messageHTML;
+
+                // Make all text fields editable
+                enableInlineEditing(el, msg.id);
+
                 el.addEventListener('mousedown', startDrag);
                 el.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -1246,6 +1361,103 @@
 
                 container.appendChild(el);
             });
+        }
+
+        // Enable inline editing for all text fields in a message
+        function enableInlineEditing(messageElement, msgId) {
+            const msg = messages.find(m => m.id === msgId);
+            if (!msg) return;
+
+            // Find all editable fields (title, subtitle, text, timestamp)
+            const editableFields = messageElement.querySelectorAll('[data-field]');
+
+            editableFields.forEach(field => {
+                const fieldType = field.getAttribute('data-field');
+
+                // Make contenteditable
+                field.contentEditable = 'true';
+                field.style.cursor = 'text';
+                field.style.outline = 'none';
+
+                // Visual feedback on hover
+                field.addEventListener('mouseenter', (e) => {
+                    if (e.target.contentEditable === 'true') {
+                        e.target.style.backgroundColor = 'rgba(52, 152, 219, 0.1)';
+                    }
+                });
+
+                field.addEventListener('mouseleave', (e) => {
+                    if (e.target.contentEditable === 'true') {
+                        e.target.style.backgroundColor = '';
+                    }
+                });
+
+                // Save changes on blur or Enter key
+                field.addEventListener('blur', () => {
+                    saveInlineEdit(msgId, fieldType, field.textContent);
+                });
+
+                field.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        field.blur(); // Trigger save
+                    }
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        // Restore original value
+                        field.textContent = msg[fieldType] || '';
+                        field.blur();
+                    }
+                });
+
+                // Prevent dragging when clicking inside editable text
+                field.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                });
+
+                field.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    // Select the message so sidebar updates
+                    selectMessage(msgId);
+                });
+            });
+        }
+
+        // Save inline edit to message data
+        function saveInlineEdit(msgId, fieldType, newValue) {
+            const msg = messages.find(m => m.id === msgId);
+            if (!msg) return;
+
+            // Update the message data
+            msg[fieldType] = newValue;
+
+            console.log(`Saved inline edit: ${fieldType} = "${newValue}"`);
+
+            // Update sidebar if this message is selected
+            if (selectedMessageId === msgId) {
+                const fieldMap = {
+                    'title': 'editTitle',
+                    'subtitle': 'editSubtitle',
+                    'text': 'editText',
+                    'timestamp': 'editTimestamp'
+                };
+
+                const inputId = fieldMap[fieldType];
+                if (inputId) {
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.value = newValue;
+                    }
+                }
+
+                // Update preview panel
+                updatePreviewPanel(msg);
+            }
+
+            // Update message list preview
+            updateMessageList();
+
+            showStatus(`✏️ ${fieldType.charAt(0).toUpperCase() + fieldType.slice(1)} updated`, 'success');
         }
 
         // Drag functionality
@@ -1439,6 +1651,206 @@
             }
         }
 
+        // Export single message as template
+        function exportSingleMessage() {
+            if (selectedMessageId === null) {
+                showStatus('No message selected', 'error');
+                return;
+            }
+
+            const msg = messages.find(m => m.id === selectedMessageId);
+            if (!msg) {
+                showStatus('Message not found', 'error');
+                return;
+            }
+
+            // Generate the rendered HTML for preview
+            let renderedHTML = generateMessageHTML(msg);
+            renderedHTML = applyCustomStyles(renderedHTML, msg);
+
+            const template = {
+                type: msg.type,
+                title: msg.title,
+                subtitle: msg.subtitle,
+                text: msg.text,
+                timestamp: msg.timestamp,
+                styles: msg.styles,
+                renderedPreview: renderedHTML,
+                metadata: {
+                    exported: new Date().toISOString(),
+                    version: '1.0'
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `message-template-${msg.type}-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus('💾 Message template exported!');
+        }
+
+        // Import message template
+        function importMessageTemplate() {
+            document.getElementById('templateFileInput').click();
+        }
+
+        // Handle template import
+        function handleTemplateImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const template = JSON.parse(e.target.result);
+
+                    // Validate template
+                    if (!template.type || !template.text) {
+                        showStatus('Invalid template format', 'error');
+                        return;
+                    }
+
+                    // Add to templates library
+                    template.id = Date.now();
+                    messageTemplates.push(template);
+
+                    // Save to localStorage
+                    try {
+                        localStorage.setItem('chatAnimatorTemplates', JSON.stringify(messageTemplates));
+                    } catch (err) {
+                        console.warn('Could not save to localStorage:', err);
+                    }
+
+                    updateTemplateLibrary();
+                    showStatus(`✅ Template imported: ${template.type} message`);
+
+                } catch (error) {
+                    showStatus('Error parsing template: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+
+            // Clear input
+            event.target.value = '';
+        }
+
+        // Update template library display
+        function updateTemplateLibrary() {
+            const libraryEl = document.getElementById('templateLibrary');
+
+            if (messageTemplates.length === 0) {
+                libraryEl.innerHTML = `
+                    <div style="text-align: center; color: #999; padding: 20px; font-size: 12px;">
+                        No templates yet
+                    </div>
+                `;
+                return;
+            }
+
+            libraryEl.innerHTML = messageTemplates.map((template, index) => `
+                <div style="
+                    background: white;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 10px;
+                    margin-bottom: 8px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                " onmouseover="this.style.borderColor='#3498db'; this.style.background='#f0f8ff';"
+                   onmouseout="this.style.borderColor='#ddd'; this.style.background='white';"
+                   onclick="addMessageFromTemplate(${template.id})">
+                    <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: ${template.type === 'agent' ? '#3498db' : '#9b59b6'}; margin-bottom: 5px;">
+                        ${template.type}
+                    </div>
+                    <div style="font-size: 12px; color: #333; margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        ${template.title || template.text}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                        <span style="font-size: 10px; color: #999;">Click to use</span>
+                        <button onclick="event.stopPropagation(); deleteTemplate(${template.id})" style="
+                            background: #e74c3c;
+                            color: white;
+                            border: none;
+                            border-radius: 3px;
+                            padding: 3px 8px;
+                            font-size: 10px;
+                            cursor: pointer;
+                        ">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add message from template
+        function addMessageFromTemplate(templateId) {
+            const template = messageTemplates.find(t => t.id === templateId);
+            if (!template) {
+                showStatus('Template not found', 'error');
+                return;
+            }
+
+            // Calculate position for new message
+            const messageIndex = messages.length;
+            const verticalSpacing = 100;
+
+            const message = {
+                id: messageIdCounter++,
+                type: template.type,
+                title: template.title || '',
+                subtitle: template.subtitle || '',
+                text: template.text || '',
+                timestamp: template.timestamp || '',
+                posX: template.type === 'customer' ? 500 : 50,
+                posY: 50 + (messageIndex * verticalSpacing),
+                styles: template.styles || {
+                    title: {fontWeight: '', fontSize: '', color: ''},
+                    subtitle: {fontWeight: '', fontSize: '', color: ''},
+                    text: {fontWeight: '', fontSize: '', color: ''},
+                    timestamp: {fontWeight: '', fontSize: '', color: ''}
+                }
+            };
+
+            messages.push(message);
+            updateMessageList();
+            renderAllMessages();
+            updateTimeline();
+            showStatus(`✅ ${template.type} message added from template`);
+        }
+
+        // Delete template
+        function deleteTemplate(templateId) {
+            if (confirm('Delete this template?')) {
+                messageTemplates = messageTemplates.filter(t => t.id !== templateId);
+
+                // Save to localStorage
+                try {
+                    localStorage.setItem('chatAnimatorTemplates', JSON.stringify(messageTemplates));
+                } catch (err) {
+                    console.warn('Could not save to localStorage:', err);
+                }
+
+                updateTemplateLibrary();
+                showStatus('Template deleted');
+            }
+        }
+
+        // Load templates from localStorage on init
+        function loadTemplatesFromStorage() {
+            try {
+                const stored = localStorage.getItem('chatAnimatorTemplates');
+                if (stored) {
+                    messageTemplates = JSON.parse(stored);
+                    updateTemplateLibrary();
+                }
+            } catch (err) {
+                console.warn('Could not load templates from localStorage:', err);
+            }
+        }
+
         // Click outside to deselect
         document.getElementById('chatContainer').addEventListener('click', (e) => {
             if (e.target.id === 'chatContainer') {
@@ -1452,6 +1864,7 @@
 
         // Initialize
         updateTimeline();
+        loadTemplatesFromStorage();
     </script>
 </body>
 </html>

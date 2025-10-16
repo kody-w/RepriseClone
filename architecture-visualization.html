@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPF Contact Solver - Architecture Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00d4ff, #0099ff, #00ffcc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        button {
+            background: linear-gradient(45deg, #00d4ff, #0099ff);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 153, 255, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 153, 255, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .architecture {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .layer {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            transition: all 0.5s;
+            animation: slideInLeft 0.8s ease-out;
+        }
+
+        .layer:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .layer:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        .layer.active {
+            border-color: #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            transform: scale(1.02);
+        }
+
+        .layer-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .layer-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #00d4ff, #0099ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .layer-title {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .layer-description {
+            color: #aaa;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .component {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 3px solid #00d4ff;
+            transition: all 0.3s;
+            opacity: 0;
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        .component:nth-child(1) { animation-delay: 0.1s; }
+        .component:nth-child(2) { animation-delay: 0.2s; }
+        .component:nth-child(3) { animation-delay: 0.3s; }
+        .component:nth-child(4) { animation-delay: 0.4s; }
+        .component:nth-child(5) { animation-delay: 0.5s; }
+        .component:nth-child(6) { animation-delay: 0.6s; }
+
+        .component:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .component-name {
+            font-weight: 600;
+            color: #00ffcc;
+            margin-bottom: 5px;
+        }
+
+        .component-desc {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+        .data-flow {
+            position: relative;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flow-arrow {
+            width: 4px;
+            height: 100px;
+            background: linear-gradient(180deg, #00d4ff 0%, #0099ff 50%, #00ffcc 100%);
+            position: relative;
+            margin: 0 auto;
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #00ffcc;
+        }
+
+        .flow-label {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            white-space: nowrap;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .build-process {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 50px;
+            animation: fadeIn 1s ease-out 0.8s both;
+        }
+
+        .build-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .build-steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .build-step {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .build-step-box {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            transition: all 0.3s;
+        }
+
+        .build-step.active .build-step-box {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+            animation: glow 1s ease-in-out infinite;
+        }
+
+        .build-step-arrow {
+            position: absolute;
+            right: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00d4ff;
+            font-size: 2em;
+        }
+
+        .build-step:last-child .build-step-arrow {
+            display: none;
+        }
+
+        .particle {
+            position: fixed;
+            width: 4px;
+            height: 4px;
+            background: #00d4ff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 3s ease-out forwards;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes flowPulse {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(0, 212, 255, 1);
+            }
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0);
+            }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            border-color: #00d4ff;
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #00ffcc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: #aaa;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .build-steps {
+                flex-direction: column;
+            }
+
+            .build-step-arrow {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 PPF Contact Solver</h1>
+            <div class="subtitle">GPU-Accelerated Physics Simulation Architecture</div>
+        </header>
+
+        <div class="controls">
+            <button onclick="animateDataFlow()">▶ Animate Data Flow</button>
+            <button onclick="animateBuildProcess()">🔨 Build Process</button>
+            <button onclick="createParticles()">✨ Particle Effect</button>
+        </div>
+
+        <div class="architecture">
+            <!-- Layer 1: Python Frontend -->
+            <div class="layer" id="layer1">
+                <div class="layer-header">
+                    <div class="layer-number">1</div>
+                    <div class="layer-title">🐍 Python Frontend</div>
+                </div>
+                <div class="layer-description">
+                    High-level API for scene creation, simulation setup, and visualization
+                </div>
+                <div class="components">
+                    <div class="component">
+                        <div class="component-name">_app_.py</div>
+                        <div class="component-desc">Main application entry point</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">_scene_.py</div>
+                        <div class="component-desc">Scene building & object management</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">_session_.py</div>
+                        <div class="component-desc">Simulation session control</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">_mesh_.py</div>
+                        <div class="component-desc">Mesh creation (tri/tet/rod)</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">_param_.py</div>
+                        <div class="component-desc">Per-object parameter system</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">_asset_.py</div>
+                        <div class="component-desc">Asset management</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-flow">
+                <div class="flow-arrow"></div>
+                <div class="flow-label">Scene Data → Serialization</div>
+            </div>
+
+            <!-- Layer 2: Rust Core -->
+            <div class="layer" id="layer2">
+                <div class="layer-header">
+                    <div class="layer-number">2</div>
+                    <div class="layer-title">🦀 Rust Core</div>
+                </div>
+                <div class="layer-description">
+                    Middle layer handling scene building, data management, and backend orchestration
+                </div>
+                <div class="components">
+                    <div class="component">
+                        <div class="component-name">main.rs</div>
+                        <div class="component-desc">Entry point & CLI</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">scene.rs</div>
+                        <div class="component-desc">Scene construction</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">builder.rs</div>
+                        <div class="component-desc">Dataset builder</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">backend.rs</div>
+                        <div class="component-desc">CUDA backend interface</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">data.rs</div>
+                        <div class="component-desc">Data structures & serialization</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">bvh.rs</div>
+                        <div class="component-desc">Spatial acceleration</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-flow">
+                <div class="flow-arrow"></div>
+                <div class="flow-label">FFI → GPU Memory</div>
+            </div>
+
+            <!-- Layer 3: CUDA Backend -->
+            <div class="layer" id="layer3">
+                <div class="layer-header">
+                    <div class="layer-number">3</div>
+                    <div class="layer-title">⚡ CUDA Backend</div>
+                </div>
+                <div class="layer-description">
+                    GPU-accelerated simulation kernels running on NVIDIA hardware
+                </div>
+                <div class="components">
+                    <div class="component">
+                        <div class="component-name">contact.cu</div>
+                        <div class="component-desc">Penetration-free contact resolution</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">energy.cu</div>
+                        <div class="component-desc">FEM energy computation</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">solver.cu</div>
+                        <div class="component-desc">Newton solver with PCG</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">barrier.cu</div>
+                        <div class="component-desc">Cubic barrier with dynamic stiffness</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">kernels/reduce.cu</div>
+                        <div class="component-desc">Custom reduction operations</div>
+                    </div>
+                    <div class="component">
+                        <div class="component-name">strainlimiting.cu</div>
+                        <div class="component-desc">Inextensibility enforcement</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Build Process -->
+        <div class="build-process">
+            <div class="build-title">🔨 Build Process Flow</div>
+            <div class="build-steps">
+                <div class="build-step" id="step1">
+                    <div class="build-step-box">
+                        <div style="font-size: 2em; margin-bottom: 10px;">📦</div>
+                        <strong>cargo build</strong>
+                        <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">Rust entry</div>
+                    </div>
+                    <div class="build-step-arrow">→</div>
+                </div>
+                <div class="build-step" id="step2">
+                    <div class="build-step-box">
+                        <div style="font-size: 2em; margin-bottom: 10px;">⚙️</div>
+                        <strong>build.rs</strong>
+                        <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">Build script</div>
+                    </div>
+                    <div class="build-step-arrow">→</div>
+                </div>
+                <div class="build-step" id="step3">
+                    <div class="build-step-box">
+                        <div style="font-size: 2em; margin-bottom: 10px;">🔧</div>
+                        <strong>Makefile</strong>
+                        <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">CUDA compilation</div>
+                    </div>
+                    <div class="build-step-arrow">→</div>
+                </div>
+                <div class="build-step" id="step4">
+                    <div class="build-step-box">
+                        <div style="font-size: 2em; margin-bottom: 10px;">⚡</div>
+                        <strong>nvcc</strong>
+                        <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">CUDA compiler</div>
+                    </div>
+                    <div class="build-step-arrow">→</div>
+                </div>
+                <div class="build-step" id="step5">
+                    <div class="build-step-box">
+                        <div style="font-size: 2em; margin-bottom: 10px;">📚</div>
+                        <strong>.so libs</strong>
+                        <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">Shared libraries</div>
+                    </div>
+                    <div class="build-step-arrow">→</div>
+                </div>
+                <div class="build-step" id="step6">
+                    <div class="build-step-box">
+                        <div style="font-size: 2em; margin-bottom: 10px;">✅</div>
+                        <strong>Binary</strong>
+                        <div style="font-size: 0.8em; color: #aaa; margin-top: 5px;">Final executable</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Architecture Layers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">150M+</div>
+                <div class="stat-label">Max Contacts</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">FP32</div>
+                <div class="stat-label">GPU Precision</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">CUDA 12.8</div>
+                <div class="stat-label">Min Version</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate data flow between layers
+        function animateDataFlow() {
+            const layers = ['layer1', 'layer2', 'layer3'];
+            layers.forEach((id, index) => {
+                const layer = document.getElementById(id);
+                layer.classList.remove('active');
+                setTimeout(() => {
+                    layer.classList.add('active');
+                    setTimeout(() => layer.classList.remove('active'), 1000);
+                }, index * 1200);
+            });
+        }
+
+        // Animate build process
+        function animateBuildProcess() {
+            const steps = ['step1', 'step2', 'step3', 'step4', 'step5', 'step6'];
+            steps.forEach((id, index) => {
+                const step = document.getElementById(id);
+                step.classList.remove('active');
+                setTimeout(() => {
+                    step.classList.add('active');
+                    if (index === steps.length - 1) {
+                        setTimeout(() => {
+                            steps.forEach(s => document.getElementById(s).classList.remove('active'));
+                        }, 1500);
+                    }
+                }, index * 500);
+            });
+        }
+
+        // Create particle effect
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * window.innerWidth + 'px';
+                    particle.style.top = Math.random() * window.innerHeight + 'px';
+                    document.body.appendChild(particle);
+                    setTimeout(() => particle.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        // Auto-play intro animation
+        window.addEventListener('load', () => {
+            setTimeout(() => animateDataFlow(), 500);
+        });
+    </script>
+</body>
+</html>
