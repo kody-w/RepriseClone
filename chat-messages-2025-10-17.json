@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "timestamp": "2025-10-17T15:05:24.483Z",
+  "messageCount": 3,
+  "messages": [
+    {
+      "type": "customer",
+      "text": "Hello what can you do?"
+    },
+    {
+      "type": "agent",
+      "text": "I can do stuff"
+    },
+    {
+      "type": "customer",
+      "text": "Thats kewl!"
+    }
+  ]
+}

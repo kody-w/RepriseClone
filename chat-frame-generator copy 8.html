@@ -1,0 +1,4402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Frame Generator - Reprise Clone</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .generator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .top-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .split-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        /* Full Screen Preview Mode */
+        .fullscreen-preview-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .fullscreen-preview-overlay.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fullscreen-header {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .fullscreen-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .fullscreen-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .fullscreen-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Hover controls - hidden by default, slide in from top */
+        #composerOverlay .fullscreen-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 10000;
+        }
+
+        /* Show on hover when not pinned and not hidden */
+        #composerOverlay:hover .fullscreen-header:not(.pinned):not(.hidden),
+        #composerOverlay .fullscreen-header:not(.pinned):not(.hidden):hover {
+            transform: translateY(0);
+        }
+
+        /* Always show when pinned (unless hidden) */
+        #composerOverlay .fullscreen-header.pinned:not(.hidden) {
+            transform: translateY(0);
+        }
+
+        /* Force hide when hidden class is active */
+        #composerOverlay .fullscreen-header.hidden {
+            transform: translateY(-100%) !important;
+        }
+
+        /* Add hover trigger zone at top */
+        #composerOverlay .hover-trigger {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            z-index: 9998;
+            pointer-events: none;
+        }
+
+        /* Show button when controls are hidden */
+        #composerOverlay .show-controls-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 10001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #composerOverlay .show-controls-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #composerOverlay:hover .show-controls-btn.visible {
+            opacity: 0.7;
+        }
+
+        #composerOverlay .show-controls-btn:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            opacity: 1 !important;
+        }
+
+        /* Pin button styles */
+        .pin-btn {
+            background: rgba(255, 255, 255, 0.2) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .pin-btn.pinned {
+            background: rgba(255, 215, 0, 0.3) !important;
+            border-color: rgba(255, 215, 0, 0.5) !important;
+        }
+
+        .fullscreen-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .fullscreen-btn.active {
+            background: rgba(255,255,255,0.4);
+        }
+
+        .close-fullscreen-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .close-fullscreen-btn:hover {
+            background: rgba(255,100,100,0.4);
+        }
+
+        .fullscreen-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .fullscreen-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: #f5f5f5;
+        }
+
+        .browser-preview {
+            width: 100%;
+            height: 100%;
+            background: white;
+            overflow: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: none;
+        }
+
+        .browser-preview.active {
+            display: block;
+        }
+
+        /* Selection overlay styles */
+        .browser-preview * {
+            cursor: pointer !important;
+        }
+
+        .browser-preview *:hover {
+            outline: 2px solid rgba(102, 126, 234, 0.5) !important;
+            outline-offset: 2px !important;
+        }
+
+        .browser-preview .chat-gen-selected {
+            outline: 3px solid #667eea !important;
+            outline-offset: 2px !important;
+        }
+
+        /* Floating selection button */
+        .floating-select-btn {
+            position: fixed;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            pointer-events: none;
+            z-index: 100000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.5);
+            display: none;
+            white-space: nowrap;
+            transition: transform 0.1s ease, opacity 0.15s ease;
+            user-select: none;
+        }
+
+        .floating-select-btn.visible {
+            pointer-events: all;
+            display: block;
+            animation: floatIn 0.2s ease;
+        }
+
+        .floating-select-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.8);
+        }
+
+        .floating-select-btn:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .element-tag-label {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            opacity: 0.9;
+            margin-left: 8px;
+            padding-left: 8px;
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .iframe-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+            z-index: 1;
+            display: none;
+        }
+
+        .iframe-loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .fullscreen-sidebar {
+            width: 400px;
+            background: #2a2a3e;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+        }
+
+        .fullscreen-sidebar.active {
+            transform: translateX(0);
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .upload-area.drag-over {
+            background: #e7e9fc;
+            border-color: #764ba2;
+        }
+
+        .message-input-container {
+            margin-top: 20px;
+        }
+
+        .message-input-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-input-group.agent {
+            border-left-color: #667eea;
+        }
+
+        .message-input-group.customer {
+            border-left-color: #764ba2;
+        }
+
+        .message-input-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .message-input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 60px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 14px;
+        }
+
+        .message-input-group .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .message-input-group .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .preview-area {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f8f9fa;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .preview-frame {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-frame-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .preview-frame-title {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .preview-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preview-message {
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .preview-message.agent {
+            background: #e7e9fc;
+            color: #333;
+            align-self: flex-start;
+            max-width: 75%;
+        }
+
+        .preview-message.customer {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+            max-width: 75%;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #f39c12;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #d68910;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        /* HTML Tree Navigator */
+        .tree-navigator {
+            padding: 20px;
+            height: 100%;
+            overflow-y: auto;
+            background: transparent;
+            color: #e0e0e0;
+        }
+
+        .tree-navigator-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #667eea;
+            font-size: 14px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .tree-node {
+            margin-left: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .tree-node-header {
+            padding: 6px 10px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e0e0e0;
+        }
+
+        .tree-node-header:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .tree-node-header.selected {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .tree-toggle {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            text-align: center;
+            line-height: 16px;
+            font-size: 10px;
+            user-select: none;
+        }
+
+        .tree-tag {
+            color: #ff6b9d;
+            font-weight: 600;
+        }
+
+        .tree-node-header.selected .tree-tag {
+            color: white;
+        }
+
+        .tree-id {
+            color: #5efc82;
+            font-weight: 600;
+        }
+
+        .tree-node-header.selected .tree-id {
+            color: #d4edda;
+        }
+
+        .tree-class {
+            color: #4fc3f7;
+        }
+
+        .tree-node-header.selected .tree-class {
+            color: #cfe2ff;
+        }
+
+        .tree-children {
+            display: none;
+        }
+
+        .tree-children.expanded {
+            display: block;
+        }
+
+        .browse-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .browse-btn:hover {
+            background: #764ba2;
+            transform: translateY(-1px);
+        }
+
+        .selected-path {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            display: none;
+        }
+
+        .selected-path.active {
+            display: block;
+        }
+
+        /* Frame Composer Styles */
+        .composer-section {
+            margin-top: 40px;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .composer-section.active {
+            display: block;
+        }
+
+        .composer-canvas {
+            position: relative;
+            width: 100%;
+            height: 800px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            overflow: auto;
+            background: #f5f5f5;
+            margin: 20px 0;
+        }
+
+        .composer-background {
+            width: 100%;
+            height: 100%;
+            background: white;
+            overflow: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: block;
+        }
+
+        .composer-background-fullscreen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            overflow: auto;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: block;
+        }
+
+        .chat-overlay-container {
+            position: absolute;
+            border: 3px dashed transparent;
+            background: white;
+            cursor: default;
+            min-width: 200px;
+            min-height: 150px;
+            display: none;
+            z-index: 100;
+            pointer-events: all;
+            transition: border-color 0.2s ease;
+        }
+
+        .chat-overlay-container.active {
+            display: block;
+        }
+
+        .chat-overlay-container.selected {
+            border-color: #667eea;
+            cursor: move;
+        }
+
+        .chat-overlay-content {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            padding: 0;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            opacity: 1;
+        }
+
+        .chat-overlay-container.selected .chat-overlay-content {
+            padding: 15px;
+            background: white;
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            right: -7px;
+            bottom: -7px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .chat-overlay-container.selected .resize-handle {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Color picker styles */
+        .color-picker-panel {
+            position: absolute;
+            top: -110px;
+            left: 0;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 12px;
+            display: none;
+            z-index: 102;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            min-width: 280px;
+            font-size: 12px;
+        }
+
+        .chat-overlay-container.selected .color-picker-panel {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .color-sample {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .color-sample:hover {
+            border-color: #667eea;
+        }
+
+        .eyedropper-active {
+            cursor: crosshair !important;
+        }
+
+        .eyedropper-active * {
+            cursor: crosshair !important;
+        }
+
+        #eyedropperBtn.active {
+            background: #f39c12 !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .overlay-controls {
+            position: absolute;
+            top: -35px;
+            right: 0;
+            display: none;
+            gap: 5px;
+            background: #667eea;
+            padding: 5px;
+            border-radius: 6px 6px 0 0;
+            z-index: 101;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .chat-overlay-container.selected .overlay-controls {
+            display: flex;
+            opacity: 1;
+        }
+
+        .overlay-control-btn {
+            background: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .overlay-control-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .animation-preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .frame-counter {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .clean-chat-message {
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease;
+        }
+
+        .clean-chat-message.agent {
+            background: #e7e9fc;
+            color: #333;
+            align-self: flex-start;
+            max-width: 75%;
+        }
+
+        .clean-chat-message.customer {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+            max-width: 75%;
+            margin-left: auto;
+        }
+
+        .clean-chat-message.system {
+            background: #f0f0f0;
+            color: #666;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .upload-zone {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+
+        .upload-zone:hover {
+            background: #e9ecef;
+            border-color: #764ba2;
+        }
+
+        .upload-zone.has-file {
+            border-color: #27ae60;
+            background: #d4edda;
+        }
+
+        /* Force preview elements to expand naturally */
+        #agentStylePreview *,
+        #customerStylePreview *,
+        .preview-messages * {
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+        }
+
+        /* But allow the outer preview containers to have max-width */
+        #agentStylePreview > *:first-child,
+        #customerStylePreview > *:first-child {
+            max-width: 75% !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Chat Frame Generator</h1>
+            <p class="subtitle">Generate progressive chat frames for step-by-step animation</p>
+            <a href="index.html" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background: rgba(255,255,255,0.2); color: white; text-decoration: none; border-radius: 6px; font-weight: 500;">← Back to Home</a>
+        </header>
+
+        <main class="generator-container">
+            <div class="instructions">
+                <h3>How to Use</h3>
+                <ol>
+                    <li>Upload your base HTML frame (the static page with chat messages)</li>
+                    <li>Use the visual preview to select example chat messages (agent and customer) to copy their styling</li>
+                    <li>Add your own chat messages in sequence (agent or customer)</li>
+                    <li><strong>Export messages to JSON</strong> to save and edit externally, then <strong>import back</strong> to continue</li>
+                    <li>Generate frames - your messages will match the original styling</li>
+                    <li>Load frames into the animator to step through them</li>
+                </ol>
+            </div>
+
+            <!-- Upload Section -->
+            <div class="top-section">
+                <h2>1. Upload Base Frame</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div style="font-size: 36px; margin-bottom: 10px;">📄</div>
+                    <p style="font-weight: 600; margin-bottom: 8px;">Drop HTML file here or click to browse</p>
+                    <p style="font-size: 13px; color: #666;">Upload the base frame with chat container</p>
+                    <input type="file" id="fileInput" accept=".html" style="display: none;">
+                </div>
+                <div id="fileStatus"></div>
+
+                <h2 style="margin-top: 25px;">2. Copy Message Styles</h2>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Click on example messages in your frame to copy their styling</p>
+                <div style="background: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px; border-radius: 6px; font-size: 12px; color: #2e7d32; margin-bottom: 15px;">
+                    💡 <strong>Smart Detection:</strong> Click anywhere on a message (container, bubble, or text). The tool will automatically find the styled chat bubble inside and copy its styling!
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <h3 style="font-size: 14px; margin-bottom: 10px; color: #667eea;">Agent Message Style</h3>
+                        <input type="text" id="agentSelector" placeholder="Click 'Select Agent Message' below"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 8px;" readonly>
+                        <button class="browse-btn" onclick="selectMessageStyle('agent')" id="selectAgentBtn" style="display: none; width: 100%;">
+                            🎨 Select Agent Message
+                        </button>
+                        <div class="selected-path" id="agentStyleStatus" style="font-size: 11px; margin-top: 8px;"></div>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #764ba2;">
+                        <h3 style="font-size: 14px; margin-bottom: 10px; color: #764ba2;">Customer Message Style</h3>
+                        <input type="text" id="customerSelector" placeholder="Click 'Select Customer Message' below"
+                               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace; font-size: 12px; margin-bottom: 8px;" readonly>
+                        <button class="browse-btn" onclick="selectMessageStyle('customer')" id="selectCustomerBtn" style="display: none; width: 100%;">
+                            🎨 Select Customer Message
+                        </button>
+                        <div class="selected-path" id="customerStyleStatus" style="font-size: 11px; margin-top: 8px;"></div>
+                    </div>
+                </div>
+
+                <div style="background: #fff3cd; border-left: 4px solid #f39c12; padding: 12px; border-radius: 6px; font-size: 12px; color: #856404;">
+                    💡 <strong>Tip:</strong> Select one agent message and one customer message to copy their complete styling (colors, fonts, padding, borders, etc.)
+                </div>
+
+                <!-- Style Preview Section -->
+                <div id="stylePreviewSection" style="margin-top: 20px; display: none;">
+                    <h3 style="font-size: 16px; margin-bottom: 15px; color: #667eea;">✨ Style Preview</h3>
+                    <div style="background: white; border: 2px solid #667eea; border-radius: 8px; padding: 20px;">
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <!-- Agent preview -->
+                            <div style="display: flex; justify-content: flex-start;">
+                                <div id="agentStylePreview" style="opacity: 0.5;">
+                                    <em>Select an agent message to see preview</em>
+                                </div>
+                            </div>
+                            <!-- Customer preview -->
+                            <div style="display: flex; justify-content: flex-end;">
+                                <div id="customerStylePreview" style="opacity: 0.5;">
+                                    <em>Select a customer message to see preview</em>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debug Output -->
+                    <div style="margin-top: 20px;">
+                        <details style="background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                            <summary style="cursor: pointer; font-weight: 600; color: #667eea;">🔍 Debug: Show Captured Properties</summary>
+
+                            <!-- Export Buttons -->
+                            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+                                <button onclick="exportStylesForAnimator()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                                    📤 Export Styles JSON
+                                </button>
+                                <button onclick="importStylesForAnimator()" style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                                    📥 Import Styles JSON
+                                </button>
+                                <button onclick="copyDebugToClipboard()" style="padding: 8px 16px; background: #2ecc71; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                                    📋 Copy to Clipboard
+                                </button>
+                            </div>
+                            <div style="margin-top: 8px; text-align: center; font-size: 11px; color: #666;">
+                                ✨ Compatible with Chat Animator
+                            </div>
+                            <input type="file" id="stylesImportFileInput" accept=".json" style="display: none;" onchange="handleStylesImport(event)">
+
+                            <div style="margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <!-- Agent Debug -->
+                                <div>
+                                    <h4 style="font-size: 13px; font-weight: 600; color: #667eea; margin-bottom: 10px;">Agent Properties:</h4>
+                                    <pre id="agentDebugOutput" style="background: white; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid #ddd;">No styles captured yet</pre>
+                                </div>
+                                <!-- Customer Debug -->
+                                <div>
+                                    <h4 style="font-size: 13px; font-weight: 600; color: #764ba2; margin-bottom: 10px;">Customer Properties:</h4>
+                                    <pre id="customerDebugOutput" style="background: white; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid #ddd;">No styles captured yet</pre>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <h2 style="margin-top: 25px;">Chat Container Selector (Optional)</h2>
+                <p style="font-size: 13px; color: #666; margin-bottom: 10px;">CSS selector for where to inject messages in full frames (e.g., #chatMessages, .chat-container). Leave blank to create standalone messages.</p>
+                <input type="text" id="containerSelector" placeholder="#chatMessages or .chat-container"
+                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: monospace;">
+            </div>
+
+            <!-- Messages and Frame Preview -->
+            <div class="split-view">
+                <div class="panel">
+                    <h2>3. Add Messages</h2>
+                    <div class="message-input-container" id="messageInputs">
+                        <!-- Messages will be added here -->
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="addMessageInput()">+ Add Message</button>
+                        <button class="btn btn-secondary" onclick="clearMessages()">Clear All</button>
+                        <button class="btn" style="background: #3498db; color: white;" onclick="exportMessages()">📤 Export Messages</button>
+                        <button class="btn" style="background: #2ecc71; color: white;" onclick="importMessages()">📥 Import Messages</button>
+                    </div>
+
+                    <h2 style="margin-top: 30px;">4. Generate Frames</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="generateFrames()">🎬 Generate Full Frames</button>
+                        <button class="btn" style="background: #27ae60; color: white;" onclick="generateCleanChatFrames()">✨ Generate Clean Chat Only</button>
+                        <button class="btn btn-success" onclick="downloadAllFrames()" id="downloadBtn" style="display: none;">📥 Download All Frames</button>
+                    </div>
+                    <div id="statusMessage"></div>
+                </div>
+
+                <div class="panel">
+                    <h2>Frame Preview</h2>
+                    <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Preview of generated frames (each frame adds one message)</p>
+                    <div class="preview-area" id="previewArea">
+                        <p style="text-align: center; color: #999; padding: 40px;">Add messages to see preview</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Frame Composer Section - Hidden, will open in fullscreen -->
+            <div class="composer-section" id="composerSection" style="display: none;">
+            </div>
+        </main>
+    </div>
+
+    <!-- Fullscreen Preview Overlay -->
+    <div class="fullscreen-preview-overlay" id="fullscreenOverlay">
+        <div class="fullscreen-header">
+            <div class="fullscreen-header-left">
+                <div class="fullscreen-title">🎨 Select Message to Copy Styling</div>
+                <div id="styleSelectionInfo" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 4px; font-size: 13px; min-width: 300px;">
+                    Click any message to copy its styling
+                </div>
+            </div>
+            <div class="fullscreen-controls">
+                <button class="fullscreen-btn" id="toggleTreeBtn" onclick="toggleFullscreenSidebar()">
+                    🌳 HTML Structure
+                </button>
+                <button class="close-fullscreen-btn" onclick="closeFullscreen()">✕ Close</button>
+            </div>
+        </div>
+        <div class="fullscreen-content">
+            <div class="fullscreen-main">
+                <div class="iframe-loading" id="iframeLoading">
+                    <div class="iframe-loading-spinner"></div>
+                    <div>Loading preview...</div>
+                </div>
+                <div id="browserPreview" class="browser-preview">
+                    <!-- HTML content will be injected here -->
+                </div>
+            </div>
+            <div class="fullscreen-sidebar" id="fullscreenSidebar">
+                <div class="tree-navigator" id="fullscreenTreeNavigator">
+                    <div class="tree-navigator-title">🌳 HTML Structure - Click to copy message styling</div>
+                </div>
+            </div>
+        </div>
+        <!-- Floating selection button -->
+        <div class="floating-select-btn" id="floatingSelectBtn">
+            🎨 Copy Style
+            <span class="element-tag-label" id="elementTagLabel"></span>
+        </div>
+    </div>
+
+    <!-- Fullscreen Frame Composer Overlay -->
+    <div class="fullscreen-preview-overlay" id="composerOverlay">
+        <button class="show-controls-btn" id="showControlsBtn" onclick="showControls()">
+            Show Controls ▼
+        </button>
+        <div class="fullscreen-header">
+            <div class="fullscreen-header-left">
+                <div class="fullscreen-title">🎬 Frame Composer - Animate Chat</div>
+                <div class="frame-counter" id="fullscreenFrameCounter" style="background: rgba(255,255,255,0.15); padding: 6px 12px; border-radius: 4px; font-size: 13px;">Frame 1 of 1</div>
+                <div style="background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 4px; font-size: 11px; margin-left: 15px; opacity: 0.8;">
+                    ⌨️ Space: Play/Pause • ← →: Navigate • ESC: Close
+                </div>
+            </div>
+            <div class="fullscreen-controls">
+                <button class="fullscreen-btn pin-btn" onclick="togglePinControls()" id="pinControlsBtn" title="Pin controls to keep visible">📌 Pin</button>
+                <button class="fullscreen-btn" onclick="hideControls()" title="Hide controls (hover top to show again)">➖ Hide</button>
+                <button class="fullscreen-btn" onclick="prevFrame()">⏮️ Prev</button>
+                <button class="fullscreen-btn" onclick="toggleAnimation()" id="fullscreenPlayBtn">▶️ Play</button>
+                <button class="fullscreen-btn" onclick="nextFrame()">Next ⏭️</button>
+                <div style="display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                    <label style="font-size: 12px;">Speed:</label>
+                    <input type="range" id="fullscreenFpsSlider" min="100" max="2000" value="500" step="100"
+                           style="width: 120px;"
+                           oninput="updateAnimationSpeed(this.value)">
+                    <span id="fullscreenFpsDisplay" style="font-size: 12px; min-width: 50px;">500ms</span>
+                </div>
+                <button class="fullscreen-btn" style="background: rgba(39, 174, 96, 0.3); border-color: rgba(39, 174, 96, 0.5);" onclick="downloadCompositeFrames()">📥 Download</button>
+                <button class="close-fullscreen-btn" onclick="closeComposer()">✕ Close</button>
+            </div>
+        </div>
+        <div class="fullscreen-content">
+            <div class="fullscreen-main">
+                <!-- Background and overlay will be rendered here -->
+                <div id="composerBackground" class="composer-background-fullscreen"></div>
+
+                <div class="chat-overlay-container" id="chatOverlay">
+                    <div class="color-picker-panel">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <button class="overlay-control-btn" onclick="activateEyedropper()" id="eyedropperBtn" title="Click to pick a color from the background">
+                                🎨 Pick Color
+                            </button>
+                            <div class="color-sample" id="colorSample" style="background: white;" title="Selected color"></div>
+                            <input type="color" id="colorInput" style="width: 40px; height: 40px; border: none; cursor: pointer;" title="Manual color picker">
+                        </div>
+                        <div style="display: flex; gap: 5px; margin-bottom: 8px;">
+                            <button class="overlay-control-btn" onclick="applyBackgroundColor()" style="font-size: 11px;">Apply to Background</button>
+                            <button class="overlay-control-btn" onclick="applyTextColor()" style="font-size: 11px;">Apply to Text</button>
+                        </div>
+                        <div style="display: flex; gap: 5px; border-top: 1px solid #ddd; padding-top: 8px;">
+                            <button class="overlay-control-btn" onclick="exportOverlayTheme()" style="font-size: 11px; background: #27ae60; color: white;">📥 Export Theme</button>
+                            <button class="overlay-control-btn" onclick="importOverlayTheme()" style="font-size: 11px; background: #3498db; color: white;">📤 Import Theme</button>
+                        </div>
+                        <div style="display: flex; gap: 5px; border-top: 1px solid #ddd; padding-top: 8px; margin-top: 8px;">
+                            <button class="overlay-control-btn" onclick="exportPortableAnimation()" style="font-size: 11px; background: #e67e22; color: white; width: 100%;">🎬 Export Portable Animation</button>
+                        </div>
+                        <input type="file" id="themeFileInput" accept=".json" style="display: none;" onchange="handleThemeImport(event)">
+                    </div>
+                    <div class="overlay-controls">
+                        <span style="color: white; font-size: 11px; padding: 4px 8px;">Chat Overlay (Drag & Resize)</span>
+                        <button class="overlay-control-btn" onclick="resetOverlayPosition()">Reset Position</button>
+                    </div>
+                    <div class="chat-overlay-content" id="chatOverlayContent">
+                        <!-- Chat frames will be displayed here -->
+                    </div>
+                    <div class="resize-handle" id="resizeHandle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let baseHTML = null;
+        let messages = [];
+        let generatedFrames = [];
+        let agentMessageStyles = null;
+        let customerMessageStyles = null;
+        let agentMessageTemplate = null; // HTML template for agent messages
+        let customerMessageTemplate = null; // HTML template for customer messages
+        let currentStyleSelectionMode = null; // 'agent' or 'customer'
+
+        // File upload handlers
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.html')) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        let parsedDoc = null;
+        let selectedElement = null;
+        let elementMap = new WeakMap(); // Maps DOM elements to their tree headers
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                baseHTML = e.target.result;
+
+                // Parse the HTML for tree navigation
+                const parser = new DOMParser();
+                parsedDoc = parser.parseFromString(baseHTML, 'text/html');
+
+                document.getElementById('fileStatus').innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-top: 10px;">
+                        ✓ Loaded: ${file.name} (${(file.size / 1024).toFixed(2)} KB)
+                    </div>
+                `;
+
+                // Show style selection buttons
+                document.getElementById('selectAgentBtn').style.display = 'block';
+                document.getElementById('selectCustomerBtn').style.display = 'block';
+            };
+            reader.readAsText(file);
+        }
+
+        // Select message style function
+        function selectMessageStyle(type) {
+            currentStyleSelectionMode = type;
+            loadVisualPreview();
+        }
+
+        // Update style preview
+        function updateStylePreview() {
+            const previewSection = document.getElementById('stylePreviewSection');
+            const agentPreview = document.getElementById('agentStylePreview');
+            const customerPreview = document.getElementById('customerStylePreview');
+            const agentDebugOutput = document.getElementById('agentDebugOutput');
+            const customerDebugOutput = document.getElementById('customerDebugOutput');
+
+            // Show preview section if any styles are captured
+            if (agentMessageStyles || customerMessageStyles) {
+                previewSection.style.display = 'block';
+            }
+
+            // Update agent preview
+            if (agentMessageTemplate || agentMessageStyles) {
+                console.log('Applying agent template/styles');
+
+                // Update debug output
+                let debugText = '';
+                if (agentMessageTemplate) {
+                    debugText += `Captured HTML Template:\n\n${agentMessageTemplate.html}\n\n---\n\n`;
+                }
+                if (agentMessageStyles) {
+                    debugText += `Captured ${Object.keys(agentMessageStyles).length} CSS properties:\n\n`;
+                    Object.entries(agentMessageStyles).forEach(([key, value]) => {
+                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        debugText += `${cssKey}: ${value}\n`;
+                    });
+                }
+                agentDebugOutput.textContent = debugText;
+
+                // Use HTML template if available, otherwise use CSS styling
+                if (agentMessageTemplate) {
+                    // Replace placeholder with sample text
+                    agentPreview.innerHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, 'This is how agent messages will look');
+                } else if (agentMessageStyles) {
+                    // Clear existing styles
+                    agentPreview.style.cssText = '';
+
+                    // Apply each style individually
+                    Object.entries(agentMessageStyles).forEach(([key, value]) => {
+                        try {
+                            // Convert camelCase to kebab-case
+                            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                            agentPreview.style.setProperty(cssKey, value);
+                        } catch (e) {
+                            console.warn(`Could not apply style ${key}: ${value}`, e);
+                        }
+                    });
+
+                    agentPreview.innerHTML = 'This is how agent messages will look';
+                }
+                console.log('Agent preview updated');
+            } else {
+                agentPreview.style.cssText = 'opacity: 0.5;';
+                agentPreview.innerHTML = '<em>Select an agent message to see preview</em>';
+                agentDebugOutput.textContent = 'No styles captured yet';
+            }
+
+            // Update customer preview
+            if (customerMessageTemplate || customerMessageStyles) {
+                console.log('Applying customer template/styles');
+
+                // Update debug output
+                let debugText = '';
+                if (customerMessageTemplate) {
+                    debugText += `Captured HTML Template:\n\n${customerMessageTemplate.html}\n\n---\n\n`;
+                }
+                if (customerMessageStyles) {
+                    debugText += `Captured ${Object.keys(customerMessageStyles).length} CSS properties:\n\n`;
+                    Object.entries(customerMessageStyles).forEach(([key, value]) => {
+                        const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                        debugText += `${cssKey}: ${value}\n`;
+                    });
+                }
+                customerDebugOutput.textContent = debugText;
+
+                // Use HTML template if available, otherwise use CSS styling
+                if (customerMessageTemplate) {
+                    // Replace placeholder with sample text
+                    customerPreview.innerHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, 'This is how customer messages will look');
+                } else if (customerMessageStyles) {
+                    // Clear existing styles
+                    customerPreview.style.cssText = '';
+
+                    // Apply each style individually
+                    Object.entries(customerMessageStyles).forEach(([key, value]) => {
+                        try {
+                            // Convert camelCase to kebab-case
+                            const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                            customerPreview.style.setProperty(cssKey, value);
+                        } catch (e) {
+                            console.warn(`Could not apply style ${key}: ${value}`, e);
+                        }
+                    });
+
+                    customerPreview.innerHTML = 'This is how customer messages will look';
+                }
+                console.log('Customer preview updated');
+            } else {
+                customerPreview.style.cssText = 'opacity: 0.5;';
+                customerPreview.innerHTML = '<em>Select a customer message to see preview</em>';
+                customerDebugOutput.textContent = 'No styles captured yet';
+            }
+        }
+
+        // Extract HTML template from an element
+        function extractHTMLTemplate(element) {
+            // Clone the element to avoid modifying the original
+            const clone = element.cloneNode(true);
+
+            // Function to override width constraints with !important inline styles
+            function overrideWidthConstraints(node) {
+                if (node.nodeType === Node.ELEMENT_NODE && node.style) {
+                    // Get current inline style
+                    const currentStyle = node.getAttribute('style') || '';
+
+                    // Remove any existing width properties
+                    node.style.removeProperty('width');
+                    node.style.removeProperty('min-width');
+                    node.style.removeProperty('max-width');
+
+                    // Add auto width with !important to override CSS classes
+                    // Use setProperty with priority 'important'
+                    node.style.setProperty('width', 'auto', 'important');
+                    node.style.setProperty('min-width', '0', 'important');
+                    node.style.setProperty('max-width', 'none', 'important');
+
+                    // Process child elements
+                    Array.from(node.children).forEach(child => overrideWidthConstraints(child));
+                }
+            }
+
+            // Function to find and replace all text nodes with placeholder
+            function replaceTextNodes(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    // Only replace if it has meaningful text (not just whitespace)
+                    if (node.textContent.trim().length > 0) {
+                        node.textContent = '{{MESSAGE_TEXT}}';
+                    }
+                } else {
+                    // Recursively process child nodes
+                    Array.from(node.childNodes).forEach(child => replaceTextNodes(child));
+                }
+            }
+
+            // Function to filter out browser default styles while keeping visual ones
+            function cleanExcessiveStyles(node) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    const styleAttr = node.getAttribute('style');
+
+                    // Only process if style attribute exists and is long (indicates computed styles)
+                    if (styleAttr && styleAttr.length > 500) {
+                        console.log('Detected excessive inline styles (', styleAttr.length, 'chars), filtering...');
+
+                        // Parse existing styles
+                        const styleDeclarations = styleAttr.split(';').map(s => s.trim()).filter(s => s);
+                        const filteredStyles = [];
+
+                        for (const decl of styleDeclarations) {
+                            const colonIndex = decl.indexOf(':');
+                            if (colonIndex === -1) continue;
+
+                            const prop = decl.substring(0, colonIndex).trim().toLowerCase();
+                            const value = decl.substring(colonIndex + 1).trim();
+
+                            // BLACKLIST approach: Remove obvious browser defaults/bloat, keep everything else
+                            const shouldRemove =
+                                // CSS custom properties (variables) - these are framework-specific bloat
+                                prop.startsWith('--') ||
+                                // Webkit-specific properties
+                                prop.startsWith('-webkit-') ||
+                                // Obscure properties that are rarely manually set
+
+                                prop.includes('anchor-') ||
+                                prop.includes('place-') ||
+                                prop.includes('corner-') ||
+                                prop === 'accent-color' ||
+                                prop === 'animation-composition' ||
+                                prop === 'app-region' ||
+                                prop === 'appearance' ||
+                                prop === 'backdrop-filter' ||
+                                prop === 'backface-visibility' ||
+                                prop === 'baseline-shift' ||
+                                prop === 'baseline-source' ||
+                                prop === 'block-size' ||
+                                prop === 'border-collapse' ||
+                                prop === 'border-spacing' ||
+                                prop === 'box-decoration-break' ||
+                                prop === 'break-after' ||
+                                prop === 'break-before' ||
+                                prop === 'break-inside' ||
+                                prop === 'buffered-rendering' ||
+                                prop === 'caption-side' ||
+                                prop === 'caret-animation' ||
+                                prop === 'caret-color' ||
+                                prop === 'clear' ||
+                                prop === 'clip' ||
+                                prop === 'clip-path' ||
+                                prop === 'clip-rule' ||
+                                prop === 'color-interpolation' ||
+                                prop === 'color-interpolation-filters' ||
+                                prop === 'color-rendering' ||
+                                prop === 'columns' ||
+                                prop === 'column-rule' ||
+                                prop === 'column-span' ||
+                                prop.startsWith('contain-') ||
+                                prop.startsWith('container-') ||
+                                prop === 'content' ||
+                                prop === 'cx' || prop === 'cy' || prop === 'd' ||
+                                prop === 'direction' ||
+                                prop === 'dominant-baseline' ||
+                                prop === 'dynamic-range-limit' ||
+                                prop === 'empty-cells' ||
+                                prop === 'field-sizing' ||
+                                prop.startsWith('fill-') ||
+                                prop === 'fill' && (value === 'rgb(0, 0, 0)' || value === '#000000') ||
+                                prop === 'filter' ||
+                                prop.startsWith('flood-') ||
+                                prop === 'font-kerning' ||
+                                prop === 'font-optical-sizing' ||
+                                prop === 'font-palette' ||
+                                prop === 'font-size-adjust' ||
+                                prop === 'font-stretch' ||
+                                prop === 'font-synthesis' ||
+                                prop === 'font-variant-alternates' ||
+                                prop === 'font-variant-caps' ||
+                                prop === 'font-variant-east-asian' ||
+                                prop === 'font-variant-ligatures' ||
+                                prop === 'font-variant-numeric' ||
+                                prop === 'font-variant-position' ||
+                                prop === 'grid' ||
+                                prop === 'grid-area' ||
+                                prop.startsWith('hyphenate-') ||
+                                prop === 'hyphens' ||
+                                prop === 'image-orientation' ||
+                                prop === 'image-rendering' ||
+                                prop === 'initial-letter' ||
+                                prop === 'inline-size' ||
+                                prop.startsWith('inset-') && value === '0px' ||
+                                prop === 'interactivity' ||
+                                prop === 'interpolate-size' ||
+                                prop === 'isolation' ||
+                                prop.startsWith('lighting-') ||
+                                prop === 'line-break' ||
+                                prop === 'list-style' ||
+                                prop === 'marker' ||
+                                prop.startsWith('mask-') ||
+                                prop === 'math-depth' ||
+                                prop === 'math-shift' ||
+                                prop === 'math-style' ||
+                                prop === 'mix-blend-mode' ||
+                                prop === 'object-fit' ||
+                                prop === 'object-position' ||
+                                prop === 'object-view-box' ||
+                                prop === 'offset' ||
+                                prop === 'order' ||
+                                prop === 'orphans' ||
+                                prop === 'outline-offset' ||
+                                prop.startsWith('overflow-') && value === 'visible' ||
+                                prop === 'overlay' ||
+                                prop.startsWith('overscroll-') ||
+                                prop === 'paint-order' ||
+                                prop.startsWith('perspective-') ||
+                                prop === 'perspective' ||
+                                prop.startsWith('position-') ||
+                                prop === 'print-color-adjust' ||
+                                prop === 'r' || prop === 'rx' || prop === 'ry' ||
+                                prop.startsWith('reading-') ||
+                                prop === 'resize' ||
+                                prop === 'rotate' ||
+                                prop.startsWith('ruby-') ||
+                                prop === 'scale' ||
+                                prop.startsWith('scroll-') ||
+                                prop.startsWith('scrollbar-') ||
+                                prop.startsWith('shape-') ||
+                                prop === 'speak' ||
+                                prop.startsWith('stop-') ||
+                                prop.startsWith('stroke-') ||
+                                prop === 'tab-size' ||
+                                prop === 'table-layout' ||
+                                prop === 'text-align-last' ||
+                                prop === 'text-anchor' ||
+                                prop === 'text-autospace' ||
+                                prop === 'text-box' ||
+                                prop === 'text-decoration-skip-ink' ||
+                                prop.startsWith('text-emphasis-') ||
+                                prop === 'text-indent' ||
+                                prop === 'text-overflow' ||
+                                prop === 'text-rendering' ||
+                                prop === 'text-size-adjust' ||
+                                prop === 'text-spacing-trim' ||
+                                prop === 'text-underline-position' ||
+                                prop === 'text-wrap' ||
+                                prop.startsWith('timeline-') ||
+                                prop === 'touch-action' ||
+                                prop === 'transform-origin' ||
+                                prop === 'transform-style' ||
+                                prop === 'translate' ||
+                                prop === 'unicode-bidi' ||
+                                prop === 'user-select' ||
+                                prop === 'vector-effect' ||
+                                prop.startsWith('view-') ||
+                                prop === 'visibility' ||
+                                prop === 'white-space-collapse' ||
+                                prop === 'widows' ||
+                                prop === 'will-change' ||
+                                prop === 'word-break' ||
+                                prop === 'writing-mode' ||
+                                prop === 'x' || prop === 'y' ||
+                                prop === 'zoom';
+
+                            if (!shouldRemove) {
+                                filteredStyles.push(`${prop}: ${value}`);
+                            }
+                        }
+
+                        // Set filtered styles or remove if empty
+                        if (filteredStyles.length > 0) {
+                            const newStyle = filteredStyles.join('; ');
+                            console.log('Reduced from', styleAttr.length, 'to', newStyle.length, 'chars');
+                            node.setAttribute('style', newStyle);
+                        } else {
+                            node.removeAttribute('style');
+                        }
+                    }
+
+                    // Also clean up auto-generated class names (from frameworks like Fluent UI)
+                    const classAttr = node.getAttribute('class');
+                    if (classAttr && classAttr.length > 50) {
+                        const classes = classAttr.split(/\s+/).filter(cls => {
+                            // Remove framework-generated class names (short random hashes)
+                            // Keep semantic class names only
+                            return cls.length < 20 &&
+                                   !cls.match(/^[rf][0-9a-z]{6,8}$/i) &&  // Fluent UI: r1f6yzd6
+                                   !cls.match(/^[_]{3,}[a-z0-9]{6,}$/i) && // ___1fjo9g7
+                                   !cls.match(/^[a-z]{1,3}[0-9]{6,}$/i);   // f1g2tzg5
+                        });
+
+                        if (classes.length > 0 && classes.length < classAttr.split(/\s+/).length) {
+                            console.log('Cleaned class names from', classAttr.split(/\s+/).length, 'to', classes.length);
+                            node.setAttribute('class', classes.join(' '));
+                        } else if (classes.length === 0) {
+                            node.removeAttribute('class');
+                        }
+                    }
+
+                    // Remove framework-specific data attributes that bloat HTML
+                    const bloatAttributes = [
+                        'data-tabster', 'data-automation-id', 'data-automation-class',
+                        'data-icon-name', 'data-focuszone-id', 'data-selection-disabled',
+                        'aria-busy', 'aria-posinset', 'aria-setsize'
+                    ];
+                    bloatAttributes.forEach(attr => node.removeAttribute(attr));
+
+                    // Clean children
+                    Array.from(node.children).forEach(child => cleanExcessiveStyles(child));
+                }
+            }
+
+            // Clean excessive styles first (from snapshot pages)
+            cleanExcessiveStyles(clone);
+
+            // Override width constraints
+            overrideWidthConstraints(clone);
+
+            // Then replace text nodes
+            replaceTextNodes(clone);
+
+            return {
+                html: clone.outerHTML,
+                originalText: element.textContent.trim()
+            };
+        }
+
+        // Extract all relevant CSS styles from an element
+        function extractStyles(element) {
+            const computedStyle = window.getComputedStyle(element);
+
+            // CSS properties to extract - ONLY visual properties, no layout-breaking ones
+            const styleProperties = [
+                // Text
+                'color', 'fontSize', 'fontFamily', 'fontWeight', 'fontStyle', 'lineHeight', 'textAlign',
+                'textDecoration', 'textTransform', 'letterSpacing', 'wordSpacing',
+
+                // Box model - padding only, no width/height/margin
+                'padding', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+
+                // Background - try both shorthand and specific
+                'background', 'backgroundColor', 'backgroundImage', 'backgroundSize',
+                'backgroundPosition', 'backgroundRepeat',
+
+                // Border
+                'border', 'borderTop', 'borderRight', 'borderBottom', 'borderLeft',
+                'borderRadius', 'borderColor', 'borderWidth', 'borderStyle',
+
+                // Effects
+                'boxShadow', 'textShadow', 'opacity'
+            ];
+
+            const extractedStyles = {};
+            styleProperties.forEach(prop => {
+                const value = computedStyle.getPropertyValue(prop) || computedStyle[prop];
+                if (value && value !== 'none' && value !== 'normal' && value !== 'auto' && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
+                    extractedStyles[prop] = value;
+                }
+            });
+
+            // Special handling for background - if no backgroundColor but has background, extract it
+            if (!extractedStyles.backgroundColor && extractedStyles.background) {
+                // Try to extract background-color from the background shorthand
+                const bgMatch = extractedStyles.background.match(/rgba?\([^)]+\)|#[0-9a-f]{3,6}/i);
+                if (bgMatch) {
+                    extractedStyles.backgroundColor = bgMatch[0];
+                }
+            }
+
+            // If still no background, check if element is visually colored (might have gradient or other bg)
+            if (!extractedStyles.backgroundColor) {
+                // Create a temporary canvas to check actual rendered color
+                console.log('No backgroundColor found, checking visual appearance');
+            }
+
+            // Add display: inline-block to ensure proper rendering
+            extractedStyles['display'] = 'inline-block';
+            extractedStyles['maxWidth'] = '75%';
+            extractedStyles['wordWrap'] = 'break-word';
+
+            return extractedStyles;
+        }
+
+        // Convert extracted styles to CSS string
+        function stylesToCSSString(styles) {
+            return Object.entries(styles)
+                .map(([key, value]) => {
+                    // Convert camelCase to kebab-case
+                    const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+                    return `${cssKey}: ${value}`;
+                })
+                .join('; ') + ';';
+        }
+
+        function loadVisualPreview() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            const browserPreview = document.getElementById('browserPreview');
+            const loading = document.getElementById('iframeLoading');
+
+            // Validate baseHTML
+            if (!baseHTML || baseHTML.trim().length === 0) {
+                console.error('baseHTML is empty or invalid');
+                loading.innerHTML = '<div style="color: #e74c3c;">Error: No HTML content to display</div>';
+                return;
+            }
+
+            console.log('Loading HTML directly into browser preview');
+            console.log('HTML length:', baseHTML.length);
+
+            // Show fullscreen overlay
+            overlay.classList.add('active');
+
+            // Show loading indicator
+            loading.style.display = 'block';
+
+            // Parse the HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(baseHTML, 'text/html');
+
+            // Extract styles and scripts to inject
+            const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
+            const scripts = Array.from(doc.querySelectorAll('script'));
+
+            // Clone the body content
+            const bodyContent = doc.body.cloneNode(true);
+
+            // Clear and populate browser preview
+            if (!browserPreview.getAttribute('data-loaded')) {
+                browserPreview.innerHTML = '';
+
+                // Inject styles
+                styles.forEach(style => {
+                    browserPreview.appendChild(style.cloneNode(true));
+                });
+
+                // Inject body content
+                const bodyWrapper = document.createElement('div');
+                bodyWrapper.innerHTML = bodyContent.innerHTML;
+                browserPreview.appendChild(bodyWrapper);
+
+                // Inject scripts with error handling
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        // Wrap inline scripts to catch errors
+                        newScript.textContent = `
+                            (function() {
+                                try {
+                                    ${script.textContent}
+                                } catch (e) {
+                                    console.warn('Script error caught and suppressed:', e);
+                                }
+                            })();
+                        `;
+                    }
+                    browserPreview.appendChild(newScript);
+                });
+
+                browserPreview.setAttribute('data-loaded', 'true');
+            }
+
+            // Show the preview
+            browserPreview.classList.add('active');
+
+            console.log('✓ HTML content injected');
+            console.log('Body content length:', bodyContent.innerHTML.length);
+            console.log('Body has children:', bodyContent.children.length);
+
+            // Update title based on selection mode
+            const titleEl = document.querySelector('.fullscreen-title');
+            if (currentStyleSelectionMode) {
+                const styleType = currentStyleSelectionMode.charAt(0).toUpperCase() + currentStyleSelectionMode.slice(1);
+                titleEl.textContent = `🎨 Select ${styleType} Message to Copy Styling`;
+                titleEl.style.color = currentStyleSelectionMode === 'agent' ? '#667eea' : '#764ba2';
+            }
+
+            // Hide loading
+            loading.style.display = 'none';
+
+            // Setup click handlers
+            setTimeout(() => {
+                setupBrowserClickHandlers();
+            }, 100);
+
+            // Build tree navigator (only once)
+            if (!document.getElementById('fullscreenTreeNavigator').hasAttribute('data-built')) {
+                buildTreeNavigator();
+                document.getElementById('fullscreenTreeNavigator').setAttribute('data-built', 'true');
+            }
+
+            // Auto-open sidebar
+            const sidebar = document.getElementById('fullscreenSidebar');
+            const toggleBtn = document.getElementById('toggleTreeBtn');
+            sidebar.classList.add('active');
+            toggleBtn.classList.add('active');
+        }
+
+        function closeFullscreen() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            overlay.classList.remove('active');
+            // Note: We deliberately keep the iframe content loaded
+            // so it doesn't blink when reopening
+        }
+
+        function toggleFullscreenSidebar() {
+            const sidebar = document.getElementById('fullscreenSidebar');
+            const toggleBtn = document.getElementById('toggleTreeBtn');
+            sidebar.classList.toggle('active');
+            toggleBtn.classList.toggle('active');
+        }
+
+        let currentHoveredElement = null;
+
+        function setupBrowserClickHandlers() {
+            const browserPreview = document.getElementById('browserPreview');
+            const floatingBtn = document.getElementById('floatingSelectBtn');
+            const elementTagLabel = document.getElementById('elementTagLabel');
+
+            // Prevent duplicate setup
+            if (browserPreview.getAttribute('data-handlers-setup')) {
+                console.log('Handlers already set up, skipping');
+                return;
+            }
+
+            console.log('Setting up browser preview click handlers');
+
+            // Add mousemove handler to track cursor and show floating button
+            browserPreview.addEventListener('mousemove', (e) => {
+                const target = e.target;
+
+                // Skip if hovering over the floating button itself
+                if (target === floatingBtn || floatingBtn.contains(target)) {
+                    return;
+                }
+
+                currentHoveredElement = target;
+
+                // Position the floating button near the cursor
+                const offsetX = 15;
+                const offsetY = 15;
+                floatingBtn.style.left = (e.clientX + offsetX) + 'px';
+                floatingBtn.style.top = (e.clientY + offsetY) + 'px';
+
+                // Update element tag label
+                let tagText = target.tagName.toLowerCase();
+                if (target.id) {
+                    tagText += `#${target.id}`;
+                } else if (target.className && typeof target.className === 'string') {
+                    const classes = target.className.split(' ').filter(c => c.trim() && !c.startsWith('chat-gen'));
+                    if (classes.length > 0) {
+                        tagText += `.${classes[0]}`;
+                    }
+                }
+                elementTagLabel.textContent = tagText;
+
+                // Show the button
+                floatingBtn.classList.add('visible');
+            }, true);
+
+            // Hide button when leaving browser preview
+            browserPreview.addEventListener('mouseleave', () => {
+                floatingBtn.classList.remove('visible');
+                currentHoveredElement = null;
+            });
+
+            // Click handler for the floating button
+            floatingBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (currentHoveredElement) {
+                    console.log('Floating button clicked for:', currentHoveredElement.tagName);
+                    handleBrowserElementClick(currentHoveredElement);
+                    floatingBtn.classList.remove('visible');
+
+                    // Close fullscreen and return to main screen
+                    setTimeout(() => {
+                        closeFullscreen();
+                    }, 300); // Small delay to show selection feedback
+                }
+            });
+
+            // Add click handler to all elements (using capture phase) as backup
+            browserPreview.addEventListener('click', (e) => {
+                console.log('Click detected on:', e.target.tagName, e.target.className);
+                e.preventDefault();
+                e.stopPropagation();
+
+                const clickedElement = e.target;
+                handleBrowserElementClick(clickedElement);
+                floatingBtn.classList.remove('visible');
+
+                // Close fullscreen and return to main screen
+                setTimeout(() => {
+                    closeFullscreen();
+                }, 300); // Small delay to show selection feedback
+            }, true);
+
+            // Mark as setup complete
+            browserPreview.setAttribute('data-handlers-setup', 'true');
+            console.log('✓ Browser click handlers setup complete');
+        }
+
+        // Find the best styled element (bubble) - either the clicked element or a child with better styling
+        function findStyledBubble(element) {
+            const computedStyle = window.getComputedStyle(element);
+
+            // Score an element based on how well-styled it is
+            const scoreElement = (el) => {
+                const style = window.getComputedStyle(el);
+                const bgColor = style.backgroundColor;
+                const bg = style.background;
+                const borderRadius = style.borderRadius;
+                const padding = style.padding;
+                const boxShadow = style.boxShadow;
+
+                let score = 0;
+
+                // Check if it has visible background (not transparent)
+                const hasBackground = bgColor &&
+                                     bgColor !== 'rgba(0, 0, 0, 0)' &&
+                                     bgColor !== 'transparent' &&
+                                     bgColor !== 'rgba(255, 255, 255, 0)';
+
+                // Check if background shorthand has color
+                const bgHasColor = bg && bg !== 'none' && bg.match(/rgba?\(|#/);
+
+                if (hasBackground) score += 10;  // Strong indicator
+                if (bgHasColor) score += 8;      // Background with color
+                if (borderRadius && borderRadius !== '0px') score += 5;  // Rounded corners
+                if (padding && padding !== '0px') score += 3;  // Has padding
+                if (boxShadow && boxShadow !== 'none') score += 2;  // Has shadow
+
+                return score;
+            };
+
+            // Check if element has good scoring
+            const hasGoodStyling = (el) => {
+                return scoreElement(el) >= 8;  // Threshold for "good" styling
+            };
+
+            // Collect all candidate elements (clicked element + all descendants up to 3 levels deep)
+            const candidates = [element];
+
+            const collectCandidates = (parent, depth = 0) => {
+                if (depth > 3) return;
+
+                const children = Array.from(parent.children);
+                children.forEach(child => {
+                    candidates.push(child);
+                    collectCandidates(child, depth + 1);
+                });
+            };
+
+            collectCandidates(element);
+
+            // Score all candidates and pick the best one
+            let bestElement = element;
+            let bestScore = scoreElement(element);
+
+            candidates.forEach(candidate => {
+                const score = scoreElement(candidate);
+                console.log(`Scoring ${candidate.tagName}.${candidate.className}: ${score}`);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestElement = candidate;
+                }
+            });
+
+            if (bestScore >= 8) {
+                console.log(`✓ Found best styled element: ${bestElement.tagName}.${bestElement.className} (score: ${bestScore})`);
+            } else if (bestScore > 0) {
+                console.log(`⚠ Found element with some styling: ${bestElement.tagName}.${bestElement.className} (score: ${bestScore})`);
+            } else {
+                console.log(`⚠ No well-styled element found, using: ${bestElement.tagName} (score: ${bestScore})`);
+            }
+
+            return bestElement;
+        }
+
+        function handleBrowserElementClick(browserElement) {
+            console.log('handleBrowserElementClick called for:', browserElement.tagName);
+
+            if (!currentStyleSelectionMode) {
+                console.warn('No style selection mode set');
+                return;
+            }
+
+            // Find the best styled element (might be a child of what was clicked)
+            const styledElement = findStyledBubble(browserElement);
+            console.log('Using element for styling:', styledElement.tagName, styledElement.className);
+
+            // Extract both styles AND HTML template from the styled element
+            const styles = extractStyles(styledElement);
+            const template = extractHTMLTemplate(styledElement);
+            const selector = getElementPath(styledElement);
+
+            console.log('Extracted HTML template:', template.html);
+
+            console.log('Extracted styles from element:', selector);
+            console.log('Styles:', styles);
+
+            // Validate styles - check if we actually captured a styled element
+            const hasBackgroundColor = styles.backgroundColor &&
+                                       styles.backgroundColor !== 'rgba(0, 0, 0, 0)' &&
+                                       styles.backgroundColor !== 'transparent';
+            const hasPadding = styles.padding && styles.padding !== '0px';
+            const hasBorderRadius = styles.borderRadius && styles.borderRadius !== '0px';
+
+            let warning = '';
+            if (!hasBackgroundColor && !hasBorderRadius) {
+                warning = '<div style="background: #fff3cd; color: #856404; padding: 6px; border-radius: 4px; font-size: 11px; margin-top: 5px;">⚠️ Warning: No background color or border-radius detected. The automatic detection may not have found a styled bubble. Try clicking on a different message or area.</div>';
+            } else if (hasBackgroundColor || hasBorderRadius) {
+                let features = [];
+                if (hasBackgroundColor) features.push('background');
+                if (hasBorderRadius) features.push('rounded corners');
+                if (hasPadding) features.push('padding');
+                warning = `<div style="background: #d4edda; color: #155724; padding: 6px; border-radius: 4px; font-size: 11px; margin-top: 5px;">✓ Detected: ${features.join(', ')}</div>`;
+            }
+
+            // Store the styles AND templates based on mode
+            if (currentStyleSelectionMode === 'agent') {
+                agentMessageStyles = styles;
+                agentMessageTemplate = template;
+                document.getElementById('agentSelector').value = selector;
+                document.getElementById('agentStyleStatus').innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 8px; border-radius: 4px;">
+                        ✓ Agent template captured (${Object.keys(styles).length} properties + HTML structure)
+                    </div>
+                    ${warning}
+                `;
+                document.getElementById('agentStyleStatus').classList.add('active');
+
+                // Update preview
+                updateStylePreview();
+            } else if (currentStyleSelectionMode === 'customer') {
+                customerMessageStyles = styles;
+                customerMessageTemplate = template;
+                document.getElementById('customerSelector').value = selector;
+                document.getElementById('customerStyleStatus').innerHTML = `
+                    <div style="background: #d4edda; color: #155724; padding: 8px; border-radius: 4px;">
+                        ✓ Customer template captured (${Object.keys(styles).length} properties + HTML structure)
+                    </div>
+                    ${warning}
+                `;
+                document.getElementById('customerStyleStatus').classList.add('active');
+
+                // Update preview
+                updateStylePreview();
+            }
+
+            // Highlight the selected styled element (not the originally clicked one)
+            highlightElementInBrowser(styledElement);
+
+            // Show success message
+            const statusType = currentStyleSelectionMode.charAt(0).toUpperCase() + currentStyleSelectionMode.slice(1);
+            showStatus(`${statusType} message style copied successfully!`, 'success');
+
+            // Clear selection mode
+            currentStyleSelectionMode = null;
+        }
+
+        function getElementPath(element) {
+            const path = [];
+            let current = element;
+
+            while (current && current !== current.ownerDocument.body) {
+                let selector = current.tagName.toLowerCase();
+
+                if (current.id) {
+                    return `#${current.id}`;
+                }
+
+                if (current.className && typeof current.className === 'string') {
+                    const classes = current.className.split(' ').filter(c => c.trim());
+                    if (classes.length > 0) {
+                        selector += `.${classes[0]}`;
+                    }
+                }
+
+                // Add nth-child if needed
+                if (current.parentElement) {
+                    const siblings = Array.from(current.parentElement.children);
+                    const sameTagSiblings = siblings.filter(s => s.tagName === current.tagName);
+                    if (sameTagSiblings.length > 1) {
+                        const index = siblings.indexOf(current) + 1;
+                        selector += `:nth-child(${index})`;
+                    }
+                }
+
+                path.unshift(selector);
+                current = current.parentElement;
+            }
+
+            return path.join(' > ');
+        }
+
+        function expandTreeToElement(headerElement) {
+            let parent = headerElement.closest('.tree-node');
+            while (parent) {
+                const childrenDiv = parent.querySelector(':scope > .tree-children');
+                const toggle = parent.querySelector(':scope > .tree-node-header > .tree-toggle');
+
+                if (childrenDiv && !childrenDiv.classList.contains('expanded')) {
+                    childrenDiv.classList.add('expanded');
+                    if (toggle) toggle.textContent = '▼';
+                }
+
+                parent = parent.parentElement.closest('.tree-node');
+            }
+        }
+
+        function highlightElementInBrowser(element) {
+            try {
+                const browserPreview = document.getElementById('browserPreview');
+
+                if (!browserPreview) {
+                    console.error('Cannot access browser preview');
+                    return;
+                }
+
+                // Remove inline styles from previously highlighted elements
+                const previouslyStyled = browserPreview.querySelectorAll('[data-chat-gen-highlight]');
+                previouslyStyled.forEach(el => {
+                    el.classList.remove('chat-gen-selected');
+                    el.removeAttribute('data-chat-gen-highlight');
+                });
+
+                // Highlight current element using CSS class
+                element.classList.add('chat-gen-selected');
+                element.setAttribute('data-chat-gen-highlight', 'true');
+
+                // Scroll into view
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                console.log('✓ Element highlighted in browser preview');
+            } catch (e) {
+                console.error('Error highlighting element:', e);
+            }
+        }
+
+        function toggleTreeNavigator() {
+            const overlay = document.getElementById('fullscreenOverlay');
+
+            // Open fullscreen if not already open
+            if (!overlay.classList.contains('active')) {
+                loadVisualPreview();
+            } else {
+                // Just toggle the sidebar if already open
+                toggleFullscreenSidebar();
+            }
+        }
+
+        function buildTreeNavigator() {
+            if (!parsedDoc) return;
+
+            const treeNav = document.getElementById('fullscreenTreeNavigator');
+            treeNav.innerHTML = '<div class="tree-navigator-title">🌳 HTML Structure - Click to copy message styling</div>';
+
+            const bodyElement = parsedDoc.body;
+            if (bodyElement) {
+                treeNav.appendChild(buildTreeNode(bodyElement, []));
+            }
+        }
+
+        function buildTreeNode(element, path) {
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'tree-node';
+
+            const hasChildren = element.children && element.children.length > 0;
+            const nodeId = 'tree-' + Math.random().toString(36).substr(2, 9);
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'tree-node-header';
+
+            // Store mapping for syncing with iframe
+            elementMap.set(element, headerDiv);
+
+            // Toggle for expanding/collapsing
+            const toggle = document.createElement('span');
+            toggle.className = 'tree-toggle';
+            toggle.textContent = hasChildren ? '▶' : '·';
+
+            // Build element label
+            let label = `<span class="tree-tag">&lt;${element.tagName.toLowerCase()}&gt;</span>`;
+
+            if (element.id) {
+                label += ` <span class="tree-id">#${element.id}</span>`;
+            }
+
+            if (element.className && typeof element.className === 'string') {
+                const classes = element.className.split(' ').filter(c => c.trim());
+                if (classes.length > 0) {
+                    label += ` <span class="tree-class">.${classes.join('.')}</span>`;
+                }
+            }
+
+            headerDiv.innerHTML = `<span class="tree-toggle">${hasChildren ? '▶' : '·'}</span>` + label;
+
+            // Click handler for selecting element
+            headerDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+
+                // If in style selection mode, extract styles from the element
+                if (currentStyleSelectionMode) {
+                    // Find corresponding element in browser preview
+                    const selector = generateSelector(element);
+                    try {
+                        const browserPreview = document.getElementById('browserPreview');
+                        const browserElement = browserPreview.querySelector(selector);
+                        if (browserElement) {
+                            handleBrowserElementClick(browserElement);
+                            closeFullscreen();
+                        }
+                    } catch (e) {
+                        console.warn('Could not find browser element:', e);
+                    }
+                } else {
+                    // Otherwise just highlight it
+                    highlightCorrespondingIframeElement(element);
+                }
+            });
+
+            // Hover effect to preview in iframe
+            headerDiv.addEventListener('mouseenter', (e) => {
+                if (!headerDiv.classList.contains('selected')) {
+                    previewHoverInIframe(element);
+                }
+            });
+
+            headerDiv.addEventListener('mouseleave', (e) => {
+                if (!headerDiv.classList.contains('selected')) {
+                    clearHoverPreview();
+                }
+            });
+
+            // Click handler for toggle
+            if (hasChildren) {
+                const toggleSpan = headerDiv.querySelector('.tree-toggle');
+                toggleSpan.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const childrenDiv = nodeDiv.querySelector('.tree-children');
+                    if (childrenDiv) {
+                        childrenDiv.classList.toggle('expanded');
+                        toggleSpan.textContent = childrenDiv.classList.contains('expanded') ? '▼' : '▶';
+                    }
+                });
+            }
+
+            nodeDiv.appendChild(headerDiv);
+
+            // Add children
+            if (hasChildren) {
+                const childrenDiv = document.createElement('div');
+                childrenDiv.className = 'tree-children';
+
+                Array.from(element.children).forEach(child => {
+                    if (child.nodeType === 1) { // Element node
+                        childrenDiv.appendChild(buildTreeNode(child, [...path, element]));
+                    }
+                });
+
+                nodeDiv.appendChild(childrenDiv);
+            }
+
+            return nodeDiv;
+        }
+
+        function highlightCorrespondingIframeElement(parsedElement) {
+            try {
+                const browserPreview = document.getElementById('browserPreview');
+
+                if (!browserPreview) return;
+
+                // Generate selector for the parsed element
+                const selector = generateSelector(parsedElement);
+
+                // Skip if selector is empty
+                if (!selector || selector.trim() === '') {
+                    console.warn('Empty selector generated for element:', parsedElement.tagName);
+                    return;
+                }
+
+                // Query within the browserPreview container
+                const browserElement = browserPreview.querySelector(selector);
+                if (browserElement) {
+                    highlightElementInBrowser(browserElement);
+                } else {
+                    console.warn('Could not find element in browser preview with selector:', selector);
+                }
+            } catch (e) {
+                console.warn('Could not highlight in browser preview:', e);
+            }
+        }
+
+        function previewHoverInIframe(parsedElement) {
+            try {
+                const browserPreview = document.getElementById('browserPreview');
+
+                if (!browserPreview) return;
+
+                // Generate selector for the parsed element
+                const selector = generateSelector(parsedElement);
+
+                // Skip if selector is empty
+                if (!selector || selector.trim() === '') {
+                    return;
+                }
+
+                const browserElement = browserPreview.querySelector(selector);
+                if (browserElement) {
+                    // Use dashed outline for hover preview (lighter than selection)
+                    browserElement.style.outline = '2px dashed rgba(102, 126, 234, 0.8)';
+                    browserElement.style.outlineOffset = '2px';
+                    browserElement.setAttribute('data-chat-gen-hover', 'true');
+
+                    // Optionally scroll into view if not visible
+                    const rect = browserElement.getBoundingClientRect();
+                    const previewRect = browserPreview.getBoundingClientRect();
+                    if (rect.top < previewRect.top || rect.bottom > previewRect.bottom) {
+                        browserElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+                    }
+                }
+            } catch (e) {
+                // Silently ignore selector errors for hover
+            }
+        }
+
+        function clearHoverPreview() {
+            try {
+                const browserPreview = document.getElementById('browserPreview');
+
+                if (!browserPreview) return;
+
+                // Remove hover preview from all elements
+                const hoveredElements = browserPreview.querySelectorAll('[data-chat-gen-hover]');
+                hoveredElements.forEach(el => {
+                    // Don't clear if this is the selected element
+                    if (!el.hasAttribute('data-chat-gen-highlight')) {
+                        el.style.outline = '';
+                        el.style.outlineOffset = '';
+                        el.removeAttribute('data-chat-gen-hover');
+                    }
+                });
+            } catch (e) {
+                console.warn('Could not clear hover preview:', e);
+            }
+        }
+
+        function selectElement(element, headerElement) {
+            // Remove previous selection
+            document.querySelectorAll('.tree-node-header.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Add selection to clicked element
+            headerElement.classList.add('selected');
+
+            // Generate CSS selector
+            const selector = generateSelector(element);
+
+            // Update both input fields
+            document.getElementById('containerSelector').value = selector;
+            document.getElementById('fullscreenSelector').value = selector;
+
+            // Show selected path
+            const pathDiv = document.getElementById('selectedPath');
+            pathDiv.textContent = `✓ Selected: ${selector}`;
+            pathDiv.classList.add('active');
+        }
+
+        function generateSelector(element) {
+            // Handle body element specially
+            if (element === parsedDoc.body) {
+                return 'body';
+            }
+
+            // Handle html element specially
+            if (element === parsedDoc.documentElement) {
+                return 'html';
+            }
+
+            // If element has an ID, use that
+            if (element.id) {
+                return `#${element.id}`;
+            }
+
+            // If element has unique classes, use those
+            if (element.className && typeof element.className === 'string') {
+                const classes = element.className.split(' ').filter(c => c.trim());
+                if (classes.length > 0) {
+                    // Try class selector
+                    const classSelector = `.${classes.join('.')}`;
+                    try {
+                        const matches = parsedDoc.querySelectorAll(classSelector);
+                        if (matches.length === 1) {
+                            return classSelector;
+                        }
+                    } catch (e) {
+                        // Invalid class selector, continue
+                    }
+                }
+            }
+
+            // Build a path-based selector
+            const path = [];
+            let current = element;
+
+            while (current && current.parentElement) {
+                let selector = current.tagName.toLowerCase();
+
+                if (current.id) {
+                    path.unshift(`#${current.id}`);
+                    break;
+                } else if (current.className && typeof current.className === 'string') {
+                    const classes = current.className.split(' ').filter(c => c.trim());
+                    if (classes.length > 0) {
+                        // Escape special characters in class names
+                        const safeClass = classes[0].replace(/[^\w-]/g, '\\$&');
+                        selector += `.${safeClass}`;
+                    }
+                }
+
+                // Add nth-child if needed for uniqueness
+                if (current.parentElement) {
+                    const siblings = Array.from(current.parentElement.children);
+                    const sameTagSiblings = siblings.filter(s => s.tagName === current.tagName);
+                    if (sameTagSiblings.length > 1) {
+                        const index = siblings.indexOf(current) + 1;
+                        selector += `:nth-child(${index})`;
+                    }
+                }
+
+                path.unshift(selector);
+                current = current.parentElement;
+            }
+
+            // If path is empty, return a fallback
+            if (path.length === 0) {
+                return element.tagName.toLowerCase();
+            }
+
+            return path.join(' > ');
+        }
+
+        function addMessageInput() {
+            const container = document.getElementById('messageInputs');
+            const id = Date.now();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-input-group agent';
+            messageDiv.setAttribute('data-message-id', id);
+            messageDiv.innerHTML = `
+                <select onchange="updateMessageType(${id}, this.value)">
+                    <option value="agent">Agent Message</option>
+                    <option value="customer">Customer Message</option>
+                    <option value="system">System Message</option>
+                </select>
+                <textarea placeholder="Enter message text..." oninput="updatePreview()"></textarea>
+                <button class="remove-btn" onclick="removeMessage(${id})">Remove</button>
+            `;
+            container.appendChild(messageDiv);
+            updatePreview();
+        }
+
+        function updateMessageType(id, type) {
+            const messageDiv = document.querySelector(`[data-message-id="${id}"]`);
+            messageDiv.className = `message-input-group ${type}`;
+            updatePreview();
+        }
+
+        function removeMessage(id) {
+            const messageDiv = document.querySelector(`[data-message-id="${id}"]`);
+            messageDiv.remove();
+            updatePreview();
+        }
+
+        function clearMessages() {
+            document.getElementById('messageInputs').innerHTML = '';
+            updatePreview();
+        }
+
+        function exportMessages() {
+            collectMessages();
+
+            if (messages.length === 0) {
+                showStatus('No messages to export', 'error');
+                return;
+            }
+
+            const exportData = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                messageCount: messages.length,
+                messages: messages
+            };
+
+            const jsonStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-messages-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus(`Exported ${messages.length} messages to JSON`, 'success');
+        }
+
+        function importMessages() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const importData = JSON.parse(event.target.result);
+
+                        // Validate the imported data
+                        if (!importData.messages || !Array.isArray(importData.messages)) {
+                            showStatus('Invalid message file format', 'error');
+                            return;
+                        }
+
+                        // Clear existing messages
+                        clearMessages();
+
+                        // Populate with imported messages
+                        importData.messages.forEach((msg, index) => {
+                            addMessageInput();
+
+                            // Wait a bit for DOM to update
+                            setTimeout(() => {
+                                const messageInputs = document.querySelectorAll('.message-input-group');
+                                const targetInput = messageInputs[index];
+
+                                if (targetInput) {
+                                    const select = targetInput.querySelector('select');
+                                    const textarea = targetInput.querySelector('textarea');
+
+                                    if (select && textarea) {
+                                        select.value = msg.type || 'agent';
+                                        textarea.value = msg.text || '';
+                                        updateMessageType(targetInput.getAttribute('data-message-id'), msg.type || 'agent');
+                                    }
+                                }
+
+                                // Update preview after last message
+                                if (index === importData.messages.length - 1) {
+                                    setTimeout(() => {
+                                        updatePreview();
+                                    }, 100);
+                                }
+                            }, index * 50);
+                        });
+
+                        showStatus(`Imported ${importData.messages.length} messages from ${file.name}`, 'success');
+                    } catch (error) {
+                        showStatus('Error parsing JSON file: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+
+        function collectMessages() {
+            const inputs = document.querySelectorAll('.message-input-group');
+            messages = [];
+            inputs.forEach(input => {
+                const type = input.querySelector('select').value;
+                const text = input.querySelector('textarea').value.trim();
+                if (text) {
+                    messages.push({ type, text });
+                }
+            });
+            return messages;
+        }
+
+        function updatePreview() {
+            collectMessages();
+            const previewArea = document.getElementById('previewArea');
+
+            if (messages.length === 0) {
+                previewArea.innerHTML = '<p style="text-align: center; color: #999; padding: 40px;">Add messages to see preview</p>';
+                return;
+            }
+
+            let previewHTML = '';
+            for (let i = 0; i < messages.length; i++) {
+                // Generate the actual styled message HTML for this frame
+                const frameMessages = messages.slice(0, i + 1);
+                const styledMessagesHTML = frameMessages.map(msg => {
+                    let messageHTML = '';
+
+                    // Use the same template logic as generateMessageHTML
+                    if (msg.type === 'agent' && agentMessageTemplate) {
+                        messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                    } else if (msg.type === 'customer' && customerMessageTemplate) {
+                        messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                    } else {
+                        // Fallback to CSS styling if no template
+                        let styleString = '';
+                        if (msg.type === 'agent' && agentMessageStyles) {
+                            styleString = stylesToCSSString(agentMessageStyles);
+                        } else if (msg.type === 'customer' && customerMessageStyles) {
+                            styleString = stylesToCSSString(customerMessageStyles);
+                        }
+                        messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                    }
+
+                    // Determine alignment
+                    const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
+
+                    // Wrap message in container for proper alignment
+                    return `
+                        <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
+                            ${messageHTML}
+                        </div>
+                    `;
+                }).join('');
+
+                previewHTML += `
+                    <div class="preview-frame">
+                        <div class="preview-frame-header">
+                            <span class="preview-frame-title">Frame ${i + 1}</span>
+                            <span style="color: #999; font-size: 12px;">${i + 1} message${i > 0 ? 's' : ''}</span>
+                        </div>
+                        <div class="preview-messages" style="display: flex; flex-direction: column; padding: 10px; background: #f8f9fa;">
+                            ${styledMessagesHTML}
+                        </div>
+                    </div>
+                `;
+            }
+
+            previewArea.innerHTML = previewHTML;
+        }
+
+        function generateMessageHTML(messages) {
+            const messagesHTML = messages.map((msg, index) => {
+                // Get the appropriate template and styling based on message type
+                let messageHTML = '';
+
+                if (msg.type === 'agent' && agentMessageTemplate) {
+                    // Use HTML template and replace placeholder with actual text
+                    messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                } else if (msg.type === 'customer' && customerMessageTemplate) {
+                    // Use HTML template and replace placeholder with actual text
+                    messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                } else {
+                    // Fallback to CSS styling if no template
+                    let styleString = '';
+                    if (msg.type === 'agent' && agentMessageStyles) {
+                        styleString = stylesToCSSString(agentMessageStyles);
+                    } else if (msg.type === 'customer' && customerMessageStyles) {
+                        styleString = stylesToCSSString(customerMessageStyles);
+                    }
+                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                }
+
+                // Determine alignment
+                const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
+
+                // Wrap message in container for proper alignment
+                return `
+                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
+                        ${messageHTML}
+                    </div>
+                `;
+            }).join('\n');
+
+            // Return wrapped in flex container
+            return `<div style="display: flex; flex-direction: column;">${messagesHTML}</div>`;
+        }
+
+        function generateFrames() {
+            if (!baseHTML) {
+                showStatus('Please upload a base HTML frame first', 'error');
+                return;
+            }
+
+            collectMessages();
+
+            if (messages.length === 0) {
+                showStatus('Please add at least one message', 'error');
+                return;
+            }
+
+            if (!agentMessageTemplate && !customerMessageTemplate && !agentMessageStyles && !customerMessageStyles) {
+                showStatus('Please select at least one message style first (agent or customer)', 'error');
+                return;
+            }
+
+            const containerSelector = document.getElementById('containerSelector').value.trim();
+            generatedFrames = [];
+
+            // Create a frame for each message count (1 to N)
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+                const messagesHTML = generateMessageHTML(frameMessages);
+
+                // Parse the base HTML and inject messages
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(baseHTML, 'text/html');
+
+                if (containerSelector) {
+                    // If container selector provided, inject into that container
+                    const chatContainer = doc.querySelector(containerSelector);
+                    if (!chatContainer) {
+                        showStatus(`Chat container not found with selector: ${containerSelector}`, 'error');
+                        return;
+                    }
+                    // Clear existing messages and add new ones
+                    chatContainer.innerHTML = messagesHTML;
+                } else {
+                    // No container selector - append messages to body
+                    const messagesWrapper = doc.createElement('div');
+                    messagesWrapper.style.cssText = 'padding: 20px;';
+                    messagesWrapper.innerHTML = messagesHTML;
+                    doc.body.appendChild(messagesWrapper);
+                }
+
+                // Serialize back to HTML
+                const frameHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+
+                generatedFrames.push({
+                    number: i + 1,
+                    html: frameHTML,
+                    filename: `chat-frame-${String(i + 1).padStart(2, '0')}.html`
+                });
+            }
+
+            showStatus(`Successfully generated ${generatedFrames.length} frames!`, 'success');
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+        }
+
+        function downloadAllFrames() {
+            if (generatedFrames.length === 0) {
+                showStatus('No frames to download. Generate frames first.', 'error');
+                return;
+            }
+
+            generatedFrames.forEach(frame => {
+                const blob = new Blob([frame.html], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = frame.filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            showStatus(`Downloaded ${generatedFrames.length} frames. Load them in the animator!`, 'success');
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // Export debug information
+        function exportDebugInfo() {
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                agentStyles: agentMessageStyles || null,
+                customerStyles: customerMessageStyles || null,
+                agentSelector: document.getElementById('agentSelector').value,
+                customerSelector: document.getElementById('customerSelector').value,
+                metadata: {
+                    agentPropertiesCount: agentMessageStyles ? Object.keys(agentMessageStyles).length : 0,
+                    customerPropertiesCount: customerMessageStyles ? Object.keys(customerMessageStyles).length : 0
+                }
+            };
+
+            const jsonStr = JSON.stringify(debugData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-styles-debug-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus('Debug info exported to JSON file', 'success');
+        }
+
+        // Export styles in chat-animator compatible format
+        function exportStylesForAnimator() {
+            if (!agentMessageTemplate && !customerMessageTemplate) {
+                showStatus('No templates captured yet. Click elements on the page first!', 'error');
+                return;
+            }
+
+            const stylesData = {
+                agentMessageTemplate: agentMessageTemplate,
+                customerMessageTemplate: customerMessageTemplate,
+                agentMessageStyles: agentMessageStyles,
+                customerMessageStyles: customerMessageStyles,
+                metadata: {
+                    exported: new Date().toISOString(),
+                    version: '1.0'
+                }
+            };
+
+            const jsonStr = JSON.stringify(stylesData, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-styles-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showStatus('✅ Styles exported! Compatible with Chat Animator', 'success');
+            console.log('Exported styles:', stylesData);
+        }
+
+        // Import styles from chat-animator compatible JSON
+        function importStylesForAnimator() {
+            document.getElementById('stylesImportFileInput').click();
+        }
+
+        // Handle styles import
+        function handleStylesImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+
+                    // Validate format
+                    if (!imported.agentMessageTemplate && !imported.customerMessageTemplate) {
+                        showStatus('❌ Invalid file format. Must contain agentMessageTemplate or customerMessageTemplate', 'error');
+                        return;
+                    }
+
+                    // Import the data
+                    if (imported.agentMessageTemplate) {
+                        agentMessageTemplate = imported.agentMessageTemplate;
+                    }
+                    if (imported.customerMessageTemplate) {
+                        customerMessageTemplate = imported.customerMessageTemplate;
+                    }
+                    if (imported.agentMessageStyles) {
+                        agentMessageStyles = imported.agentMessageStyles;
+                    }
+                    if (imported.customerMessageStyles) {
+                        customerMessageStyles = imported.customerMessageStyles;
+                    }
+
+                    // Update preview displays
+                    updateStylePreview();
+
+                    showStatus('✅ Styles imported successfully!', 'success');
+                    console.log('Imported styles:', imported);
+
+                } catch (error) {
+                    showStatus('❌ Error parsing JSON: ' + error.message, 'error');
+                    console.error('Import error:', error);
+                }
+            };
+            reader.readAsText(file);
+
+            // Clear the file input so the same file can be imported again
+            event.target.value = '';
+        }
+
+        // Copy debug info to clipboard
+        function copyDebugToClipboard() {
+            const debugData = {
+                timestamp: new Date().toISOString(),
+                agentStyles: agentMessageStyles || null,
+                customerStyles: customerMessageStyles || null,
+                agentSelector: document.getElementById('agentSelector').value,
+                customerSelector: document.getElementById('customerSelector').value,
+                metadata: {
+                    agentPropertiesCount: agentMessageStyles ? Object.keys(agentMessageStyles).length : 0,
+                    customerPropertiesCount: customerMessageStyles ? Object.keys(customerMessageStyles).length : 0
+                }
+            };
+
+            const jsonStr = JSON.stringify(debugData, null, 2);
+
+            navigator.clipboard.writeText(jsonStr).then(() => {
+                showStatus('Debug info copied to clipboard! Paste it into your message.', 'success');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                // Fallback: create a textarea to copy from
+                const textarea = document.createElement('textarea');
+                textarea.value = jsonStr;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showStatus('Debug info copied to clipboard! Paste it into your message.', 'success');
+                } catch (e) {
+                    showStatus('Failed to copy. Please use Export button instead.', 'error');
+                }
+                document.body.removeChild(textarea);
+            });
+        }
+
+        // ============================================
+        // FRAME COMPOSER FUNCTIONS
+        // ============================================
+
+        let cleanChatFrames = [];
+        let backgroundHTML = null;
+        let currentFrameIndex = 0;
+        let animationInterval = null;
+        let overlayPosition = { x: 50, y: 50, width: 400, height: 500 };
+
+        // Generate clean chat-only frames
+        function generateCleanChatFrames() {
+            if (!baseHTML) {
+                showStatus('Please upload a base HTML frame first', 'error');
+                return;
+            }
+
+            collectMessages();
+
+            if (messages.length === 0) {
+                showStatus('Please add at least one message', 'error');
+                return;
+            }
+
+            cleanChatFrames = [];
+
+            // Create frames with progressively more messages
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+                const chatHTML = generateCleanChatHTML(frameMessages);
+                cleanChatFrames.push(chatHTML);
+            }
+
+            showStatus(`Generated ${cleanChatFrames.length} clean chat frames!`, 'success');
+
+            // Use baseHTML as background
+            backgroundHTML = baseHTML;
+
+            // Open fullscreen composer
+            openComposerFullscreen();
+        }
+
+        // Open composer in fullscreen mode
+        function openComposerFullscreen() {
+            const overlay = document.getElementById('composerOverlay');
+            overlay.classList.add('active');
+
+            // Load background and initialize
+            loadBackgroundFrame();
+            currentFrameIndex = 0;
+            displayCurrentFrame();
+            updateFrameCounter();
+        }
+
+        // Close fullscreen composer
+        function closeComposer() {
+            const overlay = document.getElementById('composerOverlay');
+            overlay.classList.remove('active');
+
+            // Stop animation if playing
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                const playBtn = document.getElementById('fullscreenPlayBtn');
+                if (playBtn) playBtn.textContent = '▶️ Play';
+            }
+
+            // Reset pin/hide state
+            const header = document.querySelector('#composerOverlay .fullscreen-header');
+            const showBtn = document.getElementById('showControlsBtn');
+            const pinBtn = document.getElementById('pinControlsBtn');
+            const chatOverlay = document.getElementById('chatOverlay');
+
+            if (header) {
+                header.classList.remove('pinned', 'hidden');
+            }
+            if (showBtn) {
+                showBtn.classList.remove('visible');
+            }
+            if (pinBtn) {
+                pinBtn.classList.remove('pinned');
+                pinBtn.textContent = '📌 Pin';
+            }
+            if (chatOverlay) {
+                chatOverlay.classList.remove('selected');
+                chatOverlay.removeAttribute('data-selection-setup');
+            }
+        }
+
+        // Toggle pin state for controls
+        function togglePinControls() {
+            const header = document.querySelector('#composerOverlay .fullscreen-header');
+            const pinBtn = document.getElementById('pinControlsBtn');
+
+            if (!header) return;
+
+            if (header.classList.contains('pinned')) {
+                // Unpin
+                header.classList.remove('pinned');
+                pinBtn.classList.remove('pinned');
+                pinBtn.textContent = '📌 Pin';
+                pinBtn.title = 'Pin controls to keep visible';
+            } else {
+                // Pin
+                header.classList.add('pinned');
+                pinBtn.classList.add('pinned');
+                pinBtn.textContent = '📌 Pinned';
+                pinBtn.title = 'Unpin controls';
+            }
+        }
+
+        // Hide controls completely
+        function hideControls() {
+            const header = document.querySelector('#composerOverlay .fullscreen-header');
+            const showBtn = document.getElementById('showControlsBtn');
+
+            if (!header || !showBtn) return;
+
+            header.classList.add('hidden');
+            showBtn.classList.add('visible');
+        }
+
+        // Show controls
+        function showControls() {
+            const header = document.querySelector('#composerOverlay .fullscreen-header');
+            const showBtn = document.getElementById('showControlsBtn');
+
+            if (!header || !showBtn) return;
+
+            header.classList.remove('hidden');
+            showBtn.classList.remove('visible');
+        }
+
+        // Color picker functionality
+        let eyedropperActive = false;
+        let selectedColor = '#ffffff';
+
+        function activateEyedropper() {
+            const composerOverlay = document.getElementById('composerOverlay');
+            const background = document.getElementById('composerBackground');
+            const btn = document.getElementById('eyedropperBtn');
+
+            eyedropperActive = true;
+            composerOverlay.classList.add('eyedropper-active');
+            btn.classList.add('active');
+            btn.textContent = '🎯 Click to sample...';
+
+            console.log('🎨 Eyedropper activated - click anywhere on the background to sample color');
+        }
+
+        function deactivateEyedropper() {
+            const composerOverlay = document.getElementById('composerOverlay');
+            const btn = document.getElementById('eyedropperBtn');
+
+            eyedropperActive = false;
+            composerOverlay.classList.remove('eyedropper-active');
+            btn.classList.remove('active');
+            btn.textContent = '🎨 Pick Color';
+        }
+
+        function sampleColorAtPoint(x, y) {
+            const background = document.getElementById('composerBackground');
+
+            // Get the element at the point
+            const element = document.elementFromPoint(x, y);
+
+            if (!element || element.closest('#chatOverlay')) {
+                console.warn('Cannot sample from overlay itself');
+                return null;
+            }
+
+            // Get computed style
+            const computedStyle = window.getComputedStyle(element);
+            let color = computedStyle.backgroundColor;
+
+            // If transparent, walk up the DOM tree
+            let currentElement = element;
+            while (color === 'rgba(0, 0, 0, 0)' || color === 'transparent') {
+                currentElement = currentElement.parentElement;
+                if (!currentElement || currentElement === background) {
+                    color = 'rgb(255, 255, 255)'; // Default to white
+                    break;
+                }
+                color = window.getComputedStyle(currentElement).backgroundColor;
+            }
+
+            // Convert to hex
+            const rgb = color.match(/\d+/g);
+            if (rgb) {
+                const hex = '#' + rgb.slice(0, 3).map(x => {
+                    const hex = parseInt(x).toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+                return hex;
+            }
+
+            return null;
+        }
+
+        function applyBackgroundColor() {
+            const overlay = document.getElementById('chatOverlay');
+            const overlayContent = document.getElementById('chatOverlayContent');
+
+            // Apply to both container and content for complete coverage
+            if (overlay) {
+                overlay.style.setProperty('background', selectedColor, 'important');
+                overlay.style.setProperty('background-color', selectedColor, 'important');
+            }
+
+            if (overlayContent) {
+                overlayContent.style.setProperty('background', selectedColor, 'important');
+                overlayContent.style.setProperty('background-color', selectedColor, 'important');
+                overlayContent.style.setProperty('opacity', '1', 'important');
+                console.log('✓ Applied background color:', selectedColor);
+            }
+        }
+
+        function applyTextColor() {
+            const overlayContent = document.getElementById('chatOverlayContent');
+            if (overlayContent) {
+                overlayContent.style.color = selectedColor;
+                console.log('✓ Applied text color:', selectedColor);
+            }
+        }
+
+        // Update color from manual picker
+        document.addEventListener('DOMContentLoaded', () => {
+            const colorInput = document.getElementById('colorInput');
+            if (colorInput) {
+                colorInput.addEventListener('input', (e) => {
+                    selectedColor = e.target.value;
+                    document.getElementById('colorSample').style.background = selectedColor;
+                });
+            }
+        });
+
+        // Export overlay theme to JSON
+        function exportOverlayTheme() {
+            const overlay = document.getElementById('chatOverlay');
+            const overlayContent = document.getElementById('chatOverlayContent');
+
+            const theme = {
+                version: '1.0',
+                timestamp: new Date().toISOString(),
+                overlay: {
+                    position: {
+                        x: overlayPosition.x,
+                        y: overlayPosition.y,
+                        width: overlayPosition.width,
+                        height: overlayPosition.height
+                    },
+                    backgroundColor: overlayContent.style.getPropertyValue('background') || overlayContent.style.backgroundColor || '#ffffff',
+                    textColor: overlayContent.style.color || '#000000',
+                    selectedColor: selectedColor,
+                    containerBackground: overlay.style.getPropertyValue('background') || overlay.style.backgroundColor
+                },
+                styles: {
+                    padding: overlayContent.style.padding,
+                    fontSize: overlayContent.style.fontSize,
+                    fontFamily: overlayContent.style.fontFamily,
+                    lineHeight: overlayContent.style.lineHeight
+                }
+            };
+
+            // Download as JSON
+            const blob = new Blob([JSON.stringify(theme, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `overlay-theme-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            console.log('✓ Exported overlay theme:', theme);
+            alert('Theme exported successfully!');
+        }
+
+        // Trigger file input for import
+        function importOverlayTheme() {
+            const fileInput = document.getElementById('themeFileInput');
+            fileInput.click();
+        }
+
+        // Handle theme import
+        function handleThemeImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const theme = JSON.parse(e.target.result);
+                    applyOverlayTheme(theme);
+                    console.log('✓ Imported overlay theme:', theme);
+                    alert('Theme imported successfully!');
+                } catch (error) {
+                    console.error('Error importing theme:', error);
+                    alert('Error importing theme. Please check the JSON file format.');
+                }
+            };
+            reader.readAsText(file);
+
+            // Reset file input
+            event.target.value = '';
+        }
+
+        // Apply imported theme
+        function applyOverlayTheme(theme) {
+            const overlay = document.getElementById('chatOverlay');
+            const overlayContent = document.getElementById('chatOverlayContent');
+
+            // Apply position
+            if (theme.overlay && theme.overlay.position) {
+                overlayPosition = theme.overlay.position;
+                overlay.style.left = overlayPosition.x + 'px';
+                overlay.style.top = overlayPosition.y + 'px';
+                overlay.style.width = overlayPosition.width + 'px';
+                overlay.style.height = overlayPosition.height + 'px';
+            }
+
+            // Apply colors
+            if (theme.overlay) {
+                if (theme.overlay.backgroundColor) {
+                    overlay.style.setProperty('background', theme.overlay.backgroundColor, 'important');
+                    overlay.style.setProperty('background-color', theme.overlay.backgroundColor, 'important');
+                    overlayContent.style.setProperty('background', theme.overlay.backgroundColor, 'important');
+                    overlayContent.style.setProperty('background-color', theme.overlay.backgroundColor, 'important');
+                }
+
+                if (theme.overlay.textColor) {
+                    overlayContent.style.color = theme.overlay.textColor;
+                }
+
+                if (theme.overlay.selectedColor) {
+                    selectedColor = theme.overlay.selectedColor;
+                    document.getElementById('colorSample').style.background = selectedColor;
+                    document.getElementById('colorInput').value = selectedColor;
+                }
+
+                if (theme.overlay.containerBackground) {
+                    overlay.style.setProperty('background', theme.overlay.containerBackground, 'important');
+                }
+            }
+
+            // Apply additional styles
+            if (theme.styles) {
+                if (theme.styles.padding) overlayContent.style.padding = theme.styles.padding;
+                if (theme.styles.fontSize) overlayContent.style.fontSize = theme.styles.fontSize;
+                if (theme.styles.fontFamily) overlayContent.style.fontFamily = theme.styles.fontFamily;
+                if (theme.styles.lineHeight) overlayContent.style.lineHeight = theme.styles.lineHeight;
+            }
+
+            // Refresh current frame display
+            displayCurrentFrame();
+        }
+
+        // Export portable animation HTML file
+        function exportPortableAnimation() {
+            if (cleanChatFrames.length === 0) {
+                alert('Please generate frames first before exporting!');
+                return;
+            }
+
+            const overlay = document.getElementById('chatOverlay');
+            const overlayContent = document.getElementById('chatOverlayContent');
+            const backgroundColor = overlayContent.style.getPropertyValue('background') || overlayContent.style.backgroundColor || '#ffffff';
+            const textColor = overlayContent.style.color || '#000000';
+
+            // Get the background HTML
+            const bgHTML = backgroundHTML || baseHTML || '<html><body style="background: #f5f5f5;"></body></html>';
+
+            // Parse messages from current state
+            const currentMessages = messages.map(msg => ({
+                type: msg.type,
+                text: msg.text
+            }));
+
+            const portableHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Simulation Animation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            overflow: hidden;
+        }
+
+        #background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            z-index: 1;
+        }
+
+        #chatContainer {
+            position: fixed;
+            left: ${overlayPosition.x}px;
+            top: ${overlayPosition.y}px;
+            width: ${overlayPosition.width}px;
+            height: ${overlayPosition.height}px;
+            background: ${backgroundColor};
+            color: ${textColor};
+            overflow: auto;
+            z-index: 100;
+        }
+
+        #controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .btn {
+            background: #667eea;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        #frameInfo {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        #speedControl {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #speedControl label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        #speedSlider {
+            width: 100px;
+        }
+
+        #editor {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 350px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 200;
+            display: none;
+        }
+
+        #editor.visible {
+            display: block;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .editor-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .message-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .message-item textarea {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .message-type {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .message-type button {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .message-type button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .add-message-btn {
+            width: 100%;
+            padding: 10px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .add-message-btn:hover {
+            background: #229954;
+        }
+
+        #toggleEditor {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            z-index: 201;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        #toggleEditor:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <div id="background"></div>
+    <div id="chatContainer"></div>
+
+    <button id="toggleEditor" onclick="toggleEditor()">✏️ Edit Messages</button>
+
+    <div id="editor">
+        <div class="editor-header">
+            <div class="editor-title">Edit Messages</div>
+            <button class="btn" onclick="toggleEditor()" style="padding: 4px 8px; font-size: 11px;">Close</button>
+        </div>
+        <div id="messagesList"></div>
+        <button class="add-message-btn" onclick="addNewMessage()">+ Add Message</button>
+        <button class="btn" onclick="regenerateFrames()" style="width: 100%; margin-top: 10px; background: #3498db;">🔄 Update Animation</button>
+    </div>
+
+    <div id="controls">
+        <button class="btn" onclick="prevFrame()">⏮️ Prev</button>
+        <button class="btn" onclick="togglePlay()" id="playBtn">▶️ Play</button>
+        <button class="btn" onclick="nextFrame()">Next ⏭️</button>
+        <div id="frameInfo">Frame 1 of 1</div>
+        <div id="speedControl">
+            <label>Speed:</label>
+            <input type="range" id="speedSlider" min="100" max="2000" value="500" step="100" oninput="updateSpeed(this.value)">
+            <span id="speedDisplay">500ms</span>
+        </div>
+    </div>
+
+    <scr` + `ipt>
+        // Embedded data
+        const backgroundHTML = ${JSON.stringify(bgHTML)};
+        let messages = ${JSON.stringify(currentMessages)};
+        let frames = [];
+        let currentFrame = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        let speed = 500;
+
+        // Initialize
+        document.getElementById('background').innerHTML = backgroundHTML;
+        generateFrames();
+        displayFrame();
+
+        function generateFrames() {
+            frames = [];
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+                const frameHTML = frameMessages.map(msg => {
+                    const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
+                    return \`<div style="display: flex; justify-content: \${alignment}; margin: 8px 0;">
+                        <div style="max-width: 70%; padding: 10px 15px; border-radius: 8px; background: \${msg.type === 'customer' ? '#e3f2fd' : '#f5f5f5'};">
+                            \${msg.text}
+                        </div>
+                    </div>\`;
+                }).join('');
+                frames.push(frameHTML);
+            }
+            updateFrameInfo();
+        }
+
+        function displayFrame() {
+            if (frames.length === 0) return;
+            document.getElementById('chatContainer').innerHTML = frames[currentFrame];
+        }
+
+        function updateFrameInfo() {
+            document.getElementById('frameInfo').textContent = \`Frame \${currentFrame + 1} of \${frames.length}\`;
+        }
+
+        function prevFrame() {
+            if (currentFrame > 0) {
+                currentFrame--;
+                displayFrame();
+                updateFrameInfo();
+            }
+        }
+
+        function nextFrame() {
+            if (currentFrame < frames.length - 1) {
+                currentFrame++;
+                displayFrame();
+                updateFrameInfo();
+            }
+        }
+
+        function togglePlay() {
+            const btn = document.getElementById('playBtn');
+            if (isPlaying) {
+                clearInterval(playInterval);
+                isPlaying = false;
+                btn.textContent = '▶️ Play';
+            } else {
+                isPlaying = true;
+                btn.textContent = '⏸️ Pause';
+                playInterval = setInterval(() => {
+                    if (currentFrame < frames.length - 1) {
+                        currentFrame++;
+                    } else {
+                        currentFrame = 0;
+                    }
+                    displayFrame();
+                    updateFrameInfo();
+                }, speed);
+            }
+        }
+
+        function updateSpeed(value) {
+            speed = parseInt(value);
+            document.getElementById('speedDisplay').textContent = value + 'ms';
+            if (isPlaying) {
+                clearInterval(playInterval);
+                playInterval = setInterval(() => {
+                    if (currentFrame < frames.length - 1) {
+                        currentFrame++;
+                    } else {
+                        currentFrame = 0;
+                    }
+                    displayFrame();
+                    updateFrameInfo();
+                }, speed);
+            }
+        }
+
+        function toggleEditor() {
+            const editor = document.getElementById('editor');
+            editor.classList.toggle('visible');
+            if (editor.classList.contains('visible')) {
+                renderMessagesList();
+            }
+        }
+
+        function renderMessagesList() {
+            const list = document.getElementById('messagesList');
+            list.innerHTML = messages.map((msg, idx) => \`
+                <div class="message-item">
+                    <textarea id="msg-\${idx}" oninput="updateMessage(\${idx}, this.value)">\${msg.text}</textarea>
+                    <div class="message-type">
+                        <button class="\${msg.type === 'agent' ? 'active' : ''}" onclick="setMessageType(\${idx}, 'agent')">Agent</button>
+                        <button class="\${msg.type === 'customer' ? 'active' : ''}" onclick="setMessageType(\${idx}, 'customer')">Customer</button>
+                        <button onclick="deleteMessage(\${idx})" style="background: #e74c3c; color: white; border: none;">Delete</button>
+                    </div>
+                </div>
+            \`).join('');
+        }
+
+        function updateMessage(idx, text) {
+            messages[idx].text = text;
+        }
+
+        function setMessageType(idx, type) {
+            messages[idx].type = type;
+            renderMessagesList();
+        }
+
+        function deleteMessage(idx) {
+            messages.splice(idx, 1);
+            renderMessagesList();
+        }
+
+        function addNewMessage() {
+            messages.push({ type: 'agent', text: 'New message' });
+            renderMessagesList();
+        }
+
+        function regenerateFrames() {
+            generateFrames();
+            currentFrame = 0;
+            displayFrame();
+            alert('Animation updated with new messages!');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && !e.target.matches('textarea')) {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                prevFrame();
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                nextFrame();
+            } else if (e.key === 'e' && e.ctrlKey) {
+                e.preventDefault();
+                toggleEditor();
+            }
+        });
+    </scr` + `ipt>
+</body>
+</html>`;
+
+            // Download the file
+            const blob = new Blob([portableHTML], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `message-simulation-${Date.now()}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            console.log('✓ Exported portable animation with', cleanChatFrames.length, 'frames');
+            alert('Portable animation exported! Users can open this HTML file to view and edit the animation.');
+        }
+
+        // Update animation speed
+        function updateAnimationSpeed(value) {
+            document.getElementById('fullscreenFpsDisplay').textContent = value + 'ms';
+
+            // If animation is playing, restart it with new speed
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                const duration = parseInt(value);
+                const playBtn = document.getElementById('fullscreenPlayBtn');
+
+                animationInterval = setInterval(() => {
+                    if (currentFrameIndex < cleanChatFrames.length - 1) {
+                        currentFrameIndex++;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    } else {
+                        currentFrameIndex = 0;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    }
+                }, duration);
+            }
+        }
+
+        // Generate minimal HTML for clean chat
+        function generateCleanChatHTML(msgs) {
+            const messagesHTML = msgs.map(msg => {
+                // Get the appropriate template or styling based on message type
+                let messageHTML = '';
+
+                if (msg.type === 'agent' && agentMessageTemplate) {
+                    // Use HTML template and replace placeholder with actual text
+                    messageHTML = agentMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                } else if (msg.type === 'customer' && customerMessageTemplate) {
+                    // Use HTML template and replace placeholder with actual text
+                    messageHTML = customerMessageTemplate.html.replace(/\{\{MESSAGE_TEXT\}\}/g, msg.text);
+                } else if (msg.type === 'agent' && agentMessageStyles) {
+                    // Fallback to CSS styling
+                    const styleString = stylesToCSSString(agentMessageStyles);
+                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                } else if (msg.type === 'customer' && customerMessageStyles) {
+                    // Fallback to CSS styling
+                    const styleString = stylesToCSSString(customerMessageStyles);
+                    messageHTML = `<div style="${styleString}">${msg.text}</div>`;
+                } else {
+                    // Fallback to default styling if nothing is captured
+                    const msgClass = msg.type;
+                    messageHTML = `<div class="clean-chat-message ${msgClass}">${msg.text}</div>`;
+                }
+
+                // Determine alignment
+                const alignment = msg.type === 'customer' ? 'flex-end' : 'flex-start';
+
+                return `
+                    <div style="display: flex; justify-content: ${alignment}; margin: 8px 0;">
+                        ${messageHTML}
+                    </div>
+                `;
+            }).join('\n');
+
+            return `<div style="display: flex; flex-direction: column; padding: 10px;">
+                ${messagesHTML}
+            </div>`;
+        }
+
+        // Load background frame - STATIC VERSION (no scripts)
+        function loadBackgroundFrame() {
+            const backgroundDiv = document.getElementById('composerBackground');
+
+            console.log('Loading background frame, HTML length:', backgroundHTML ? backgroundHTML.length : 0);
+
+            if (!backgroundHTML || backgroundHTML.trim().length === 0) {
+                console.error('backgroundHTML is empty or invalid');
+                return;
+            }
+
+            // Parse HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(backgroundHTML, 'text/html');
+
+            const styles = Array.from(doc.querySelectorAll('style, link[rel="stylesheet"]'));
+            // NOTE: We deliberately DO NOT inject scripts - this is a static background
+            const bodyContent = doc.body.cloneNode(true);
+
+            // Only inject once
+            if (!backgroundDiv.getAttribute('data-loaded')) {
+                backgroundDiv.innerHTML = '';
+
+                // Inject styles first
+                styles.forEach(style => {
+                    backgroundDiv.appendChild(style.cloneNode(true));
+                });
+
+                // Inject body content
+                const bodyWrapper = document.createElement('div');
+                bodyWrapper.innerHTML = bodyContent.innerHTML;
+                backgroundDiv.appendChild(bodyWrapper);
+
+                backgroundDiv.setAttribute('data-loaded', 'true');
+            }
+
+            console.log('✓ Background HTML injected (static - no scripts)');
+            console.log('Body content length:', bodyContent.innerHTML.length);
+            console.log('Body has children:', bodyContent.children.length);
+
+            // Wait longer for DOM to settle, then calculate overlay position
+            setTimeout(() => {
+                calculateOverlayPosition();
+                showChatOverlay();
+            }, 500);
+        }
+
+        // Calculate where the chat container is in the background
+        function calculateOverlayPosition() {
+            const backgroundDiv = document.getElementById('composerBackground');
+
+            if (!backgroundDiv) {
+                console.warn('Background div not found');
+                return;
+            }
+
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+            console.log('🔍 Looking for chat container with selector:', containerSelector);
+            console.log('Background div children:', backgroundDiv.children.length);
+
+            try {
+                // Try to find the element
+                const chatContainer = backgroundDiv.querySelector(containerSelector);
+
+                if (chatContainer) {
+                    console.log('✓ Found chat container:', chatContainer.tagName, chatContainer.id, chatContainer.className);
+
+                    const rect = chatContainer.getBoundingClientRect();
+                    const canvas = document.getElementById('composerCanvas');
+                    const canvasRect = canvas.getBoundingClientRect();
+
+                    console.log('Chat container rect:', {
+                        left: rect.left,
+                        top: rect.top,
+                        width: rect.width,
+                        height: rect.height
+                    });
+
+                    console.log('Canvas rect:', {
+                        left: canvasRect.left,
+                        top: canvasRect.top
+                    });
+
+                    // Calculate relative position within the canvas
+                    overlayPosition = {
+                        x: rect.left - canvasRect.left,
+                        y: rect.top - canvasRect.top,
+                        width: Math.max(200, rect.width),
+                        height: Math.max(150, rect.height)
+                    };
+
+                    console.log('✓ Auto-positioned overlay at:', overlayPosition);
+                } else {
+                    console.warn('❌ Chat container not found with selector:', containerSelector);
+
+                    // Debug: List some IDs that ARE present
+                    const allIds = Array.from(backgroundDiv.querySelectorAll('[id]')).slice(0, 10);
+                    console.log('First 10 elements with IDs in background:', allIds.map(el => `#${el.id}`));
+                }
+            } catch (e) {
+                console.error('Error finding chat container:', e);
+                // Keep default position if selector doesn't work
+            }
+        }
+
+        function showChatOverlay() {
+            const overlay = document.getElementById('chatOverlay');
+            overlay.classList.add('active', 'selected');
+            overlay.style.left = overlayPosition.x + 'px';
+            overlay.style.top = overlayPosition.y + 'px';
+            overlay.style.width = overlayPosition.width + 'px';
+            overlay.style.height = overlayPosition.height + 'px';
+
+            // Clear original chat container in the background iframe
+            clearOriginalChatContainer();
+
+            setupDragAndResize();
+            setupOverlaySelection();
+            displayCurrentFrame();
+        }
+
+        // Setup click handlers for overlay selection
+        function setupOverlaySelection() {
+            const overlay = document.getElementById('chatOverlay');
+            const background = document.getElementById('composerBackground');
+            const composerOverlay = document.getElementById('composerOverlay');
+
+            // Only setup once
+            if (overlay.hasAttribute('data-selection-setup')) {
+                return;
+            }
+            overlay.setAttribute('data-selection-setup', 'true');
+
+            // Click on overlay to select it
+            overlay.addEventListener('click', (e) => {
+                if (eyedropperActive) return; // Don't select if eyedropper is active
+                e.stopPropagation();
+                overlay.classList.add('selected');
+            });
+
+            // Click on background to deselect overlay OR sample color
+            background.addEventListener('click', (e) => {
+                if (eyedropperActive) {
+                    // Sample color at click position
+                    const color = sampleColorAtPoint(e.clientX, e.clientY);
+                    if (color) {
+                        selectedColor = color;
+                        document.getElementById('colorSample').style.background = color;
+                        document.getElementById('colorInput').value = color;
+                        console.log('✓ Sampled color:', color);
+                    }
+                    deactivateEyedropper();
+                    e.stopPropagation();
+                    return;
+                }
+                overlay.classList.remove('selected');
+            });
+
+            // Also deselect when clicking the main fullscreen area OR sample color
+            composerOverlay.addEventListener('click', (e) => {
+                if (eyedropperActive) {
+                    // Sample color if clicking on background area
+                    if (e.target === composerOverlay || e.target.classList.contains('fullscreen-content') || e.target.classList.contains('fullscreen-main') || e.target.closest('.composer-background-fullscreen')) {
+                        const color = sampleColorAtPoint(e.clientX, e.clientY);
+                        if (color) {
+                            selectedColor = color;
+                            document.getElementById('colorSample').style.background = color;
+                            document.getElementById('colorInput').value = color;
+                            console.log('✓ Sampled color:', color);
+                        }
+                        deactivateEyedropper();
+                        e.stopPropagation();
+                        return;
+                    }
+                }
+
+                // Only deselect if clicking directly on the overlay background, not its children
+                if (e.target === composerOverlay || e.target.classList.contains('fullscreen-content') || e.target.classList.contains('fullscreen-main')) {
+                    overlay.classList.remove('selected');
+                }
+            });
+        }
+
+        function clearOriginalChatContainer() {
+            const backgroundDiv = document.getElementById('composerBackground');
+
+            if (!backgroundDiv) return;
+
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+
+            try {
+                const chatContainer = backgroundDiv.querySelector(containerSelector);
+                if (chatContainer) {
+                    chatContainer.innerHTML = '';
+                    console.log('✓ Cleared original chat container in preview');
+                }
+            } catch (e) {
+                console.warn('Could not clear original chat container:', e);
+            }
+        }
+
+        // Drag and resize functionality
+        function setupDragAndResize() {
+            const overlay = document.getElementById('chatOverlay');
+            const resizeHandle = document.getElementById('resizeHandle');
+            let isDragging = false;
+            let isResizing = false;
+            let startX, startY, startLeft, startTop, startWidth, startHeight;
+
+            // Dragging
+            overlay.addEventListener('mousedown', (e) => {
+                // Only allow dragging if overlay is selected
+                if (!overlay.classList.contains('selected')) {
+                    return;
+                }
+                if (e.target.classList.contains('resize-handle') || e.target.closest('.overlay-controls')) {
+                    return;
+                }
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                const rect = overlay.getBoundingClientRect();
+                startLeft = rect.left;
+                startTop = rect.top;
+                e.preventDefault();
+            });
+
+            // Resizing
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                const rect = overlay.getBoundingClientRect();
+                startWidth = rect.width;
+                startHeight = rect.height;
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    const newLeft = startLeft + dx;
+                    const newTop = startTop + dy;
+                    overlay.style.left = newLeft + 'px';
+                    overlay.style.top = newTop + 'px';
+                    overlayPosition.x = newLeft;
+                    overlayPosition.y = newTop;
+                }
+
+                if (isResizing) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    const newWidth = Math.max(200, startWidth + dx);
+                    const newHeight = Math.max(150, startHeight + dy);
+                    overlay.style.width = newWidth + 'px';
+                    overlay.style.height = newHeight + 'px';
+                    overlayPosition.width = newWidth;
+                    overlayPosition.height = newHeight;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+                isResizing = false;
+            });
+        }
+
+        function resetOverlayPosition() {
+            overlayPosition = { x: 50, y: 50, width: 400, height: 500 };
+            const overlay = document.getElementById('chatOverlay');
+            overlay.style.left = overlayPosition.x + 'px';
+            overlay.style.top = overlayPosition.y + 'px';
+            overlay.style.width = overlayPosition.width + 'px';
+            overlay.style.height = overlayPosition.height + 'px';
+        }
+
+        // Display current frame
+        function displayCurrentFrame() {
+            if (cleanChatFrames.length === 0) return;
+
+            const content = document.getElementById('chatOverlayContent');
+
+            // Preserve the current background color
+            const currentBg = content.style.getPropertyValue('background');
+            const currentOpacity = content.style.getPropertyValue('opacity');
+
+            content.innerHTML = cleanChatFrames[currentFrameIndex];
+
+            // Reapply background color if it was set
+            if (currentBg) {
+                content.style.setProperty('background', currentBg, 'important');
+                content.style.setProperty('opacity', currentOpacity || '1', 'important');
+            }
+        }
+
+        function updateFrameCounter() {
+            const counter = document.getElementById('frameCounter');
+            const fullscreenCounter = document.getElementById('fullscreenFrameCounter');
+
+            const text = `Frame ${currentFrameIndex + 1} of ${cleanChatFrames.length}`;
+
+            if (counter) counter.textContent = text;
+            if (fullscreenCounter) fullscreenCounter.textContent = text;
+        }
+
+        // Animation controls
+        function prevFrame() {
+            if (currentFrameIndex > 0) {
+                currentFrameIndex--;
+                displayCurrentFrame();
+                updateFrameCounter();
+            }
+        }
+
+        function nextFrame() {
+            if (currentFrameIndex < cleanChatFrames.length - 1) {
+                currentFrameIndex++;
+                displayCurrentFrame();
+                updateFrameCounter();
+            }
+        }
+
+        function toggleAnimation() {
+            const playBtn = document.getElementById('playBtn');
+            const fullscreenPlayBtn = document.getElementById('fullscreenPlayBtn');
+
+            if (animationInterval) {
+                // Stop animation
+                clearInterval(animationInterval);
+                animationInterval = null;
+                if (playBtn) playBtn.textContent = '▶️ Play Animation';
+                if (fullscreenPlayBtn) fullscreenPlayBtn.textContent = '▶️ Play';
+            } else {
+                // Start animation - use fullscreen slider if in fullscreen mode
+                const fpsSlider = document.getElementById('fullscreenFpsSlider') || document.getElementById('fpsSlider');
+                const duration = parseInt(fpsSlider.value);
+
+                if (playBtn) playBtn.textContent = '⏸️ Pause Animation';
+                if (fullscreenPlayBtn) fullscreenPlayBtn.textContent = '⏸️ Pause';
+
+                animationInterval = setInterval(() => {
+                    if (currentFrameIndex < cleanChatFrames.length - 1) {
+                        currentFrameIndex++;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    } else {
+                        // Loop back to start
+                        currentFrameIndex = 0;
+                        displayCurrentFrame();
+                        updateFrameCounter();
+                    }
+                }, duration);
+            }
+        }
+
+        // Export functions
+        function downloadCompositeFrames() {
+            if (!backgroundHTML || cleanChatFrames.length === 0) {
+                showExportStatus('Please generate frames and upload a background first', 'error');
+                return;
+            }
+
+            cleanChatFrames.forEach((chatHTML, index) => {
+                const compositeHTML = createCompositeFrame(chatHTML, index);
+                const blob = new Blob([compositeHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `composite-frame-${String(index + 1).padStart(2, '0')}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+
+            showExportStatus(`Downloaded ${cleanChatFrames.length} composite frames!`, 'success');
+        }
+
+        function createCompositeFrame(chatHTML, frameIndex) {
+            // Parse background HTML
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(backgroundHTML, 'text/html');
+
+            // Clear the original chat container (so we don't have duplicate content)
+            const containerSelector = document.getElementById('containerSelector').value.trim() || '#chatMessages';
+            try {
+                const originalChatContainer = doc.querySelector(containerSelector);
+                if (originalChatContainer) {
+                    originalChatContainer.innerHTML = '';
+                    console.log('Cleared original chat container');
+                }
+            } catch (e) {
+                console.warn('Could not clear original chat container:', e);
+            }
+
+            // Create overlay div with chat content
+            const overlayDiv = doc.createElement('div');
+            overlayDiv.style.cssText = `
+                position: absolute;
+                left: ${overlayPosition.x}px;
+                top: ${overlayPosition.y}px;
+                width: ${overlayPosition.width}px;
+                height: ${overlayPosition.height}px;
+                background: white;
+                border-radius: 8px;
+                overflow: auto;
+                padding: 15px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                z-index: 9999;
+            `;
+            overlayDiv.innerHTML = chatHTML;
+
+            // Add overlay to body
+            doc.body.appendChild(overlayDiv);
+
+            return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+        }
+
+        function exportToVideo() {
+            showExportStatus('Video export requires additional libraries. Downloading frames instead...', 'error');
+            setTimeout(() => {
+                downloadCompositeFrames();
+            }, 1500);
+        }
+
+        function exportToGIF() {
+            showExportStatus('GIF export requires additional libraries. Downloading frames instead...', 'error');
+            setTimeout(() => {
+                downloadCompositeFrames();
+            }, 1500);
+        }
+
+        function showExportStatus(message, type) {
+            const statusDiv = document.getElementById('exportStatus');
+            if (statusDiv) {
+                statusDiv.innerHTML = `<div class="status-message ${type}">${message}</div>`;
+
+                if (type === 'success') {
+                    setTimeout(() => {
+                        statusDiv.innerHTML = '';
+                    }, 5000);
+                }
+            } else {
+                // Show in console if no status div
+                console.log(message);
+            }
+        }
+
+        // Keyboard shortcuts for fullscreen composer
+        document.addEventListener('keydown', (e) => {
+            const composerOverlay = document.getElementById('composerOverlay');
+
+            // Only handle shortcuts if composer is open
+            if (!composerOverlay.classList.contains('active')) return;
+
+            // ESC cancels eyedropper or closes composer
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (eyedropperActive) {
+                    deactivateEyedropper();
+                } else {
+                    closeComposer();
+                }
+                return;
+            }
+
+            // Don't handle other shortcuts if eyedropper is active
+            if (eyedropperActive) return;
+
+            switch(e.key) {
+                case ' ': // Spacebar - play/pause
+                    e.preventDefault();
+                    toggleAnimation();
+                    break;
+                case 'ArrowLeft': // Previous frame
+                    e.preventDefault();
+                    prevFrame();
+                    break;
+                case 'ArrowRight': // Next frame
+                    e.preventDefault();
+                    nextFrame();
+                    break;
+            }
+        });
+
+        // Add initial message inputs with default test data
+        addMessageInput();
+
+        // Add default test messages for easy testing
+        setTimeout(() => {
+            const messageInputs = document.querySelectorAll('.message-input-group');
+
+            // First message - Customer
+            if (messageInputs[0]) {
+                messageInputs[0].querySelector('select').value = 'customer';
+                messageInputs[0].querySelector('textarea').value = 'Hello what can you do?';
+                updateMessageType(messageInputs[0].getAttribute('data-message-id'), 'customer');
+            }
+
+            // Add second message
+            addMessageInput();
+
+            // Wait a bit then populate it
+            setTimeout(() => {
+                const inputs2 = document.querySelectorAll('.message-input-group');
+                if (inputs2[1]) {
+                    inputs2[1].querySelector('select').value = 'agent';
+                    inputs2[1].querySelector('textarea').value = 'I can do stuff';
+                    updateMessageType(inputs2[1].getAttribute('data-message-id'), 'agent');
+                }
+
+                // Add third message
+                addMessageInput();
+
+                setTimeout(() => {
+                    const inputs3 = document.querySelectorAll('.message-input-group');
+                    if (inputs3[2]) {
+                        inputs3[2].querySelector('select').value = 'customer';
+                        inputs3[2].querySelector('textarea').value = 'Thats kewl!';
+                        updateMessageType(inputs3[2].getAttribute('data-message-id'), 'customer');
+                    }
+
+                    // Update preview with all messages
+                    updatePreview();
+                }, 50);
+            }, 50);
+        }, 100);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Animation Studio - All-in-One</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .studio-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .studio-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .studio-header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .studio-header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            padding: 24px 32px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .step {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .step.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .step.completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .step.active .step-number {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .step.completed .step-number {
+            background: #4caf50;
+            color: white;
+        }
+
+        .step-info {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step-desc {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        /* Main Content */
+        .studio-content {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            min-height: calc(100vh - 240px);
+        }
+
+        /* Sidebar */
+        .studio-sidebar {
+            background: #fafafa;
+            padding: 24px;
+            border-right: 2px solid #e0e0e0;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 24px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .upload-area.loaded {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        /* Preview Area */
+        .studio-preview {
+            background: #fff;
+            padding: 24px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .preview-container {
+            width: 100%;
+            height: 100%;
+            background: #f5f5f5;
+            border-radius: 8px;
+            position: relative;
+            min-height: 600px;
+        }
+
+        .message-item {
+            display: flex;
+            margin: 16px 0;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-item.agent {
+            justify-content: flex-start;
+        }
+
+        .message-item.customer {
+            justify-content: flex-end;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            word-wrap: break-word;
+        }
+
+        .message-bubble.agent {
+            background: #f0f0f0;
+            color: #000;
+        }
+
+        .message-bubble.customer {
+            background: #667eea;
+            color: white;
+        }
+
+        .message-list {
+            padding: 16px;
+        }
+
+        .message-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .message-list-item:hover {
+            border-color: #667eea;
+        }
+
+        .message-list-item .type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .message-list-item .type-badge.agent {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .message-list-item .type-badge.customer {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f5f5f5;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Animation Controls */
+        .animation-controls {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+
+        .animation-controls.active {
+            display: block;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .frame-counter {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .speed-slider {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        /* Style Designer */
+        .style-preview {
+            padding: 20px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            margin-top: 12px;
+        }
+
+        .style-property {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .style-property label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .style-property input[type="color"] {
+            width: 60px;
+            height: 32px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .style-property input[type="range"] {
+            width: 100%;
+        }
+
+        /* Background overlay */
+        .background-preview {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: #f5f5f5;
+        }
+
+        .chat-overlay {
+            position: absolute;
+            background: white;
+            border: 3px dashed #667eea;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: move;
+            min-width: 300px;
+            min-height: 200px;
+        }
+
+        .overlay-handle {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border: 2px solid white;
+            border-radius: 50%;
+            bottom: -10px;
+            right: -10px;
+            cursor: nwse-resize;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .success-box {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            padding: 24px;
+            background: #fafafa;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .nav-buttons button {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="studio-container">
+        <!-- Header -->
+        <div class="studio-header">
+            <div>
+                <h1>🎬 Chat Animation Studio</h1>
+                <div class="subtitle">Design → Compose → Animate → Export - All in One Place</div>
+            </div>
+            <button class="btn btn-success" onclick="exportAnimation()" style="width: auto; padding: 12px 24px;">
+                📥 Export Animation
+            </button>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active" data-step="1" onclick="goToStep(1)">
+                <div class="step-number">1</div>
+                <div class="step-info">
+                    <div class="step-title">Background</div>
+                    <div class="step-desc">Upload base HTML (optional)</div>
+                </div>
+            </div>
+            <div class="step" data-step="2" onclick="goToStep(2)">
+                <div class="step-number">2</div>
+                <div class="step-info">
+                    <div class="step-title">Message Styles</div>
+                    <div class="step-desc">Design agent & customer bubbles</div>
+                </div>
+            </div>
+            <div class="step" data-step="3" onclick="goToStep(3)">
+                <div class="step-info">
+                    <div class="step-number">3</div>
+                    <div class="step-title">Conversation</div>
+                    <div class="step-desc">Add messages</div>
+                </div>
+            </div>
+            <div class="step" data-step="4" onclick="goToStep(4)">
+                <div class="step-number">4</div>
+                <div class="step-info">
+                    <div class="step-title">Positioning</div>
+                    <div class="step-desc">Position overlay</div>
+                </div>
+            </div>
+            <div class="step" data-step="5" onclick="goToStep(5)">
+                <div class="step-number">5</div>
+                <div class="step-info">
+                    <div class="step-title">Preview</div>
+                    <div class="step-desc">Watch animation</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="studio-content">
+            <!-- Sidebar -->
+            <div class="studio-sidebar">
+                <!-- Step 1: Background -->
+                <div class="section active" data-section="1">
+                    <div class="section-title">📁 Upload Background</div>
+                    <div class="info-box">
+                        Upload the HTML page where you want the chat to appear (e.g., M365 Copilot interface). Leave blank for a simple background.
+                    </div>
+                    <div class="upload-area" id="backgroundUpload" onclick="document.getElementById('backgroundInput').click()">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📄</div>
+                        <div style="font-weight: 600; margin-bottom: 8px;">Click to Upload Background HTML</div>
+                        <div style="font-size: 12px; color: #888;">Or drag and drop here</div>
+                    </div>
+                    <input type="file" id="backgroundInput" accept=".html" style="display: none;" onchange="loadBackground(event)">
+                    <div id="backgroundStatus" style="margin-top: 12px; font-size: 13px; color: #888;"></div>
+                </div>
+
+                <!-- Step 2: Message Styles -->
+                <div class="section" data-section="2">
+                    <div class="section-title">🎨 Design Message Styles</div>
+
+                    <h4 style="font-size: 14px; margin-bottom: 12px; color: #764ba2;">Agent Message</h4>
+                    <div class="style-property">
+                        <label>Background</label>
+                        <input type="color" id="agentBg" value="#f0f0f0" onchange="updateStylePreview()">
+                    </div>
+                    <div class="style-property">
+                        <label>Text Color</label>
+                        <input type="color" id="agentColor" value="#000000" onchange="updateStylePreview()">
+                    </div>
+                    <div class="style-property">
+                        <label>Border Radius</label>
+                        <input type="range" id="agentRadius" min="0" max="30" value="12" onchange="updateStylePreview()">
+                        <span id="agentRadiusVal">12px</span>
+                    </div>
+                    <div class="style-property">
+                        <label>Padding</label>
+                        <input type="range" id="agentPadding" min="8" max="24" value="12" onchange="updateStylePreview()">
+                        <span id="agentPaddingVal">12px</span>
+                    </div>
+
+                    <h4 style="font-size: 14px; margin: 20px 0 12px; color: #764ba2;">Customer Message</h4>
+                    <div class="style-property">
+                        <label>Background</label>
+                        <input type="color" id="customerBg" value="#667eea" onchange="updateStylePreview()">
+                    </div>
+                    <div class="style-property">
+                        <label>Text Color</label>
+                        <input type="color" id="customerColor" value="#ffffff" onchange="updateStylePreview()">
+                    </div>
+                    <div class="style-property">
+                        <label>Border Radius</label>
+                        <input type="range" id="customerRadius" min="0" max="30" value="12" onchange="updateStylePreview()">
+                        <span id="customerRadiusVal">12px</span>
+                    </div>
+                    <div class="style-property">
+                        <label>Padding</label>
+                        <input type="range" id="customerPadding" min="8" max="24" value="12" onchange="updateStylePreview()">
+                        <span id="customerPaddingVal">12px</span>
+                    </div>
+
+                    <div class="style-preview" id="stylePreview">
+                        <div style="margin-bottom: 12px;">
+                            <div class="message-bubble agent" id="agentPreview">Agent message preview</div>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <div class="message-bubble customer" id="customerPreview">Customer message preview</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Conversation -->
+                <div class="section" data-section="3">
+                    <div class="section-title">💬 Build Conversation</div>
+
+                    <div class="input-group">
+                        <label>Message Type</label>
+                        <select id="messageType">
+                            <option value="agent">Agent</option>
+                            <option value="customer">Customer</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Message Text</label>
+                        <textarea id="messageText" placeholder="Enter message content..."></textarea>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="addMessage()">➕ Add Message</button>
+
+                    <div style="margin-top: 20px;">
+                        <h4 style="font-size: 14px; margin-bottom: 12px; color: #764ba2;">Messages (<span id="messageCount">0</span>)</h4>
+                        <div class="message-list" id="messageList">
+                            <div style="text-align: center; color: #888; padding: 20px; font-size: 13px;">
+                                No messages yet. Add your first message above.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Positioning -->
+                <div class="section" data-section="4">
+                    <div class="section-title">📐 Position Overlay</div>
+
+                    <div class="info-box">
+                        Drag the chat overlay to position it on your background. Resize using the handle in the bottom-right corner.
+                    </div>
+
+                    <div class="input-group">
+                        <label>Overlay Background</label>
+                        <input type="color" id="overlayBg" value="#ffffff" onchange="updateOverlayStyle()">
+                    </div>
+
+                    <div class="input-group">
+                        <label>Overlay Opacity</label>
+                        <input type="range" id="overlayOpacity" min="0" max="100" value="100" onchange="updateOverlayStyle()">
+                        <span id="overlayOpacityVal">100%</span>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Border Radius</label>
+                        <input type="range" id="overlayRadius" min="0" max="30" value="8" onchange="updateOverlayStyle()">
+                        <span id="overlayRadiusVal">8px</span>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="resetOverlayPosition()">🔄 Reset Position</button>
+                </div>
+
+                <!-- Step 5: Preview -->
+                <div class="section" data-section="5">
+                    <div class="section-title">▶️ Animation Preview</div>
+
+                    <div class="info-box">
+                        Watch your chat conversation animate. Adjust speed and playback options below.
+                    </div>
+
+                    <div class="input-group">
+                        <label>Animation Speed</label>
+                        <input type="range" id="animSpeed" min="500" max="3000" value="1000" step="100" onchange="updateSpeed()">
+                        <span id="animSpeedVal">1.0s per message</span>
+                    </div>
+
+                    <div class="control-row">
+                        <button class="btn btn-primary" onclick="playAnimation()" id="playBtn">▶️ Play</button>
+                        <button class="btn btn-secondary" onclick="stopAnimation()">⏹ Stop</button>
+                    </div>
+
+                    <div class="control-row">
+                        <button class="btn btn-secondary" onclick="prevMessage()">⬅️ Prev</button>
+                        <button class="btn btn-secondary" onclick="nextMessage()">➡️ Next</button>
+                    </div>
+
+                    <div class="frame-counter" id="frameCounter">Frame 0 / 0</div>
+
+                    <button class="btn btn-success" onclick="exportAnimation()" style="margin-top: 16px;">
+                        📥 Export All Frames
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Area -->
+            <div class="studio-preview">
+                <div class="preview-container" id="previewContainer">
+                    <!-- Background and overlay will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button class="btn btn-secondary" onclick="prevStep()" id="prevBtn" disabled>⬅️ Previous</button>
+            <button class="btn btn-primary" onclick="nextStep()" id="nextBtn">Next ➡️</button>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentStep = 1;
+        let backgroundHTML = null;
+        let messages = [];
+        let overlayPosition = { x: 50, y: 50, width: 600, height: 400 };
+        let animationInterval = null;
+        let currentFrame = 0;
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateStylePreview();
+            renderPreview();
+        });
+
+        // Step navigation
+        function goToStep(step) {
+            currentStep = step;
+
+            // Update step indicators
+            document.querySelectorAll('.step').forEach((el, idx) => {
+                el.classList.remove('active');
+                if (idx + 1 < step) {
+                    el.classList.add('completed');
+                } else {
+                    el.classList.remove('completed');
+                }
+            });
+            document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
+
+            // Update sections
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.section[data-section="${step}"]`).classList.add('active');
+
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = step === 1;
+            document.getElementById('nextBtn').textContent = step === 5 ? 'Export ➡️' : 'Next ➡️';
+
+            // Render preview for current step
+            renderPreview();
+        }
+
+        function nextStep() {
+            if (currentStep < 5) {
+                goToStep(currentStep + 1);
+            } else {
+                exportAnimation();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                goToStep(currentStep - 1);
+            }
+        }
+
+        // Background upload
+        function loadBackground(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                backgroundHTML = e.target.result;
+                document.getElementById('backgroundUpload').classList.add('loaded');
+                document.getElementById('backgroundStatus').innerHTML =
+                    `<span style="color: #4caf50;">✓ Loaded: ${file.name}</span>`;
+                renderPreview();
+            };
+            reader.readAsText(file);
+        }
+
+        // Style preview
+        function updateStylePreview() {
+            const agentBg = document.getElementById('agentBg').value;
+            const agentColor = document.getElementById('agentColor').value;
+            const agentRadius = document.getElementById('agentRadius').value;
+            const agentPadding = document.getElementById('agentPadding').value;
+
+            const customerBg = document.getElementById('customerBg').value;
+            const customerColor = document.getElementById('customerColor').value;
+            const customerRadius = document.getElementById('customerRadius').value;
+            const customerPadding = document.getElementById('customerPadding').value;
+
+            // Update sidebar preview bubbles (always present)
+            const agentPreview = document.getElementById('agentPreview');
+            if (agentPreview) {
+                agentPreview.style.backgroundColor = agentBg;
+                agentPreview.style.color = agentColor;
+                agentPreview.style.borderRadius = agentRadius + 'px';
+                agentPreview.style.padding = agentPadding + 'px 16px';
+            }
+
+            const customerPreview = document.getElementById('customerPreview');
+            if (customerPreview) {
+                customerPreview.style.backgroundColor = customerBg;
+                customerPreview.style.color = customerColor;
+                customerPreview.style.borderRadius = customerRadius + 'px';
+                customerPreview.style.padding = customerPadding + 'px 16px';
+            }
+
+            // Update main preview bubbles (only exist in step 2)
+            const previewAgent = document.getElementById('previewAgent');
+            if (previewAgent) {
+                previewAgent.style.backgroundColor = agentBg;
+                previewAgent.style.color = agentColor;
+                previewAgent.style.borderRadius = agentRadius + 'px';
+                previewAgent.style.padding = agentPadding + 'px 16px';
+            }
+
+            const previewCustomer = document.getElementById('previewCustomer');
+            if (previewCustomer) {
+                previewCustomer.style.backgroundColor = customerBg;
+                previewCustomer.style.color = customerColor;
+                previewCustomer.style.borderRadius = customerRadius + 'px';
+                previewCustomer.style.padding = customerPadding + 'px 16px';
+            }
+
+            // Update value displays
+            document.getElementById('agentRadiusVal').textContent = agentRadius + 'px';
+            document.getElementById('agentPaddingVal').textContent = agentPadding + 'px';
+            document.getElementById('customerRadiusVal').textContent = customerRadius + 'px';
+            document.getElementById('customerPaddingVal').textContent = customerPadding + 'px';
+
+            // NO MORE renderPreview() call here - that was causing the infinite loop!
+        }
+
+        // Message management
+        function addMessage() {
+            const type = document.getElementById('messageType').value;
+            const text = document.getElementById('messageText').value.trim();
+
+            if (!text) {
+                alert('Please enter message text');
+                return;
+            }
+
+            messages.push({ type, text });
+            document.getElementById('messageText').value = '';
+            updateMessageList();
+            renderPreview();
+        }
+
+        function removeMessage(index) {
+            messages.splice(index, 1);
+            updateMessageList();
+            renderPreview();
+        }
+
+        function updateMessageList() {
+            const list = document.getElementById('messageList');
+            document.getElementById('messageCount').textContent = messages.length;
+
+            if (messages.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #888; padding: 20px; font-size: 13px;">No messages yet. Add your first message above.</div>';
+                return;
+            }
+
+            list.innerHTML = messages.map((msg, idx) => `
+                <div class="message-list-item">
+                    <div>
+                        <span class="type-badge ${msg.type}">${msg.type}</span>
+                        <div style="margin-top: 6px; font-size: 13px; color: #666;">${msg.text.substring(0, 50)}${msg.text.length > 50 ? '...' : ''}</div>
+                    </div>
+                    <div class="message-actions">
+                        <button class="icon-btn" onclick="removeMessage(${idx})" title="Delete">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Overlay styling
+        function updateOverlayStyle() {
+            const bg = document.getElementById('overlayBg').value;
+            const opacity = document.getElementById('overlayOpacity').value;
+            const radius = document.getElementById('overlayRadius').value;
+
+            document.getElementById('overlayOpacityVal').textContent = opacity + '%';
+            document.getElementById('overlayRadiusVal').textContent = radius + 'px';
+
+            renderPreview();
+        }
+
+        function resetOverlayPosition() {
+            overlayPosition = { x: 50, y: 50, width: 600, height: 400 };
+            renderPreview();
+        }
+
+        // Preview rendering
+        function renderPreview() {
+            const container = document.getElementById('previewContainer');
+
+            if (currentStep === 1) {
+                // Step 1: Show background
+                if (backgroundHTML) {
+                    container.innerHTML = '<iframe style="width: 100%; height: 100%; border: none; border-radius: 8px;"></iframe>';
+                    const iframe = container.querySelector('iframe');
+                    iframe.contentDocument.open();
+                    iframe.contentDocument.write(backgroundHTML);
+                    iframe.contentDocument.close();
+                } else {
+                    container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #888;">No background uploaded. Using default background.</div>';
+                }
+            } else if (currentStep === 2) {
+                // Step 2: Show style preview
+                container.innerHTML = `
+                    <div style="padding: 40px;">
+                        <h3 style="margin-bottom: 24px; color: #667eea;">Message Style Preview</h3>
+                        <div class="message-item agent">
+                            <div class="message-bubble agent" id="previewAgent">This is how agent messages will look</div>
+                        </div>
+                        <div class="message-item customer">
+                            <div class="message-bubble customer" id="previewCustomer">This is how customer messages will look</div>
+                        </div>
+                    </div>
+                `;
+                updateStylePreview();
+            } else if (currentStep === 3) {
+                // Step 3: Show conversation
+                renderConversationPreview();
+            } else if (currentStep === 4) {
+                // Step 4: Show positioning
+                renderPositioningPreview();
+            } else if (currentStep === 5) {
+                // Step 5: Show animation
+                renderAnimationPreview();
+            }
+        }
+
+        function renderConversationPreview() {
+            const container = document.getElementById('previewContainer');
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #888;">Add messages to see the conversation preview</div>';
+                return;
+            }
+
+            const agentBg = document.getElementById('agentBg').value;
+            const agentColor = document.getElementById('agentColor').value;
+            const agentRadius = document.getElementById('agentRadius').value;
+            const agentPadding = document.getElementById('agentPadding').value;
+
+            const customerBg = document.getElementById('customerBg').value;
+            const customerColor = document.getElementById('customerColor').value;
+            const customerRadius = document.getElementById('customerRadius').value;
+            const customerPadding = document.getElementById('customerPadding').value;
+
+            const messagesHTML = messages.map(msg => {
+                const isAgent = msg.type === 'agent';
+                const bg = isAgent ? agentBg : customerBg;
+                const color = isAgent ? agentColor : customerColor;
+                const radius = isAgent ? agentRadius : customerRadius;
+                const padding = isAgent ? agentPadding : customerPadding;
+
+                return `
+                    <div class="message-item ${msg.type}">
+                        <div class="message-bubble" style="background: ${bg}; color: ${color}; border-radius: ${radius}px; padding: ${padding}px 16px;">
+                            ${msg.text}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="padding: 24px; overflow-y: auto; height: 100%;">
+                    ${messagesHTML}
+                </div>
+            `;
+        }
+
+        function renderPositioningPreview() {
+            const container = document.getElementById('previewContainer');
+            const overlayBg = document.getElementById('overlayBg').value;
+            const overlayOpacity = document.getElementById('overlayOpacity').value / 100;
+            const overlayRadius = document.getElementById('overlayRadius').value;
+
+            // Render background
+            let backgroundContent = '<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); border-radius: 8px;"></div>';
+
+            if (backgroundHTML) {
+                backgroundContent = `<iframe style="width: 100%; height: 100%; border: none; border-radius: 8px; pointer-events: none;"></iframe>`;
+            }
+
+            container.innerHTML = backgroundContent;
+
+            if (backgroundHTML) {
+                const iframe = container.querySelector('iframe');
+                iframe.contentDocument.open();
+                iframe.contentDocument.write(backgroundHTML);
+                iframe.contentDocument.close();
+            }
+
+            // Add draggable overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'chat-overlay';
+            overlay.style.left = overlayPosition.x + 'px';
+            overlay.style.top = overlayPosition.y + 'px';
+            overlay.style.width = overlayPosition.width + 'px';
+            overlay.style.height = overlayPosition.height + 'px';
+            overlay.style.background = overlayBg;
+            overlay.style.opacity = overlayOpacity;
+            overlay.style.borderRadius = overlayRadius + 'px';
+
+            overlay.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 12px; color: #667eea;">Chat Overlay (Drag to reposition)</div>
+                <div style="font-size: 13px; color: #888;">Your chat messages will appear here</div>
+                <div class="overlay-handle"></div>
+            `;
+
+            container.appendChild(overlay);
+
+            // Make draggable
+            makeDraggable(overlay);
+            makeResizable(overlay);
+        }
+
+        function renderAnimationPreview() {
+            const container = document.getElementById('previewContainer');
+            container.innerHTML = '<div style="padding: 24px; overflow-y: auto; height: 100%;"><div id="animationMessages"></div></div>';
+
+            currentFrame = 0;
+            updateAnimationFrame();
+        }
+
+        function updateAnimationFrame() {
+            const animContainer = document.getElementById('animationMessages');
+            if (!animContainer) return;
+
+            const visibleMessages = messages.slice(0, currentFrame + 1);
+
+            const agentBg = document.getElementById('agentBg').value;
+            const agentColor = document.getElementById('agentColor').value;
+            const agentRadius = document.getElementById('agentRadius').value;
+            const agentPadding = document.getElementById('agentPadding').value;
+
+            const customerBg = document.getElementById('customerBg').value;
+            const customerColor = document.getElementById('customerColor').value;
+            const customerRadius = document.getElementById('customerRadius').value;
+            const customerPadding = document.getElementById('customerPadding').value;
+
+            const messagesHTML = visibleMessages.map(msg => {
+                const isAgent = msg.type === 'agent';
+                const bg = isAgent ? agentBg : customerBg;
+                const color = isAgent ? agentColor : customerColor;
+                const radius = isAgent ? agentRadius : customerRadius;
+                const padding = isAgent ? agentPadding : customerPadding;
+
+                return `
+                    <div class="message-item ${msg.type}">
+                        <div class="message-bubble" style="background: ${bg}; color: ${color}; border-radius: ${radius}px; padding: ${padding}px 16px;">
+                            ${msg.text}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            animContainer.innerHTML = messagesHTML;
+            document.getElementById('frameCounter').textContent = `Frame ${currentFrame + 1} / ${messages.length}`;
+        }
+
+        // Animation controls
+        function playAnimation() {
+            if (animationInterval) return;
+
+            const speed = parseInt(document.getElementById('animSpeed').value);
+            document.getElementById('playBtn').textContent = '⏸️ Pause';
+
+            animationInterval = setInterval(() => {
+                if (currentFrame < messages.length - 1) {
+                    currentFrame++;
+                    updateAnimationFrame();
+                } else {
+                    currentFrame = 0;
+                    updateAnimationFrame();
+                }
+            }, speed);
+        }
+
+        function stopAnimation() {
+            clearInterval(animationInterval);
+            animationInterval = null;
+            document.getElementById('playBtn').textContent = '▶️ Play';
+        }
+
+        function prevMessage() {
+            if (currentFrame > 0) {
+                currentFrame--;
+                updateAnimationFrame();
+            }
+        }
+
+        function nextMessage() {
+            if (currentFrame < messages.length - 1) {
+                currentFrame++;
+                updateAnimationFrame();
+            }
+        }
+
+        function updateSpeed() {
+            const speed = document.getElementById('animSpeed').value;
+            document.getElementById('animSpeedVal').textContent = (speed / 1000).toFixed(1) + 's per message';
+
+            if (animationInterval) {
+                stopAnimation();
+                playAnimation();
+            }
+        }
+
+        // Drag and resize functionality
+        function makeDraggable(element) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+            element.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                if (e.target.classList.contains('overlay-handle')) return;
+
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+
+                const newTop = element.offsetTop - pos2;
+                const newLeft = element.offsetLeft - pos1;
+
+                element.style.top = newTop + "px";
+                element.style.left = newLeft + "px";
+
+                overlayPosition.x = newLeft;
+                overlayPosition.y = newTop;
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        function makeResizable(element) {
+            const handle = element.querySelector('.overlay-handle');
+
+            handle.onmousedown = resizeMouseDown;
+
+            function resizeMouseDown(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const startWidth = element.offsetWidth;
+                const startHeight = element.offsetHeight;
+
+                document.onmousemove = resize;
+                document.onmouseup = stopResize;
+
+                function resize(e) {
+                    const newWidth = startWidth + (e.clientX - startX);
+                    const newHeight = startHeight + (e.clientY - startY);
+
+                    element.style.width = Math.max(300, newWidth) + 'px';
+                    element.style.height = Math.max(200, newHeight) + 'px';
+
+                    overlayPosition.width = Math.max(300, newWidth);
+                    overlayPosition.height = Math.max(200, newHeight);
+                }
+
+                function stopResize() {
+                    document.onmousemove = null;
+                    document.onmouseup = null;
+                }
+            }
+        }
+
+        // Export
+        function exportAnimation() {
+            if (messages.length === 0) {
+                alert('Please add at least one message before exporting');
+                return;
+            }
+
+            const agentBg = document.getElementById('agentBg').value;
+            const agentColor = document.getElementById('agentColor').value;
+            const agentRadius = document.getElementById('agentRadius').value;
+            const agentPadding = document.getElementById('agentPadding').value;
+
+            const customerBg = document.getElementById('customerBg').value;
+            const customerColor = document.getElementById('customerColor').value;
+            const customerRadius = document.getElementById('customerRadius').value;
+            const customerPadding = document.getElementById('customerPadding').value;
+
+            const overlayBg = document.getElementById('overlayBg').value;
+            const overlayOpacity = document.getElementById('overlayOpacity').value / 100;
+            const overlayRadius = document.getElementById('overlayRadius').value;
+
+            // Generate frames
+            for (let i = 0; i < messages.length; i++) {
+                const frameMessages = messages.slice(0, i + 1);
+
+                const messagesHTML = frameMessages.map(msg => {
+                    const isAgent = msg.type === 'agent';
+                    const bg = isAgent ? agentBg : customerBg;
+                    const color = isAgent ? agentColor : customerColor;
+                    const radius = isAgent ? agentRadius : customerRadius;
+                    const padding = isAgent ? agentPadding : customerPadding;
+
+                    return `
+                        <div style="display: flex; justify-content: ${isAgent ? 'flex-start' : 'flex-end'}; margin: 16px 0;">
+                            <div style="max-width: 70%; background: ${bg}; color: ${color}; border-radius: ${radius}px; padding: ${padding}px 16px; word-wrap: break-word;">
+                                ${msg.text}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                const chatHTML = `<div style="padding: 16px;">${messagesHTML}</div>`;
+
+                // Create composite frame
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(backgroundHTML || '<html><body style="background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); margin: 0; padding: 0; width: 100vw; height: 100vh;"></body></html>', 'text/html');
+
+                const overlayDiv = doc.createElement('div');
+                overlayDiv.style.cssText = `
+                    position: absolute;
+                    left: ${overlayPosition.x}px;
+                    top: ${overlayPosition.y}px;
+                    width: ${overlayPosition.width}px;
+                    height: ${overlayPosition.height}px;
+                    background: ${overlayBg};
+                    opacity: ${overlayOpacity};
+                    border-radius: ${overlayRadius}px;
+                    overflow: auto;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    z-index: 9999;
+                `;
+                overlayDiv.innerHTML = chatHTML;
+
+                doc.body.appendChild(overlayDiv);
+
+                const frameHTML = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+
+                // Download frame
+                const blob = new Blob([frameHTML], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `chat-frame-${String(i + 1).padStart(2, '0')}.html`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            alert(`✓ Exported ${messages.length} frames successfully!\n\nLoad them into the Static Page Animator to play the animation.`);
+        }
+    </script>
+</body>
+</html>

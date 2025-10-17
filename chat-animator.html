@@ -357,6 +357,74 @@
             outline-offset: 2px;
             border-radius: 3px;
         }
+
+        /* Background Frame Picker */
+        .frame-gallery-item {
+            background: white;
+            border: 3px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .frame-gallery-item:hover {
+            border-color: #3498db;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+
+        .frame-gallery-item.selected {
+            border-color: #27ae60;
+            border-width: 4px;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+        }
+
+        .frame-preview {
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            border-radius: 4px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: #999;
+            border: 1px solid #eee;
+        }
+
+        .frame-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            pointer-events: none;
+        }
+
+        .frame-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .canvas-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
     </style>
 </head>
 <body>
@@ -366,6 +434,7 @@
         <button class="btn btn-primary" onclick="importStyles()">🎨 Import Styles</button>
         <button class="btn btn-primary" onclick="exportStyles()">📤 Export Styles</button>
         <button class="btn btn-primary" onclick="importConversation()">📥 Import Conversation</button>
+        <button class="btn btn-primary" onclick="openBackgroundPicker()">🖼️ Background Frames</button>
         <button class="btn btn-success" onclick="addMessage('agent')">➕ Add Agent</button>
         <button class="btn btn-success" onclick="addMessage('customer')">➕ Add Customer</button>
         <button class="btn btn-purple" onclick="exportConversation()">💬 Export Conversation</button>
@@ -652,6 +721,45 @@
         </div>
     </div>
 
+    <!-- Background Frame Picker Modal -->
+    <div class="modal" id="backgroundPickerModal">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh;">
+            <h2>Background Frame Picker</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                Import frames from Chat Frame Generator and select one as your canvas background:
+            </p>
+
+            <input type="file" id="backgroundFramesInput" accept=".json,.html" style="margin-bottom: 15px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+
+            <div id="frameGallery" style="
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                gap: 15px;
+                max-height: 500px;
+                overflow-y: auto;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin-bottom: 15px;
+            ">
+                <div style="grid-column: 1 / -1; text-align: center; color: #999; padding: 40px;">
+                    Upload a frame export file to see frame previews
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                <button class="btn btn-danger" onclick="clearBackground()" style="font-size: 12px;">
+                    🗑️ Clear Background
+                </button>
+                <span id="backgroundStatus" style="font-size: 12px; color: #666;"></span>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn" onclick="closeModal('backgroundPickerModal')" style="background: #95a5a6; color: white;">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Status Message -->
     <div class="status-message" id="statusMessage"></div>
 
@@ -671,6 +779,8 @@
         let dragOffsetY = 0;
         let messageIdCounter = 0;
         let messageTemplates = []; // Store imported message templates
+        let backgroundFrames = []; // Store imported background frames
+        let selectedBackgroundIndex = null; // Currently selected background frame
 
         // Show status message
         function showStatus(message, type = 'success') {
@@ -1320,7 +1430,7 @@
             const container = document.getElementById('chatContainer');
             const emptyState = document.getElementById('emptyState');
 
-            // Clear existing messages but keep empty state element
+            // Clear existing messages but keep empty state element and background
             const messagesToRemove = container.querySelectorAll('.message-item');
             messagesToRemove.forEach(msg => msg.remove());
 
@@ -1341,6 +1451,8 @@
                 el.dataset.msgId = msg.id;
                 el.style.left = (msg.posX || 0) + 'px';
                 el.style.top = (msg.posY || 0) + 'px';
+                el.style.position = 'absolute';
+                el.style.zIndex = '10'; // Ensure messages appear above background
 
                 // Use the same HTML generation as preview panel
                 let messageHTML = generateMessageHTML(msg);
@@ -1848,6 +1960,171 @@
                 }
             } catch (err) {
                 console.warn('Could not load templates from localStorage:', err);
+            }
+        }
+
+        // ============================================
+        // BACKGROUND FRAME PICKER FUNCTIONS
+        // ============================================
+
+        // Open background picker modal
+        function openBackgroundPicker() {
+            document.getElementById('backgroundPickerModal').classList.add('active');
+
+            // Setup file input handler
+            const fileInput = document.getElementById('backgroundFramesInput');
+            fileInput.onchange = handleBackgroundFrameUpload;
+
+            // Update status if background is already set
+            updateBackgroundStatus();
+        }
+
+        // Handle background frame file upload
+        function handleBackgroundFrameUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const content = e.target.result;
+
+                    // Try to parse as JSON first
+                    if (file.name.endsWith('.json')) {
+                        const data = JSON.parse(content);
+
+                        // Check if it's a frame export from chat-frame-generator
+                        if (data.frames && Array.isArray(data.frames)) {
+                            backgroundFrames = data.frames;
+                        } else if (data.cleanChatFrames && Array.isArray(data.cleanChatFrames)) {
+                            backgroundFrames = data.cleanChatFrames;
+                        } else if (Array.isArray(data)) {
+                            // Direct array of frames
+                            backgroundFrames = data;
+                        } else {
+                            showStatus('Invalid frame format in JSON', 'error');
+                            return;
+                        }
+                    } else if (file.name.endsWith('.html')) {
+                        // Single HTML frame
+                        backgroundFrames = [content];
+                    } else {
+                        showStatus('Please upload a JSON or HTML file', 'error');
+                        return;
+                    }
+
+                    displayFrameGallery();
+                    showStatus(`Loaded ${backgroundFrames.length} background frame(s)!`);
+                } catch (error) {
+                    showStatus('Error loading frames: ' + error.message, 'error');
+                    console.error('Frame loading error:', error);
+                }
+            };
+            reader.readAsText(file);
+
+            // Clear input
+            event.target.value = '';
+        }
+
+        // Display frame gallery
+        function displayFrameGallery() {
+            const gallery = document.getElementById('frameGallery');
+
+            if (backgroundFrames.length === 0) {
+                gallery.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; color: #999; padding: 40px;">
+                        Upload a frame export file to see frame previews
+                    </div>
+                `;
+                return;
+            }
+
+            gallery.innerHTML = backgroundFrames.map((frameHTML, index) => {
+                const isSelected = selectedBackgroundIndex === index;
+                return `
+                    <div class="frame-gallery-item ${isSelected ? 'selected' : ''}"
+                         onclick="selectBackgroundFrame(${index})"
+                         data-frame-index="${index}">
+                        <div class="frame-number">Frame ${index + 1}</div>
+                        <div class="frame-preview">
+                            <div style="
+                                width: 100%;
+                                height: 100%;
+                                overflow: hidden;
+                                transform: scale(0.5);
+                                transform-origin: top left;
+                                width: 200%;
+                                height: 200%;
+                            ">
+                                ${frameHTML}
+                            </div>
+                        </div>
+                        ${isSelected ? '<div style="text-align: center; color: #27ae60; font-size: 11px; font-weight: 600; margin-top: 8px;">✓ Selected</div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Select a background frame
+        function selectBackgroundFrame(index) {
+            selectedBackgroundIndex = index;
+            displayFrameGallery();
+            applyBackgroundToCanvas();
+            updateBackgroundStatus();
+            showStatus(`Background frame ${index + 1} selected!`);
+        }
+
+        // Apply background to canvas
+        function applyBackgroundToCanvas() {
+            const container = document.getElementById('chatContainer');
+
+            // Remove existing background if any
+            const existingBg = container.querySelector('.canvas-background');
+            if (existingBg) {
+                existingBg.remove();
+            }
+
+            // Add new background if one is selected
+            if (selectedBackgroundIndex !== null && backgroundFrames[selectedBackgroundIndex]) {
+                const bgDiv = document.createElement('div');
+                bgDiv.className = 'canvas-background';
+                bgDiv.innerHTML = backgroundFrames[selectedBackgroundIndex];
+                container.insertBefore(bgDiv, container.firstChild);
+            }
+
+            // Ensure messages have higher z-index
+            const messages = container.querySelectorAll('.message-item');
+            messages.forEach(msg => {
+                msg.style.position = 'absolute';
+                msg.style.zIndex = '10';
+            });
+        }
+
+        // Clear background
+        function clearBackground() {
+            selectedBackgroundIndex = null;
+            backgroundFrames = [];
+
+            const container = document.getElementById('chatContainer');
+            const existingBg = container.querySelector('.canvas-background');
+            if (existingBg) {
+                existingBg.remove();
+            }
+
+            displayFrameGallery();
+            updateBackgroundStatus();
+            showStatus('Background cleared');
+        }
+
+        // Update background status text
+        function updateBackgroundStatus() {
+            const statusEl = document.getElementById('backgroundStatus');
+            if (selectedBackgroundIndex !== null && backgroundFrames[selectedBackgroundIndex]) {
+                statusEl.textContent = `✓ Using frame ${selectedBackgroundIndex + 1} as background`;
+                statusEl.style.color = '#27ae60';
+            } else {
+                statusEl.textContent = 'No background selected';
+                statusEl.style.color = '#999';
             }
         }
 
